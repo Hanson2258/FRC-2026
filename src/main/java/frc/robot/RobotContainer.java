@@ -314,6 +314,9 @@ public class RobotContainer {
         faceTargetController.reset(drive.getRotation().getRadians());
       }
     }, drive));
+
+    // Pathfind then follow path to outpost when D-pad up is held
+    driverController.povUp().whileTrue(DriveCommands.pathfindThenFollowPath(drive, "DriveToOutpost"));
   }
 
   /** 

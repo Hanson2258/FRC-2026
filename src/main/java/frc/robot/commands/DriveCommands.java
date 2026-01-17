@@ -7,6 +7,9 @@
 
 package frc.robot.commands;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -300,6 +303,32 @@ public class DriveCommands {
                               + formatter.format(Units.metersToInches(wheelRadius))
                               + " inches");
                     })));
+  }
+
+  /**
+   * Returns a command that pathfinds to the start of the specified path, then follows it.
+   * This is a modular method that can be used for any path.
+   *
+   * @param drive The drive subsystem
+   * @param pathName The name of the path file (without .path extension) in deploy/pathplanner/paths/
+   * @return A command that pathfinds then follows the path
+   * @throws RuntimeException if the path file cannot be loaded
+   */
+  public static Command pathfindThenFollowPath(Drive drive, String pathName) {
+    // Load the path from file with error handling
+    PathPlannerPath path;
+    try {
+      path = PathPlannerPath.fromPathFile(pathName);
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException("Failed to load path: " + pathName + ". Make sure the path exists in deploy/pathplanner/paths/", e);
+    }
+    
+    // Use the path's constraints for pathfinding
+    PathConstraints pathfindingConstraints = path.getGlobalConstraints();
+    
+    // Return the AutoBuilder command
+    return AutoBuilder.pathfindThenFollowPath(path, pathfindingConstraints);
   }
 
   private static class WheelRadiusCharacterizationState {
