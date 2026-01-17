@@ -1,5 +1,6 @@
 package frc.robot.subsystems.vision;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -9,11 +10,9 @@ import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-
 /**
- * Vision simulation support for PhotonVision.
- * This class handles simulating the camera and vision system in simulation mode.
+ * Vision simulation support for PhotonVision. This class handles simulating the camera and vision
+ * system in simulation mode.
  */
 public class VisionSim {
   private PhotonCameraSim cameraSim;
@@ -22,7 +21,7 @@ public class VisionSim {
 
   /**
    * Creates a new VisionSim instance.
-   * 
+   *
    * @param camera The PhotonCamera to simulate
    * @param fieldLayout The AprilTag field layout
    * @param robotToCameraTransform The transform from robot center to camera
@@ -37,7 +36,7 @@ public class VisionSim {
     if (RobotBase.isSimulation()) {
       // Create the vision system simulation which handles cameras and targets on the field
       visionSim = new VisionSystemSim("main");
-      
+
       // Add all the AprilTags from the field layout as visible targets
       visionSim.addAprilTags(fieldLayout);
 
@@ -63,9 +62,9 @@ public class VisionSim {
   }
 
   /**
-   * Update the vision simulation with the current robot pose.
-   * This should be called periodically during simulation.
-   * 
+   * Update the vision simulation with the current robot pose. This should be called periodically
+   * during simulation.
+   *
    * @param robotSimPose The current simulated robot pose
    */
   public void simulationPeriodic(Pose2d robotSimPose) {
@@ -76,7 +75,7 @@ public class VisionSim {
 
   /**
    * Reset the robot pose in the vision system simulation.
-   * 
+   *
    * @param pose The new robot pose
    */
   public void resetSimPose(Pose2d pose) {
@@ -86,9 +85,9 @@ public class VisionSim {
   }
 
   /**
-   * Get a Field2d for visualizing the robot and objects on the field in simulation.
-   * This can be added to SmartDashboard for visualization.
-   * 
+   * Get a Field2d for visualizing the robot and objects on the field in simulation. This can be
+   * added to SmartDashboard for visualization.
+   *
    * @return Field2d for visualization, or null if not in simulation
    */
   public Field2d getSimDebugField() {
