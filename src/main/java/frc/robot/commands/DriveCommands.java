@@ -43,6 +43,26 @@ public class DriveCommands {
 
   private DriveCommands() {}
 
+  /** Returns the PID proportional gain for angle control. */
+  public static double getAngleKp() {
+    return ANGLE_KP;
+  }
+
+  /** Returns the PID derivative gain for angle control. */
+  public static double getAngleKd() {
+    return ANGLE_KD;
+  }
+
+  /** Returns the maximum angular velocity for angle control (rad/s). */
+  public static double getAngleMaxVelocity() {
+    return ANGLE_MAX_VELOCITY;
+  }
+
+  /** Returns the maximum angular acceleration for angle control (rad/s²). */
+  public static double getAngleMaxAcceleration() {
+    return ANGLE_MAX_ACCELERATION;
+  }
+
   private static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
     // Apply deadband
     double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), DEADBAND);

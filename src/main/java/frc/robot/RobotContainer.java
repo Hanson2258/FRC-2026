@@ -12,9 +12,12 @@ import static edu.wpi.first.units.Units.*;
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -62,6 +65,10 @@ public class RobotContainer {
   // Manual Override and Encoder Reset
   public static boolean manualOverride = false;
   private boolean encoderReset = false;
+
+  // Face Target mode
+  private boolean isFacingHub = false;
+  private ProfiledPIDController faceTargetController;
 
 
   /** 
@@ -140,6 +147,11 @@ public class RobotContainer {
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
+    // Initialize face-target PID controller (using same constants as DriveCommands)
+    faceTargetController = new ProfiledPIDController(DriveCommands.getAngleKp(), 0.0, DriveCommands.getAngleKd(),
+        new TrapezoidProfile.Constraints(DriveCommands.getAngleMaxVelocity(), DriveCommands.getAngleMaxAcceleration()));
+    faceTargetController.enableContinuousInput(-Math.PI, Math.PI);
+
     // Configure button bindings
     configureDriveBindings(true); // False to disable driving
     configureOperatorBindings(false); // False to disable operator controls
@@ -204,6 +216,25 @@ public class RobotContainer {
     return ChassisSpeeds.fromFieldRelativeSpeeds(robotRelativeSpeeds, fieldOrientation);
   }
 
+  /**
+   * Calculates the target angle to face the alliance's hub center.
+   *
+   * @return The desired rotation to face the target hub
+   */
+  private Rotation2d calculateTargetHubAngle() {
+    // Get robot's current position
+    Pose2d robotPose = drive.getPose();
+    Translation2d robotPosition = robotPose.getTranslation();
+
+    // Determine target based on alliance
+    boolean isRedAlliance = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
+    Translation2d targetPosition = isRedAlliance ? FieldConstants.RED_HUB_CENTER : FieldConstants.BLUE_HUB_CENTER;
+
+    // Calculate angle from robot to target
+    Translation2d delta = targetPosition.minus(robotPosition);
+    return new Rotation2d(Math.atan2(delta.getY(), delta.getX()));
+  }
+
   /** Prints the current odometry pose of the robot to the console. */
   public void printPose() {
     Pose2d robotPose = drive.getPose();
@@ -231,7 +262,7 @@ public class RobotContainer {
       return;
     }
 
-    // Drive enabled: field-relative drive with turbo control
+    // Drive enabled: field-relative drive with turbo control and optional face-target mode
     drive.setDefaultCommand(Commands.run(() -> {
       // Read joystick inputs
       double leftY = -driverController.getLeftY(); // Forward/backward
@@ -242,7 +273,19 @@ public class RobotContainer {
       // Calculate velocities with turbo and deadband
       double velocityX = scaleAxisWithTurbo(leftY, turboAxis, MAX_CONTROL_SPEED);
       double velocityY = scaleAxisWithTurbo(leftX, turboAxis, MAX_CONTROL_SPEED);
-      double rotationalRate = scaleAxisWithTurbo(rightX, turboAxis, MAX_ANGULAR_RATE);
+      
+      // Determine rotational rate: use face-target PID if enabled, otherwise use joystick
+      double rotationalRate;
+      if (isFacingHub) {
+        // Calculate target angle and use PID controller to rotate toward it
+        Rotation2d targetAngle = calculateTargetHubAngle();
+        rotationalRate = faceTargetController.calculate(drive.getRotation().getRadians(), targetAngle.getRadians());
+      } else {
+        // Use joystick input for rotation
+        rotationalRate = scaleAxisWithTurbo(rightX, turboAxis, MAX_ANGULAR_RATE);
+        // Reset PID controller when not using face-target mode
+        faceTargetController.reset(drive.getRotation().getRadians());
+      }
 
       // Convert to field-relative speeds
       ChassisSpeeds robotRelativeSpeeds = new ChassisSpeeds(velocityX, velocityY, rotationalRate);
@@ -262,6 +305,15 @@ public class RobotContainer {
     // Reset gyro to 0° when B button is pressed
     driverController.b().onTrue(Commands.runOnce(() -> drive.setPose(
         new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),drive).ignoringDisable(true));
+
+    // Toggle face-target mode when Y button is pressed
+    driverController.y().onTrue(Commands.runOnce(() -> {
+      isFacingHub = !isFacingHub;
+      if (isFacingHub) {
+        // Reset PID controller when enabling face-target mode
+        faceTargetController.reset(drive.getRotation().getRadians());
+      }
+    }, drive));
   }
 
   /** 
