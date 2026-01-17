@@ -8,37 +8,13 @@
 package frc.robot.subsystems.vision;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Filesystem;
-import java.nio.file.Path;
 
 public class VisionConstants {
-  // AprilTag layout  TODO: Uncomment this if/when WPILib adds 2026-rebuilt-welded.json
-  // public static AprilTagFieldLayout aprilTagLayout =
-  // AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
-
-  // Load the AprilTag field layout
-  // Note: WPILib 2026 doesn't include 2026 field layouts in AprilTagFields enum yet,
-  // so we load the custom 2026 field layout JSON from deploy directory
-  // File location: src/main/deploy/2026-rebuilt-welded.json (deployed to /home/lvuser/deploy/ on
-  // roboRIO)
-  public static AprilTagFieldLayout aprilTagLayout;
-
-  static {
-    // On real robot, files in src/main/deploy are deployed to /home/lvuser/deploy/
-    // Use Filesystem.getDeployDirectory() to get the correct path
-    try {
-      Path deployPath =
-          Filesystem.getDeployDirectory().toPath().resolve("2026-rebuilt-welded.json");
-      aprilTagLayout = new AprilTagFieldLayout(deployPath.toString());
-    } catch (Exception e) {
-      DriverStation.reportError(
-          "Failed to load AprilTag field layout: " + e.getMessage(), e.getStackTrace());
-      aprilTagLayout = null;
-    }
-  }
+  // AprilTag layout (Welded field - Correct for Canada Competitions, and United States Regionals)
+  public static AprilTagFieldLayout aprilTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
 
   // Camera names, must match names configured on coprocessor
   public static String camera0Name = "Arducam_OV9821";
