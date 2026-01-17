@@ -41,9 +41,6 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
-  // Vision-only mode: Set to true to skip hardware initialization
-  private static final boolean VISION_ONLY_MODE = false; // Set to false for full robot operation
-
   // Swerve Drive constants
   private final double MaxSpeed =
       TunerConstants.kSpeedAt12Volts.in(
@@ -75,41 +72,26 @@ public class RobotContainer {
   public RobotContainer() {
     // Initialize subsystems based on mode (REAL, SIM, or REPLAY)
     switch (Constants.currentMode) {
-      case REAL:
         // Real robot, instantiate hardware IO implementations
-        if (!VISION_ONLY_MODE) {
-          drive =
-              new Drive(
-                  new GyroIOPigeon2(),
-                  new ModuleIOTalonFX(TunerConstants.FrontLeft),
-                  new ModuleIOTalonFX(TunerConstants.FrontRight),
-                  new ModuleIOTalonFX(TunerConstants.BackLeft),
-                  new ModuleIOTalonFX(TunerConstants.BackRight));
-        } else {
-          drive = null;
-        }
+      case REAL:
+        drive =
+            new Drive(
+                new GyroIOPigeon2(),
+                new ModuleIOTalonFX(TunerConstants.FrontLeft),
+                new ModuleIOTalonFX(TunerConstants.FrontRight),
+                new ModuleIOTalonFX(TunerConstants.BackLeft),
+                new ModuleIOTalonFX(TunerConstants.BackRight));
 
         // Initialize vision after drive (vision needs drive reference)
-        if (drive != null) {
-          vision =
-              new Vision(
-                  drive::addVisionMeasurement,
-                  new VisionIOPhotonVision(camera0Name, robotToCamera0),
-                  new VisionIOPhotonVision(camera1Name, robotToCamera1));
-        } else {
-          // Vision-only mode: create dummy vision without drive
-          vision =
-              new Vision(
-                  (pose, timestamp, stdDevs) -> {
-                    // No-op: vision-only mode, don't update drive
-                  },
-                  new VisionIOPhotonVision(camera0Name, robotToCamera0),
-                  new VisionIOPhotonVision(camera1Name, robotToCamera1));
-        }
+        vision =
+            new Vision(
+                drive::addVisionMeasurement,
+                new VisionIOPhotonVision(camera0Name, robotToCamera0),
+                new VisionIOPhotonVision(camera1Name, robotToCamera1));
         break;
 
-      case SIM:
         // Sim robot, instantiate physics sim IO implementations
+      case SIM:
         drive =
             new Drive(
                 new GyroIO() {},
@@ -126,8 +108,8 @@ public class RobotContainer {
                 new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose));
         break;
 
-      default:
         // Replayed robot, disable IO implementations
+      default:
         drive =
             new Drive(
                 new GyroIO() {},
@@ -137,50 +119,32 @@ public class RobotContainer {
                 new ModuleIO() {});
 
         // Initialize vision after drive (vision needs drive reference)
-        // (Use same number of dummy implementations as the real robot)
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
         break;
     }
 
     // Set up auto routines
-    if (drive != null) {
-      autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+    autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
-      // Set up SysId routines
-      autoChooser.addOption(
-          "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
-      autoChooser.addOption(
-          "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
-      autoChooser.addOption(
-          "Drive SysId (Quasistatic Forward)",
-          drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-      autoChooser.addOption(
-          "Drive SysId (Quasistatic Reverse)",
-          drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-      autoChooser.addOption(
-          "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-      autoChooser.addOption(
-          "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-    } else {
-      // Vision-only mode: create empty chooser
-      autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-      DriverStation.reportWarning(
-          "Vision-only mode enabled. Drivetrain hardware initialization skipped to suppress CAN errors.",
-          false);
-    }
+    // Add SysId routines to auto chooser
+    autoChooser.addOption(
+        "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
+    autoChooser.addOption(
+        "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
+    autoChooser.addOption(
+        "Drive SysId (Quasistatic Forward)",
+        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Drive SysId (Quasistatic Reverse)",
+        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    // Register the named commands for Auto
-    registerCommands();
-
-    // Configure the trigger bindings (skip if vision-only mode)
-    if (!VISION_ONLY_MODE && drive != null) {
-      configureDriveBindings(true); // True to enable driving
-      configureOperatorBindings(false); // False to disable operator controls
-    } else if (VISION_ONLY_MODE) {
-      DriverStation.reportWarning(
-          "Vision-only mode enabled. Drivetrain hardware initialization skipped to suppress CAN errors.",
-          false);
-    }
+    // Configure button bindings
+    configureDriveBindings(true); // False to disable driving
+    configureOperatorBindings(false); // False to disable operator controls
   }
 
   /**
@@ -190,7 +154,7 @@ public class RobotContainer {
    */
   private static double applyDeadband(double value) {
     return applyDeadband(value, XBOX_DEADBAND);
-  }
+  } // End applyDeadband
 
   /**
    * Deadband function to eliminate small joystick inputs.
@@ -206,7 +170,7 @@ public class RobotContainer {
     double sign = Math.signum(value);
     double adjusted = (Math.abs(value) - deadband) / (1.0 - deadband);
     return sign * adjusted;
-  }
+  } // End applyDeadband
 
   /**
    * Scale a raw joystick axis to a control output, applying a deadband and a "turbo" multiplier.
@@ -231,22 +195,33 @@ public class RobotContainer {
 
     // Scale the (signed) axis by the physical range and the turbo multiplier
     return inputAxis * maxRange * turbo;
+  } // End scaleAxisWithTurbo
+
+  /**
+   * Converts robot-relative speeds to field-relative speeds, accounting for alliance color.
+   *
+   * @param robotRelativeSpeeds Speeds relative to the robot's current orientation
+   * @return Speeds relative to the field, flipped if on red alliance
+   */
+  private ChassisSpeeds convertToFieldRelative(ChassisSpeeds robotRelativeSpeeds) {
+    boolean isRedAlliance =
+        DriverStation.getAlliance().isPresent()
+            && DriverStation.getAlliance().get() == Alliance.Red;
+    Rotation2d fieldOrientation =
+        isRedAlliance ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation();
+    return ChassisSpeeds.fromFieldRelativeSpeeds(robotRelativeSpeeds, fieldOrientation);
   }
 
   /** Prints the current odometry pose of the robot to the console. */
   public void printPose() {
-    if (drive != null) {
-      Pose2d robotPose = drive.getPose();
-      System.out.println("=== Odometry Pose ===");
-      System.out.println("  X: " + String.format("%.3f", robotPose.getX()) + " m");
-      System.out.println("  Y: " + String.format("%.3f", robotPose.getY()) + " m");
-      System.out.println(
-          "  Rotation: " + String.format("%.2f", robotPose.getRotation().getDegrees()) + " deg");
-      System.out.println("====================");
-    } else {
-      System.out.println("Odometry: Drivetrain not initialized (vision-only mode)");
-    }
-  }
+    Pose2d robotPose = drive.getPose();
+    System.out.println("=== Odometry Pose ===");
+    System.out.println("X:   " + String.format("%.3f", robotPose.getX()) + " m");
+    System.out.println("Y:   " + String.format("%.3f", robotPose.getY()) + " m");
+    System.out.println(
+        "Rot: " + String.format("%.2f", robotPose.getRotation().getDegrees()) + " deg");
+    System.out.println("====================");
+  } // End printPose
 
   /**
    * Configure only the drive to enable or disable
@@ -254,104 +229,80 @@ public class RobotContainer {
    * @param enableDriving true to enable driving, false to disable
    */
   private void configureDriveBindings(boolean enableDriving) {
+    // Can't configure if drive is null
     if (drive == null) {
-      return; // Can't configure if drive is null
+      return;
     }
 
-    // Drive Enabled
-    if (enableDriving) {
-      // Drivetrain will execute this command periodically
+    // Drive disabled: stop all movement
+    if (!enableDriving) {
       drive.setDefaultCommand(
-          Commands.run(
-              () -> {
-                // Calculate velocities with turbo and deadband
-                double velocityX =
-                    scaleAxisWithTurbo(
-                        -driverController.getLeftY(),
-                        driverController.getRightTriggerAxis(),
-                        MAX_CONTROL_SPEED);
-                double velocityY =
-                    scaleAxisWithTurbo(
-                        -driverController.getLeftX(),
-                        driverController.getRightTriggerAxis(),
-                        MAX_CONTROL_SPEED);
-                double rotationalRate =
-                    scaleAxisWithTurbo(
-                        -driverController.getRightX(),
-                        driverController.getRightTriggerAxis(),
-                        MAX_ANGULAR_RATE);
-
-                // Convert to field-relative speeds
-                boolean isFlipped =
-                    DriverStation.getAlliance().isPresent()
-                        && DriverStation.getAlliance().get() == Alliance.Red;
-                ChassisSpeeds speeds =
-                    ChassisSpeeds.fromFieldRelativeSpeeds(
-                        new ChassisSpeeds(velocityX, velocityY, rotationalRate),
-                        isFlipped
-                            ? drive.getRotation().plus(new Rotation2d(Math.PI))
-                            : drive.getRotation());
-
-                drive.runVelocity(speeds);
-              },
-              drive));
-
-      // Reset the field-centric heading on Start button press
-      driverController
-          .start()
-          .onTrue(
-              Commands.runOnce(
-                  () ->
-                      drive.setPose(new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
-                  drive));
-
-      // Switch to X pattern when X button is pressed
-      driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
-
-      // Reset gyro to 0° when B button is pressed
-      driverController
-          .b()
-          .onTrue(
-              Commands.runOnce(
-                      () ->
-                          drive.setPose(
-                              new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
-                      drive)
-                  .ignoringDisable(true));
-
-      // Drive Disabled
-    } else {
-      drive.setDefaultCommand(
-          Commands.run(
-              () -> {
-                drive.runVelocity(new ChassisSpeeds(0.0, 0.0, 0.0));
-              },
-              drive));
+          Commands.run(() -> drive.runVelocity(new ChassisSpeeds(0.0, 0.0, 0.0)), drive));
+      return;
     }
+
+    // Drive enabled: field-relative drive with turbo control
+    drive.setDefaultCommand(
+        Commands.run(
+            () -> {
+              // Read joystick inputs
+              double leftY = -driverController.getLeftY(); // Forward/backward
+              double leftX = -driverController.getLeftX(); // Left/right
+              double rightX = -driverController.getRightX(); // Rotation
+              double turboAxis = driverController.getRightTriggerAxis(); // Turbo multiplier
+
+              // Calculate velocities with turbo and deadband
+              double velocityX = scaleAxisWithTurbo(leftY, turboAxis, MAX_CONTROL_SPEED);
+              double velocityY = scaleAxisWithTurbo(leftX, turboAxis, MAX_CONTROL_SPEED);
+              double rotationalRate = scaleAxisWithTurbo(rightX, turboAxis, MAX_ANGULAR_RATE);
+
+              // Convert to field-relative speeds
+              ChassisSpeeds robotRelativeSpeeds =
+                  new ChassisSpeeds(velocityX, velocityY, rotationalRate);
+              ChassisSpeeds fieldRelativeSpeeds = convertToFieldRelative(robotRelativeSpeeds);
+
+              // Execute drive command
+              drive.runVelocity(fieldRelativeSpeeds);
+            },
+            drive));
+
+    // Reset the field-centric heading on Start button press
+    driverController
+        .start()
+        .onTrue(
+            Commands.runOnce(
+                () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
+                drive));
+
+    // Switch to X pattern when X button is pressed
+    driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+
+    // Reset gyro to 0° when B button is pressed
+    driverController
+        .b()
+        .onTrue(
+            Commands.runOnce(
+                    () ->
+                        drive.setPose(
+                            new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
+                    drive)
+                .ignoringDisable(true));
   }
 
-  /** Created only to reduce Merge Conflicts while both working on this file */
+  /** Configure operator controls */
   private void configureOperatorBindings(boolean enableOperatorControls) {
     // Operator Controls Enabled
     if (enableOperatorControls) {
       // Add operator controls here
     }
-  }
+  } // End configureOperatorBindings
 
   /**
    * Run the path selected from the auto chooser
    *
-   * @return the command to run in autonomous, or null if PathPlanner is not configured
+   * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    if (autoChooser != null) {
-      return autoChooser.get();
-    }
-    return null; // PathPlanner not configured, no autonomous command available
-  }
-
-  /** Register commands for use in the dashboard. */
-  private void registerCommands() {
-    // Register the commands here
+    return autoChooser.get();
   }
 }
