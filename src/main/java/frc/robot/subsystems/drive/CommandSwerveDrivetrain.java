@@ -28,6 +28,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.subsystems.vision.Vision;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.numbers.N1;
 
 
 /**
@@ -46,6 +51,15 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   /* Keep track if we've ever applied the operator perspective before or not */
   private boolean m_hasAppliedOperatorPerspective = false;
   private Timer timer = new Timer();
+
+  /* Vision subsystem for pose estimation */
+  private Vision vision = null;
+
+  /* Standard deviations for vision measurements [x, y, theta] */
+  private static final Matrix<N3, N1> kVisionStdDevs = VecBuilder.fill(0.9, 0.9, 999999);
+
+  /* Track if AutoBuilder was successfully configured */
+  private boolean m_autoBuilderConfigured = false;
 
   /** Swerve request to apply during robot-centric path following */
   private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
@@ -142,6 +156,15 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   }
 
   /**
+   * Sets the vision subsystem to use for pose estimation.
+   * 
+   * @param visionSubsystem The vision subsystem instance
+   */
+  public void setVisionSubsystem(Vision visionSubsystem) {
+    this.vision = visionSubsystem;
+  }
+
+  /**
    * Constructs a CTRE SwerveDrivetrain using the specified constants.
    * <p>
    * This constructs the underlying hardware devices, so users should not construct
@@ -222,9 +245,20 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
         this // Subsystem for requirements
         );
+      m_autoBuilderConfigured = true;
     } catch (Exception ex) {
-      DriverStation.reportError("Failed to load PathPlanner config and configure AutoBuilder", ex.getStackTrace());
+      DriverStation.reportError("Failed to load PathPlanner config and configure AutoBuilder. PathPlanner features will be disabled. To enable, configure PathPlanner in the PathPlanner GUI.", ex.getStackTrace());
+      m_autoBuilderConfigured = false;
     }
+  }
+
+  /**
+   * Check if AutoBuilder was successfully configured.
+   * 
+   * @return true if AutoBuilder is configured and ready to use
+   */
+  public boolean isAutoBuilderConfigured() {
+    return m_autoBuilderConfigured;
   }
 
   /**
@@ -282,7 +316,17 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     /// ---------------------------------------------------------------------------------------
     /// ----------------------------------- Vision Odometry -----------------------------------
     /// ---------------------------------------------------------------------------------------
-    // TODO: Add Vision Odometry
+    // Get vision-based pose estimates and add them to the pose estimator
+    if (vision != null) {
+      var visionEst = vision.getEstimatedGlobalPose(getState().Pose);
+      if (visionEst.isPresent()) {
+        var est = visionEst.get();
+        // Add vision measurement to the pose estimator
+        // The timestamp is in seconds, and we need to account for latency
+        // Use standard deviations to weight the vision measurement appropriately
+        addVisionMeasurement(est.estimatedPose.toPose2d(), est.timestampSeconds, kVisionStdDevs);
+      }
+    }
   }
 
 
