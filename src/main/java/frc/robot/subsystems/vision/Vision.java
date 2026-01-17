@@ -12,6 +12,7 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.Timer;
 import java.io.InputStream;
 import java.nio.file.Path;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -29,6 +30,7 @@ public class Vision extends SubsystemBase {
   private double lastEstimateTimestamp = 0;
   private VisionSim visionSim;
   private edu.wpi.first.math.geometry.Transform3d robotToCameraTransform;
+  private final Timer m_posePrintTimer = new Timer();
 
   /**
    * Creates a new Vision subsystem.
@@ -43,10 +45,13 @@ public class Vision extends SubsystemBase {
     
     // Load the AprilTag field layout
     // Note: WPILib 2026 doesn't include 2026 field layouts in AprilTagFields enum yet,
-    // so we load the custom 2026 field layout JSON from resources
-    // File location: src/main/resources/2026-rebuilt-welded.json
+    // so we load the custom 2026 field layout JSON from deploy directory
+    // File location: src/main/deploy/2026-rebuilt-welded.json (deployed to /home/lvuser/deploy/ on roboRIO)
     try {
-      fieldLayout = new AprilTagFieldLayout("src/main/resources/2026-rebuilt-welded.json");
+      // On real robot, files in src/main/deploy are deployed to /home/lvuser/deploy/
+      // Use Filesystem.getDeployDirectory() to get the correct path
+      Path deployPath = Filesystem.getDeployDirectory().toPath().resolve("2026-rebuilt-welded.json");
+      fieldLayout = new AprilTagFieldLayout(deployPath.toString());
     } catch (Exception e) {
       DriverStation.reportError("Failed to load AprilTag field layout: " + e.getMessage(), e.getStackTrace());
       fieldLayout = null;
@@ -71,6 +76,9 @@ public class Vision extends SubsystemBase {
     } else {
       poseEstimator = null;
     }
+    
+    // Start timer for periodic pose printing
+    m_posePrintTimer.start();
   }
 
   /**
@@ -80,11 +88,10 @@ public class Vision extends SubsystemBase {
    * @return Transform3d from robot center to camera
    */
   private edu.wpi.first.math.geometry.Transform3d getRobotToCameraTransform() {
-    // TODO: Configure these values based on your camera mounting position
     // X: forward, Y: left, Z: up (all in meters)
     // Rotation: camera orientation relative to robot
     return new edu.wpi.first.math.geometry.Transform3d(
-        new edu.wpi.first.math.geometry.Translation3d(0.0, 0.0, 0.0), // Camera position relative to robot center
+        new edu.wpi.first.math.geometry.Translation3d(0.0, 0.0, 0.52705), // Camera position relative to robot center
         new edu.wpi.first.math.geometry.Rotation3d(0.0, 0.0, 0.0)    // Camera rotation (pitch, yaw, roll)
     );
   }
@@ -92,7 +99,37 @@ public class Vision extends SubsystemBase {
   @Override
   public void periodic() {
     // The pose estimation is done on-demand via getEstimatedGlobalPose()
-    // This periodic method can be used for logging or other periodic tasks
+    // Print vision pose estimate every 1 second
+    if (m_posePrintTimer.hasElapsed(1.0)) {
+      printVisionPose();
+      m_posePrintTimer.reset();
+    }
+  }
+  
+  /**
+   * Prints the current vision pose estimate to the console.
+   */
+  private void printVisionPose() {
+    if (poseEstimator == null || fieldLayout == null) {
+      System.out.println("Vision: Pose estimator not initialized");
+      return;
+    }
+    
+    // Use origin as previous estimate (vision will estimate from AprilTags)
+    Pose2d defaultPose = new Pose2d();
+    var visionEst = getEstimatedGlobalPose(defaultPose);
+    
+    if (visionEst.isPresent()) {
+      Pose2d visionPose = visionEst.get().estimatedPose.toPose2d();
+      System.out.println("=== Vision Pose Estimate ===");
+      System.out.println("  X: " + String.format("%.3f", visionPose.getX()) + " m");
+      System.out.println("  Y: " + String.format("%.3f", visionPose.getY()) + " m");
+      System.out.println("  Rotation: " + String.format("%.2f", visionPose.getRotation().getDegrees()) + " deg");
+      System.out.println("  Timestamp: " + String.format("%.3f", visionEst.get().timestampSeconds) + " s");
+      System.out.println("============================");
+    } else {
+      System.out.println("Vision: No pose estimate available (no AprilTags detected)");
+    }
   }
 
   /**
