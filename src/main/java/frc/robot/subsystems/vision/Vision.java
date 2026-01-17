@@ -14,6 +14,7 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
@@ -81,6 +82,7 @@ public class Vision extends SubsystemBase {
       List<Pose3d> robotPoses = new LinkedList<>();
       List<Pose3d> robotPosesAccepted = new LinkedList<>();
       List<Pose3d> robotPosesRejected = new LinkedList<>();
+      List<Pose3d> cameraPoses = new LinkedList<>();
 
       // Add tag poses
       for (int tagId : inputs[cameraIndex].tagIds) {
@@ -112,6 +114,10 @@ public class Vision extends SubsystemBase {
           robotPosesRejected.add(observation.pose());
         } else {
           robotPosesAccepted.add(observation.pose());
+          // Calculate camera pose from robot pose for visualization (lines to tags)
+          Transform3d robotToCamera = (cameraIndex == 0) ? robotToCamera0 : robotToCamera1;
+          Pose3d cameraPose = observation.pose().plus(robotToCamera);
+          cameraPoses.add(cameraPose);
         }
 
         // Skip if rejected
@@ -141,6 +147,9 @@ public class Vision extends SubsystemBase {
       }
 
       // Log camera metadata
+      Logger.recordOutput(
+          "Vision/Camera" + Integer.toString(cameraIndex) + "/CameraPose",
+          cameraPoses.toArray(new Pose3d[0]));
       Logger.recordOutput(
           "Vision/Camera" + Integer.toString(cameraIndex) + "/TagPoses",
           tagPoses.toArray(new Pose3d[0]));
