@@ -338,4 +338,13 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     return autoChooser.get();
   }
+
+  /**
+   * Get the drive subsystem. Used for physics simulation.
+   *
+   * @return the drive subsystem
+   */
+  public Drive getDrive() {
+    return drive;
+  }
 }
