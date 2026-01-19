@@ -185,7 +185,7 @@ public class RobotContainer {
             () -> driverController.getRightTriggerAxis(), // Turbo
             () -> isFacingHub, // Face-target enabled
             faceTargetController,
-            false)); // usePhysicalMaxSpeed: false = use artificial limit (1.6 m/s), true = use physical max
+            true)); // usePhysicalMaxSpeed: false = use artificial limit (1.6 m/s), true = use physical max
 
     // Reset the field-centric heading on Start button press
     driverController.start().onTrue(

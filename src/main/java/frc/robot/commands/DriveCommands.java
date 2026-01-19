@@ -304,8 +304,8 @@ public class DriveCommands {
               : MAX_ANGULAR_RATE;
 
           // Apply turbo scaling to linear velocity components
-          double velocityX = scaleAxisWithTurbo(linearVelocity.getX(), turboInput, maxLinearSpeed);
-          double velocityY = scaleAxisWithTurbo(linearVelocity.getY(), turboInput, maxLinearSpeed);
+          double velocityX = scaleAxisWithTurbo(linearVelocity.getY(), turboInput, maxLinearSpeed);  // Forward/backward joystick → field X
+          double velocityY = scaleAxisWithTurbo(linearVelocity.getX(), turboInput, maxLinearSpeed);  // Left/right joystick → field Y
 
           // Determine rotational rate: use face-target PID if enabled, otherwise use joystick
           double rotationalRate;
