@@ -15,11 +15,8 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -45,15 +42,9 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
-  // Swerve Drive constants
-  private final double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts top speed possible at 12 volts
-  private final double MAX_ANGULAR_RATE = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second, max angular velocity
-  private final double MAX_CONTROL_SPEED = 1.6; // Max speed the driver can go in x or y in m/s
-  private final double TURBO_MULTIPLE = 2; // Technically a divider for how slow it is pre-turbo since it is limited to the max control speed
 
   // Controllers
   private final CommandXboxController driverController = new CommandXboxController(0);
-  private static final double XBOX_DEADBAND = 0.09;
 
   // Subsystems
   private final Drive drive;
@@ -157,83 +148,7 @@ public class RobotContainer {
     configureOperatorBindings(false); // False to disable operator controls
   }
 
-  /**
-   * Deadband function to eliminate small joystick inputs.
-   * @param value to apply deadband to.
-   */
-  private static double applyDeadband(double value) {
-		return applyDeadband(value, XBOX_DEADBAND);
-	} // End applyDeadband
 
-  /** 
-   * Deadband function to eliminate small joystick inputs.
-   * @param value to apply deadband to.
-   * @param deadband threshold.
-   */
-  private static double applyDeadband(double value, double deadband) {
-    if (Math.abs(value) < deadband) {
-      return 0.0;
-    }
-    // Rescale so the output goes from 0 to 1 outside the deadband
-    double sign = Math.signum(value);
-    double adjusted = (Math.abs(value) - deadband) / (1.0 - deadband);
-    return sign * adjusted;
-  } // End applyDeadband
-
-  /**
-   * Scale a raw joystick axis to a control output, applying a deadband and a "turbo" multiplier.
-   *
-   * Behavior:
-   * - Applies the existing deadband to `inputAxis` (expected in range [-1, 1]).
-   * - Interpolates `turboAxis` (expected in [0, 1]) linearly between a minimum turbo
-   *   value (1 / TURBO_MULTIPLE) and 1.0, then scales the result.
-   *
-   * @param inputAxis  Raw joystick axis in [-1.0, 1.0]. Positive/negative direction is preserved.
-   * @param turboAxis  Turbo level in [0.0, 1.0] (0 = minimum speed limiter; 1 = full speed). Values outside that range will be clamped.
-   * @param maxRange   Maximum magnitude of the output (units chosen by caller; e.g. meters/sec or radians/sec). Should be >= 0.
-   */
-  private double scaleAxisWithTurbo(double inputAxis, double turboAxis, double maxRange) {
-    inputAxis = applyDeadband(inputAxis); // Apply the joystick deadband
-
-    // Linear interpolation from minTurbo (when turboAxis == 0) to 1.0 (when turboAxis == 1).
-    double minTurbo = 1.0 / TURBO_MULTIPLE; // Minimum fraction of maxRange when turbo is not applied
-    double turbo = turboAxis * (1.0 - minTurbo) + minTurbo;
-
-    // Scale the (signed) axis by the physical range and the turbo multiplier
-    return inputAxis * maxRange * turbo;
-  } // End scaleAxisWithTurbo
-
-
-  /**
-   * Converts robot-relative speeds to field-relative speeds, accounting for alliance color.
-   *
-   * @param robotRelativeSpeeds Speeds relative to the robot's current orientation
-   * @return Speeds relative to the field, flipped if on red alliance
-   */
-  private ChassisSpeeds convertToFieldRelative(ChassisSpeeds robotRelativeSpeeds) {
-    boolean isRedAlliance = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
-    Rotation2d fieldOrientation = isRedAlliance ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation();
-    return ChassisSpeeds.fromFieldRelativeSpeeds(robotRelativeSpeeds, fieldOrientation);
-  }
-
-  /**
-   * Calculates the target angle to face the alliance's hub center.
-   *
-   * @return The desired rotation to face the target hub
-   */
-  private Rotation2d calculateTargetHubAngle() {
-    // Get robot's current position
-    Pose2d robotPose = drive.getPose();
-    Translation2d robotPosition = robotPose.getTranslation();
-
-    // Determine target based on alliance
-    boolean isRedAlliance = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
-    Translation2d targetPosition = isRedAlliance ? FieldConstants.RED_HUB_CENTER : FieldConstants.BLUE_HUB_CENTER;
-
-    // Calculate angle from robot to target
-    Translation2d delta = targetPosition.minus(robotPosition);
-    return new Rotation2d(Math.atan2(delta.getY(), delta.getX()));
-  }
 
   /** Prints the current odometry pose of the robot to the console. */
   public void printPose() {
@@ -263,37 +178,15 @@ public class RobotContainer {
     }
 
     // Drive enabled: field-relative drive with turbo control and optional face-target mode
-    drive.setDefaultCommand(Commands.run(() -> {
-      // Read joystick inputs
-      double leftY = -driverController.getLeftY(); // Forward/backward
-      double leftX = -driverController.getLeftX(); // Left/right
-      double rightX = -driverController.getRightX(); // Rotation
-      double turboAxis = driverController.getRightTriggerAxis(); // Turbo multiplier
-
-      // Calculate velocities with turbo and deadband
-      double velocityX = scaleAxisWithTurbo(leftY, turboAxis, MAX_CONTROL_SPEED);
-      double velocityY = scaleAxisWithTurbo(leftX, turboAxis, MAX_CONTROL_SPEED);
-      
-      // Determine rotational rate: use face-target PID if enabled, otherwise use joystick
-      double rotationalRate;
-      if (isFacingHub) {
-        // Calculate target angle and use PID controller to rotate toward it
-        Rotation2d targetAngle = calculateTargetHubAngle();
-        rotationalRate = faceTargetController.calculate(drive.getRotation().getRadians(), targetAngle.getRadians());
-      } else {
-        // Use joystick input for rotation
-        rotationalRate = scaleAxisWithTurbo(rightX, turboAxis, MAX_ANGULAR_RATE);
-        // Reset PID controller when not using face-target mode
-        faceTargetController.reset(drive.getRotation().getRadians());
-      }
-
-      // Convert to field-relative speeds
-      ChassisSpeeds robotRelativeSpeeds = new ChassisSpeeds(velocityX, velocityY, rotationalRate);
-      ChassisSpeeds fieldRelativeSpeeds = convertToFieldRelative(robotRelativeSpeeds);
-
-      // Execute drive command
-      drive.runVelocity(fieldRelativeSpeeds);
-    }, drive));
+    drive.setDefaultCommand(
+        DriveCommands.joystickDriveWithTurboAndFaceTarget(
+            drive,
+            () -> -driverController.getLeftX(), // X-axis (left/right)
+            () -> -driverController.getLeftY(), // Y-axis (forward/backward)
+            () -> -driverController.getRightX(), // Omega (rotation)
+            () -> driverController.getRightTriggerAxis(), // Turbo
+            () -> isFacingHub, // Face-target enabled
+            faceTargetController));
 
     // Reset the field-centric heading on Start button press
     driverController.start().onTrue(
