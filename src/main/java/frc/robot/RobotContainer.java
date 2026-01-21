@@ -24,13 +24,17 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
+import frc.robot.subsystems.drive.GyroIOSim;
 import frc.robot.subsystems.drive.ModuleIO;
-import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.subsystems.drive.ModuleIOTalonFXSim;
+import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -59,6 +63,9 @@ public class RobotContainer {
   private boolean isFacingHub = false;
   private ProfiledPIDController faceTargetController;
 
+  // Maple-sim simulation (only used in SIM mode)
+  private SwerveDriveSimulation driveSimulation = null;
+
 
   /** 
    * RobotContainer constructor initializes the robot. 
@@ -86,20 +93,29 @@ public class RobotContainer {
 
       // Sim robot, instantiate physics sim IO implementations
       case SIM:
+        driveSimulation = new SwerveDriveSimulation(Drive.mapleSimConfig, new Pose2d(3, 3, new Rotation2d()));
+        SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
         drive =
             new Drive(
-                new GyroIO() {},
-                new ModuleIOSim(TunerConstants.FrontLeft),
-                new ModuleIOSim(TunerConstants.FrontRight),
-                new ModuleIOSim(TunerConstants.BackLeft),
-                new ModuleIOSim(TunerConstants.BackRight));
+                new GyroIOSim(driveSimulation.getGyroSimulation()),
+                new ModuleIOTalonFXSim(
+                    TunerConstants.FrontLeft, driveSimulation.getModules()[0]),
+                new ModuleIOTalonFXSim(
+                    TunerConstants.FrontRight, driveSimulation.getModules()[1]),
+                new ModuleIOTalonFXSim(
+                    TunerConstants.BackLeft, driveSimulation.getModules()[2]),
+                new ModuleIOTalonFXSim(
+                    TunerConstants.BackRight, driveSimulation.getModules()[3]),
+                driveSimulation::setSimulationWorldPose);
 
         // Initialize vision after drive (vision needs drive reference)
         vision =
             new Vision(
                 drive::addVisionMeasurement,
-                new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drive::getPose),
-                new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose));
+                new VisionIOPhotonVisionSim(
+                    camera0Name, robotToCamera0, driveSimulation::getSimulatedDriveTrainPose),
+                new VisionIOPhotonVisionSim(
+                    camera1Name, robotToCamera1, driveSimulation::getSimulatedDriveTrainPose));
         break;
 
       // Replayed robot, disable IO implementations
@@ -187,9 +203,12 @@ public class RobotContainer {
             faceTargetController,
             true)); // usePhysicalMaxSpeed: false = use artificial limit (1.6 m/s), true = use physical max
 
-    // Reset the field-centric heading on Start button press
-    driverController.start().onTrue(
-        Commands.runOnce(() -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)), drive));
+    // Reset gyro / odometry - syncs with simulation pose in SIM mode
+    final Runnable resetGyro = Constants.currentMode == Constants.Mode.SIM
+        ? () -> drive.setPose(
+            driveSimulation.getSimulatedDriveTrainPose()) // Reset odometry to actual robot pose during simulation
+        : () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)); // Zero gyro on real robot
+    driverController.start().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
 
     // Switch to X pattern when X button is pressed
     driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
@@ -229,5 +248,26 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     return autoChooser.get();
+  }
+
+  /**
+   * Reset the simulation field for autonomous mode. Only works in SIM mode.
+   */
+  public void resetSimulationField() {
+    if (Constants.currentMode != Constants.Mode.SIM) return;
+
+    driveSimulation.setSimulationWorldPose(new Pose2d(3, 3, new Rotation2d()));
+    SimulatedArena.getInstance().resetFieldForAuto();
+  }
+
+  /**
+   * Update the simulation world. Should be called from Robot.simulationPeriodic().
+   * Only works in SIM mode.
+   */
+  public void updateSimulation() {
+    if (Constants.currentMode != Constants.Mode.SIM) return;
+
+    SimulatedArena.getInstance().simulationPeriodic();
+    Logger.recordOutput("FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
   }
 }

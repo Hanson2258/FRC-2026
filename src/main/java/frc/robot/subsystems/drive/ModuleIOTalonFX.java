@@ -44,14 +44,12 @@ import java.util.Queue;
  * <p>Device configuration and other behaviors not exposed by TunerConstants can be customized here.
  */
 public class ModuleIOTalonFX implements ModuleIO {
-  private final SwerveModuleConstants<
-          TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
-      constants;
+  private final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants;
 
-  // Hardware objects
-  private final TalonFX driveTalon;
-  private final TalonFX turnTalon;
-  private final CANcoder cancoder;
+  // Hardware objects (protected for simulation subclass access)
+  protected final TalonFX driveTalon;
+  protected final TalonFX turnTalon;
+  protected final CANcoder cancoder;
 
   // Voltage control requests
   private final VoltageOut voltageRequest = new VoltageOut(0);
