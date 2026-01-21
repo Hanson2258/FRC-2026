@@ -54,6 +54,7 @@ public class Robot extends LoggedRobot {
       case SIM:
         // Running a physics simulator, log to NT
         Logger.addDataReceiver(new NT4Publisher());
+        Logger.addDataReceiver(new WPILOGWriter()); // Add this line
         break;
 
       case REPLAY:
@@ -86,6 +87,14 @@ public class Robot extends LoggedRobot {
     // This must be called from the robot's periodic block in order for anything in
     // the Command-based framework to work.
     CommandScheduler.getInstance().run();
+
+    // Log memory usage to help identify GC-related spikes
+    Runtime runtime = Runtime.getRuntime();
+    long usedMemory = runtime.totalMemory() - runtime.freeMemory();
+    long maxMemory = runtime.maxMemory();
+    Logger.recordOutput("System/MemoryUsedMB", usedMemory / (1024 * 1024));
+    Logger.recordOutput("System/MemoryMaxMB", maxMemory / (1024 * 1024));
+    Logger.recordOutput("System/MemoryPercent", (double) usedMemory / maxMemory * 100.0);
 
     // Return to non-RT thread priority (do not modify the first argument)
     // Threads.setCurrentThreadPriority(false, 10);
