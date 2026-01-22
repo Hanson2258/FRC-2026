@@ -12,6 +12,7 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.wpilibj.Timer;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -41,18 +42,36 @@ public class VisionIOPhotonVision implements VisionIO {
     // Read new camera observations
     Set<Short> tagIds = new HashSet<>();
     List<PoseObservation> poseObservations = new LinkedList<>();
-    for (var result : camera.getAllUnreadResults()) {
-      // Update latest target observation
-      if (result.hasTargets()) {
-        inputs.latestTargetObservation =
+    
+    // Get current time for timestamp validation
+    double currentTime = Timer.getFPGATimestamp();
+    double maxAgeSeconds = 0.5; // Reject measurements older than 500ms
+    
+    // Track latest valid target observation
+    double latestValidTargetTimestamp = 0.0;
+    TargetObservation latestValidTarget = null;
+    
+    var allResults = camera.getAllUnreadResults();
+    
+    for (var result : allResults) {
+      double timestamp = result.getTimestampSeconds();
+      
+      // Validate timestamp: must be recent and not in the future
+      // Skip stale or invalid timestamps
+      if (timestamp > currentTime || (currentTime - timestamp) > maxAgeSeconds) {
+        continue; // Skip stale or invalid timestamps
+      }
+      
+      // Update latest target observation from most recent valid result with targets
+      if (result.hasTargets() && timestamp > latestValidTargetTimestamp) {
+        latestValidTargetTimestamp = timestamp;
+        latestValidTarget =
             new TargetObservation(
                 Rotation2d.fromDegrees(result.getBestTarget().getYaw()),
                 Rotation2d.fromDegrees(result.getBestTarget().getPitch()));
-      } else {
-        inputs.latestTargetObservation = new TargetObservation(Rotation2d.kZero, Rotation2d.kZero);
       }
 
-      // Add pose observation
+      // Add pose observation (only for valid timestamps)
       if (result.multitagResult.isPresent()) { // Multitag result
         var multitagResult = result.multitagResult.get();
 
@@ -107,6 +126,13 @@ public class VisionIOPhotonVision implements VisionIO {
                   PoseObservationType.PHOTONVISION)); // Observation type
         }
       }
+    }
+
+    // Set latest target observation (or default if none found)
+    if (latestValidTarget != null) {
+      inputs.latestTargetObservation = latestValidTarget;
+    } else {
+      inputs.latestTargetObservation = new TargetObservation(Rotation2d.kZero, Rotation2d.kZero);
     }
 
     // Save pose observations to inputs object
