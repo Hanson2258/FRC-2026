@@ -47,31 +47,42 @@ public class VisionIOPhotonVision implements VisionIO {
     double currentTime = Timer.getFPGATimestamp();
     double maxAgeSeconds = 0.5; // Reject measurements older than 500ms
     
-    // Track latest valid target observation
-    double latestValidTargetTimestamp = 0.0;
-    TargetObservation latestValidTarget = null;
-    
     var allResults = camera.getAllUnreadResults();
     
+    // Find the most recent result with targets (if any)
+    // This ensures we only process results from when vision actually sees tags,
+    // preventing stale results from being processed when vision loses sight
+    org.photonvision.targeting.PhotonPipelineResult mostRecentResultWithTargets = null;
+    double mostRecentTimestamp = 0.0;
+    
+    // First pass: Find the most recent valid result with targets
     for (var result : allResults) {
       double timestamp = result.getTimestampSeconds();
       
       // Validate timestamp: must be recent and not in the future
-      // Skip stale or invalid timestamps
       if (timestamp > currentTime || (currentTime - timestamp) > maxAgeSeconds) {
         continue; // Skip stale or invalid timestamps
       }
       
-      // Update latest target observation from most recent valid result with targets
-      if (result.hasTargets() && timestamp > latestValidTargetTimestamp) {
-        latestValidTargetTimestamp = timestamp;
-        latestValidTarget =
-            new TargetObservation(
-                Rotation2d.fromDegrees(result.getBestTarget().getYaw()),
-                Rotation2d.fromDegrees(result.getBestTarget().getPitch()));
+      // Track the most recent result with targets
+      if (result.hasTargets() && timestamp > mostRecentTimestamp) {
+        mostRecentTimestamp = timestamp;
+        mostRecentResultWithTargets = result;
       }
-
-      // Add pose observation (only for valid timestamps)
+    }
+    
+    // Second pass: Only process the most recent result with targets (if any)
+    // When vision loses sight, no results will be processed, so odometry continues normally
+    if (mostRecentResultWithTargets != null) {
+      var result = mostRecentResultWithTargets;
+      
+      // Update latest target observation
+      inputs.latestTargetObservation =
+          new TargetObservation(
+              Rotation2d.fromDegrees(result.getBestTarget().getYaw()),
+              Rotation2d.fromDegrees(result.getBestTarget().getPitch()));
+      
+      // Add pose observation
       if (result.multitagResult.isPresent()) { // Multitag result
         var multitagResult = result.multitagResult.get();
 
@@ -126,12 +137,8 @@ public class VisionIOPhotonVision implements VisionIO {
                   PoseObservationType.PHOTONVISION)); // Observation type
         }
       }
-    }
-
-    // Set latest target observation (or default if none found)
-    if (latestValidTarget != null) {
-      inputs.latestTargetObservation = latestValidTarget;
     } else {
+      // No valid results with targets found - set default target observation
       inputs.latestTargetObservation = new TargetObservation(Rotation2d.kZero, Rotation2d.kZero);
     }
 
