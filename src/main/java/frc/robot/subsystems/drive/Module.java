@@ -31,6 +31,9 @@ public class Module {
   private final Alert turnEncoderDisconnectedAlert;
   private SwerveModulePosition[] odometryPositions = new SwerveModulePosition[] {};
 
+  // Velocity deadband below which the module should stop (m/s)
+  private static final double SWERVE_VELOCITY_DEADBAND = 0.01;
+
   public Module(
       ModuleIO io,
       int index,
@@ -73,6 +76,12 @@ public class Module {
 
   /** Runs the module with the specified setpoint state. Mutates the state to optimize it. */
   public void runSetpoint(SwerveModuleState state) {
+    // Check if velocity is below deadband - if so, stop the module
+    if (Math.abs(state.speedMetersPerSecond) < SWERVE_VELOCITY_DEADBAND) {
+      stop();
+      return;
+    }
+
     // Optimize velocity setpoint
     state.optimize(getAngle());
     state.cosineScale(inputs.turnPosition);

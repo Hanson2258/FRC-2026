@@ -94,6 +94,12 @@ public class RobotContainer {
 
       // Sim robot, instantiate physics sim IO implementations
       case SIM:
+        // Configure simulation timing for accurate physics
+        // 5 ticks per 20ms period = 4kHz effective control loop rate
+        SimulatedArena.overrideSimulationTimings(
+            edu.wpi.first.units.Units.Seconds.of(0.02), // 20ms robot period
+            5); // 5 simulation ticks per period
+        
         driveSimulation = new SwerveDriveSimulation(Drive.mapleSimConfig, new Pose2d(3, 3, new Rotation2d()));
         SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
         drive =

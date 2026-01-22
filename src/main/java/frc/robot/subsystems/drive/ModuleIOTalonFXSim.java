@@ -12,11 +12,14 @@ import static edu.wpi.first.units.Units.*;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.DriverStation;
+import frc.robot.generated.TunerConstants;
 import frc.robot.util.PhoenixUtil;
 import java.util.Arrays;
+import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
 import org.ironmaple.simulation.motorsims.SimulatedMotorController;
 
@@ -38,18 +41,11 @@ public class ModuleIOTalonFXSim extends ModuleIOTalonFX {
   private final PIDController turnController;
   
   // State tracking
-  private boolean driveClosedLoop = false;
-  private boolean turnClosedLoop = false;
-  private double driveFFVolts = 0.0;
-  private double driveAppliedVolts = 0.0;
-  private double turnAppliedVolts = 0.0;
-  
-  // Velocity tracking (for PID control)
-  private double previousDrivePositionRad = 0.0;
-  private double previousTurnPositionRad = 0.0;
-  private double driveVelocityRadPerSec = 0.0;
-  private double turnVelocityRadPerSec = 0.0;
-  private double previousTimestamp = 0.0;
+  private boolean driveClosedLoopActivated = false;
+  private boolean steerClosedLoopActivated = false;
+  private double desiredMotorVelocityRadPerSec = 0.0;
+  private double torqueFeedforwardVolts = 0.0;
+  private Rotation2d desiredSteerFacing = new Rotation2d();
 
   public ModuleIOTalonFXSim(
       SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants,
@@ -80,66 +76,91 @@ public class ModuleIOTalonFXSim extends ModuleIOTalonFX {
         0,
         regulatedConstants.SteerMotorGains.kD);
     turnController.enableContinuousInput(-Math.PI, Math.PI);
+    
+    // Register control loops to run at simulation rate (critical for accurate control)
+    SimulatedArena.getInstance().addCustomSimulation((subTickNum) -> runControlLoops());
+  }
+  
+  /**
+   * Runs control loops at simulation rate. This is called by SimulatedArena at high frequency
+   * (typically 5 ticks per 20ms period = 4kHz effective rate) for accurate control.
+   */
+  public void runControlLoops() {
+    // Run control loops if activated
+    if (driveClosedLoopActivated) {
+      calculateDriveControlLoops();
+    } else {
+      driveController.reset();
+    }
+    if (steerClosedLoopActivated) {
+      calculateSteerControlLoops();
+    } else {
+      turnController.reset();
+    }
+  }
+  
+  /**
+   * Calculates drive motor control using DCMotor model for accurate feedforward.
+   * This matches the official MapleSim implementation for better accuracy.
+   */
+  private void calculateDriveControlLoops() {
+    DCMotor motorModel = simulation.config.driveMotorConfigs.motor;
+    
+    // Calculate friction torque using motor model
+    double frictionTorque = motorModel.getTorque(
+        motorModel.getCurrent(0, TunerConstants.FrontLeft.DriveFrictionVoltage))
+        * Math.signum(desiredMotorVelocityRadPerSec);
+    
+    // Calculate velocity feedforward using motor model (more accurate than KS + KV)
+    double velocityFeedforwardVolts = motorModel.getVoltage(frictionTorque, desiredMotorVelocityRadPerSec);
+    double feedforwardVolts = velocityFeedforwardVolts + torqueFeedforwardVolts;
+    
+    // Get actual velocity from simulation (direct reading, more accurate)
+    double actualVelocityRadPerSec = simulation.getDriveWheelFinalSpeed().in(RadiansPerSecond);
+    
+    // Calculate PID feedback
+    // Note: actualVelocityRadPerSec is wheel velocity, desiredMotorVelocityRadPerSec is motor velocity
+    // We need to convert wheel velocity to motor velocity for PID comparison
+    double driveGearRatio = TunerConstants.FrontLeft.DriveMotorGearRatio;
+    double feedBackVolts = driveController.calculate(
+        actualVelocityRadPerSec, 
+        desiredMotorVelocityRadPerSec / driveGearRatio);
+    
+    // Combine feedforward and feedback
+    double driveVoltage = feedforwardVolts + feedBackVolts;
+    driveMotor.requestVoltage(Volts.of(DriverStation.isEnabled() ? driveVoltage : 0.0));
+  }
+  
+  /**
+   * Calculates steer motor control using PID.
+   */
+  private void calculateSteerControlLoops() {
+    double steerVoltage = turnController.calculate(
+        simulation.getSteerAbsoluteFacing().getRadians(), 
+        desiredSteerFacing.getRadians());
+    steerMotor.requestVoltage(Volts.of(DriverStation.isEnabled() ? steerVoltage : 0.0));
   }
 
   @Override
   public void updateInputs(ModuleIOInputs inputs) {
-    // Get current positions from simulation
-    double drivePositionRad = simulation.getDriveWheelFinalPosition().in(Radians);
-    Rotation2d turnPosition = simulation.getSteerAbsoluteFacing();
-    double turnPositionRad = turnPosition.getRadians();
-    
-    // Calculate velocities from position changes
-    double currentTimestamp = edu.wpi.first.wpilibj.Timer.getFPGATimestamp();
-    double dt = currentTimestamp - previousTimestamp;
-    if (dt > 0 && previousTimestamp > 0) {
-      // Calculate velocity from position change
-      driveVelocityRadPerSec = (drivePositionRad - previousDrivePositionRad) / dt;
-      
-      // Handle wrap-around for turn position
-      double turnDelta = turnPositionRad - previousTurnPositionRad;
-      if (turnDelta > Math.PI) turnDelta -= 2 * Math.PI;
-      if (turnDelta < -Math.PI) turnDelta += 2 * Math.PI;
-      turnVelocityRadPerSec = turnDelta / dt;
-    }
-    previousDrivePositionRad = drivePositionRad;
-    previousTurnPositionRad = turnPositionRad;
-    previousTimestamp = currentTimestamp;
-    
-    // Run closed-loop control
-    if (driveClosedLoop) {
-      driveAppliedVolts = driveFFVolts + driveController.calculate(driveVelocityRadPerSec);
-      driveAppliedVolts = MathUtil.clamp(driveAppliedVolts, -12.0, 12.0);
-      driveMotor.requestVoltage(Volts.of(driveAppliedVolts));
-    } else {
-      driveController.reset();
-      driveMotor.requestVoltage(Volts.of(driveAppliedVolts));
-    }
-    
-    if (turnClosedLoop) {
-      turnAppliedVolts = turnController.calculate(turnPositionRad);
-      turnAppliedVolts = MathUtil.clamp(turnAppliedVolts, -12.0, 12.0);
-      steerMotor.requestVoltage(Volts.of(turnAppliedVolts));
-    } else {
-      turnController.reset();
-      steerMotor.requestVoltage(Volts.of(turnAppliedVolts));
-    }
-
-    // Update inputs with simulation values
     inputs.driveConnected = true;
-    inputs.drivePositionRad = drivePositionRad;
-    inputs.driveVelocityRadPerSec = driveVelocityRadPerSec;
-    inputs.driveAppliedVolts = driveAppliedVolts;
-    // Current not directly available from GenericMotorController, estimate from voltage
-    inputs.driveCurrentAmps = Math.abs(driveAppliedVolts / 12.0 * 60.0); // Rough estimate
-
     inputs.turnConnected = true;
     inputs.turnEncoderConnected = true;
-    inputs.turnAbsolutePosition = turnPosition;
-    inputs.turnPosition = turnPosition;
-    inputs.turnVelocityRadPerSec = turnVelocityRadPerSec;
-    inputs.turnAppliedVolts = turnAppliedVolts;
-    inputs.turnCurrentAmps = Math.abs(turnAppliedVolts / 12.0 * 20.0); // Rough estimate
+
+    // Read positions from simulation
+    inputs.drivePositionRad = simulation.getDriveWheelFinalPosition().in(Radians);
+    inputs.turnAbsolutePosition = simulation.getSteerAbsoluteFacing();
+    inputs.turnPosition = simulation.getSteerAbsoluteFacing();
+
+    // Read velocities directly from simulation (more accurate than calculating from position)
+    inputs.driveVelocityRadPerSec = simulation.getDriveWheelFinalSpeed().in(RadiansPerSecond);
+    inputs.turnVelocityRadPerSec = simulation.getSteerAbsoluteEncoderSpeed().in(RadiansPerSecond);
+
+    // Read applied voltage and current from simulation (most accurate - matches official implementation)
+    inputs.driveAppliedVolts = simulation.getDriveMotorAppliedVoltage().in(Volts);
+    inputs.driveCurrentAmps = simulation.getDriveMotorStatorCurrent().in(Amps);
+    inputs.turnAppliedVolts = simulation.getSteerMotorAppliedVoltage().in(Volts);
+    inputs.turnCurrentAmps = simulation.getSteerMotorStatorCurrent().in(Amps);
 
     // Update odometry inputs
     inputs.odometryTimestamps = PhoenixUtil.getSimulationOdometryTimeStamps();
@@ -151,37 +172,31 @@ public class ModuleIOTalonFXSim extends ModuleIOTalonFX {
 
   @Override
   public void setDriveOpenLoop(double output) {
-    driveClosedLoop = false;
-    driveAppliedVolts = output; // output is already in voltage units (matches ModuleIOSim)
-    driveMotor.requestVoltage(Volts.of(driveAppliedVolts));
+    this.driveClosedLoopActivated = false;
+    driveMotor.requestVoltage(Volts.of(output));
   }
 
   @Override
   public void setTurnOpenLoop(double output) {
-    turnClosedLoop = false;
-    turnAppliedVolts = output; // output is already in voltage units (matches ModuleIOSim)
-    steerMotor.requestVoltage(Volts.of(turnAppliedVolts));
+    this.steerClosedLoopActivated = false;
+    steerMotor.requestVoltage(Volts.of(output));
   }
 
   @Override
   public void setDriveVelocity(double velocityRadPerSec) {
-    driveClosedLoop = true;
-    
-    // Get regulated constants for feedforward calculation
-    var regulatedConstants = PhoenixUtil.regulateModuleConstantForSimulation(
-        (SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>) moduleConstants);
-    
-    // Calculate feedforward voltage (KS * sign + KV * velocity)
-    double ks = regulatedConstants.DriveMotorGains.kS;
-    double kv = regulatedConstants.DriveMotorGains.kV;
-    driveFFVolts = ks * Math.signum(velocityRadPerSec) + kv * velocityRadPerSec;
-    
-    driveController.setSetpoint(velocityRadPerSec);
+    // velocityRadPerSec is wheel velocity (rad/s), convert to motor velocity
+    // This matches how the official implementation handles it
+    double driveGearRatio = TunerConstants.FrontLeft.DriveMotorGearRatio;
+    this.desiredMotorVelocityRadPerSec = velocityRadPerSec * driveGearRatio;
+    this.driveClosedLoopActivated = true;
+    // Note: torqueFeedforwardVolts should be set by the calling code if needed
+    // For now, we'll use 0.0 (can be enhanced later if torque feedforward is needed)
+    this.torqueFeedforwardVolts = 0.0;
   }
 
   @Override
   public void setTurnPosition(Rotation2d rotation) {
-    turnClosedLoop = true;
-    turnController.setSetpoint(rotation.getRadians());
+    this.desiredSteerFacing = rotation;
+    this.steerClosedLoopActivated = true;
   }
 }
