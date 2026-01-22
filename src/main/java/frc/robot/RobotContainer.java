@@ -17,6 +17,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
@@ -201,7 +202,7 @@ public class RobotContainer {
             () -> driverController.getRightTriggerAxis(), // Turbo
             () -> isFacingHub, // Face-target enabled
             faceTargetController,
-            true)); // usePhysicalMaxSpeed: false = use artificial limit (1.6 m/s), true = use physical max
+            false)); // usePhysicalMaxSpeed: false = use artificial limit (1.6 m/s), true = use physical max
 
     // Reset gyro / odometry - syncs with simulation pose in SIM mode
     final Runnable resetGyro = Constants.currentMode == Constants.Mode.SIM
@@ -225,6 +226,8 @@ public class RobotContainer {
         faceTargetController.reset(drive.getRotation().getRadians());
       }
     }, drive));
+
+    driverController.a().onTrue(Commands.runOnce(() -> printPose()));
 
     // Pathfind then follow path to outpost when D-pad up is held
     driverController.povUp().whileTrue(DriveCommands.pathfindThenFollowPath(drive, "DriveToOutpost"));

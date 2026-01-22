@@ -49,7 +49,7 @@ public class DriveCommands {
   private static final double ANGLE_MAX_ACCELERATION = 20.0;
 
   // Drive control constants
-  private static final double XBOX_JOYSTICK_DEADBAND = 0.09; // Deadband threshold for joystick inputs
+  private static final double XBOX_JOYSTICK_DEADBAND = 0.15; // Deadband threshold for joystick inputs
   private static final double MAX_CONTROL_SPEED = 1.6; // Max speed the driver can go in x or y in m/s
   private static final double MAX_ANGULAR_RATE = 0.75 * 2 * Math.PI; // 3/4 rotation per second in rad/s
   private static final double TURBO_MULTIPLE = 2.0; // Minimum fraction when turbo is not applied
