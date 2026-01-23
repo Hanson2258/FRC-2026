@@ -68,6 +68,10 @@ public class Module {
       odometryPositions[i] = new SwerveModulePosition(positionMeters, angle);
     }
 
+    // Record raw odometry inputs for debugging sign/axis issues
+    Logger.recordOutput("Debug/Module" + Integer.toString(index) + "/OdometryDrivePositionsRad", inputs.odometryDrivePositionsRad);
+    Logger.recordOutput("Debug/Module" + Integer.toString(index) + "/OdometryTurnPositions", inputs.odometryTurnPositions);
+
     // Update alerts
     driveDisconnectedAlert.set(!inputs.driveConnected);
     turnDisconnectedAlert.set(!inputs.turnConnected);

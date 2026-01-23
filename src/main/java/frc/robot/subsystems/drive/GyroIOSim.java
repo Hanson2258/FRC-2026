@@ -9,8 +9,10 @@ package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import frc.robot.util.PhoenixUtil;
+import java.util.Arrays;
 import org.ironmaple.simulation.drivesims.GyroSimulation;
 
 public class GyroIOSim implements GyroIO {
@@ -23,11 +25,15 @@ public class GyroIOSim implements GyroIO {
   @Override
   public void updateInputs(GyroIOInputs inputs) {
     inputs.connected = true;
-    inputs.yawPosition = gyroSimulation.getGyroReading();
+    // Negate to match NavX convention used elsewhere
+    Rotation2d simYaw = gyroSimulation.getGyroReading();
+    inputs.yawPosition = new Rotation2d(-simYaw.getRadians());
     inputs.yawVelocityRadPerSec = Units.degreesToRadians(
-        gyroSimulation.getMeasuredAngularVelocity().in(RadiansPerSecond));
+        -gyroSimulation.getMeasuredAngularVelocity().in(RadiansPerSecond));
 
     inputs.odometryYawTimestamps = PhoenixUtil.getSimulationOdometryTimeStamps();
-    inputs.odometryYawPositions = gyroSimulation.getCachedGyroReadings();
+    inputs.odometryYawPositions = Arrays.stream(gyroSimulation.getCachedGyroReadings())
+        .map(r -> new Rotation2d(-r.getRadians()))
+        .toArray(Rotation2d[]::new);
   }
 }

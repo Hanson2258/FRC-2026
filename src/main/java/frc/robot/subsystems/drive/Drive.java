@@ -123,6 +123,18 @@ public class Drive extends SubsystemBase {
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, Pose2d.kZero);
 
+  // Temporary test modes to help diagnose odometry sign issues. Change at compile time to
+  // try inverting drive distances or turn angles to see which one corrects the odometry when
+  // vision is absent.
+  private static enum OdometryTestMode {
+    NONE,
+    INVERT_DRIVE_DISTANCE,
+    INVERT_TURN_ANGLE
+  }
+
+  // Set to a test mode to invert parts of the odometry input for diagnostics.
+  private static final OdometryTestMode odometryTestMode = OdometryTestMode.INVERT_TURN_ANGLE;
+
   private final Consumer<Pose2d> resetSimulationPoseCallBack;
 
   public Drive(
@@ -147,6 +159,9 @@ public class Drive extends SubsystemBase {
     modules[1] = new Module(frModuleIO, 1, TunerConstants.FrontRight);
     modules[2] = new Module(blModuleIO, 2, TunerConstants.BackLeft);
     modules[3] = new Module(brModuleIO, 3, TunerConstants.BackRight);
+
+  // Log module translations so we can verify coordinate signs used by kinematics
+  Logger.recordOutput("Odometry/ModuleTranslations", getModuleTranslations());
 
     // Usage reporting for swerve template
     HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_AdvantageKit);
@@ -226,14 +241,40 @@ public class Drive extends SubsystemBase {
       SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
       SwerveModulePosition[] moduleDeltas = new SwerveModulePosition[4];
       for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
-        modulePositions[moduleIndex] = modules[moduleIndex].getOdometryPositions()[i];
+        // Read raw positions from modules
+        SwerveModulePosition rawPos = modules[moduleIndex].getOdometryPositions()[i];
+
+        double posMeters = rawPos.distanceMeters;
+        Rotation2d angle = rawPos.angle;
+
+        // Apply diagnostic test-mode adjustments if requested. This allows quick
+        // compile-time testing to see whether drive distance sign or steer angle
+        // sign is the source of inverted odometry when vision is absent.
+        if (odometryTestMode == OdometryTestMode.INVERT_DRIVE_DISTANCE) {
+          posMeters = -posMeters;
+        } else if (odometryTestMode == OdometryTestMode.INVERT_TURN_ANGLE) {
+          angle = new Rotation2d(-angle.getRadians());
+        }
+
+        SwerveModulePosition adjustedPos = new SwerveModulePosition(posMeters, angle);
+
+        modulePositions[moduleIndex] = adjustedPos;
         moduleDeltas[moduleIndex] =
             new SwerveModulePosition(
                 modulePositions[moduleIndex].distanceMeters
                     - lastModulePositions[moduleIndex].distanceMeters,
                 modulePositions[moduleIndex].angle);
+
+        // Keep lastModulePositions in the same adjusted frame
         lastModulePositions[moduleIndex] = modulePositions[moduleIndex];
       }
+
+  // Debug logging to diagnose sign problems when vision is absent
+  Logger.recordOutput("Debug/OdometryTestMode", odometryTestMode.toString());
+  Logger.recordOutput("Debug/ModulePositions", modulePositions);
+  Logger.recordOutput("Debug/ModuleDeltas", moduleDeltas);
+  Twist2d debugTwist = kinematics.toTwist2d(moduleDeltas);
+  Logger.recordOutput("Debug/Twist", debugTwist);
 
       // Update gyro angle
       if (gyroInputs.connected) {
