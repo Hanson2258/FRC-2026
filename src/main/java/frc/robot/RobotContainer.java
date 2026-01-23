@@ -237,6 +237,9 @@ public class RobotContainer {
 
     // Pathfind then follow path to outpost when D-pad up is held
     driverController.povUp().whileTrue(DriveCommands.pathfindThenFollowPath(drive, "DriveToOutpost"));
+
+    // Pathfind then follow path to hub when D-pad down is held
+    driverController.povDown().whileTrue(DriveCommands.pathfindThenFollowPath(drive, "DriveToHub"));
   }
 
   /** 
