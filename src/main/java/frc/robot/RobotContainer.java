@@ -8,13 +8,13 @@
 package frc.robot;
 
 import static frc.robot.subsystems.vision.VisionConstants.*;
-import static frc.robot.subsystems.vision.VisionConstants.robotToCamera1;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -44,26 +44,37 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
+
+	// Controller(s)
+	private final CommandXboxController driverController = new CommandXboxController(0);
+
 	// Subsystems
 	private final Drive drive;
 	@SuppressWarnings("unused")
 	private final Vision vision; 
 
+	// Drive Simulation
 	private SwerveDriveSimulation driveSimulation = null;
-
-	// Controller
-	private final CommandXboxController controller = new CommandXboxController(0);
 
 	// Dashboard inputs
 	private final LoggedDashboardChooser<Command> autoChooser;
 
+  // Manual Override and Encoder Reset
+  public static boolean manualOverride = false;
+  @SuppressWarnings("unused")
+  private boolean encoderReset = false;
+
+  // Face Target mode
+  private boolean isFacingHub = false;
+  private ProfiledPIDController faceTargetController;
+
+
 	/** The container for the robot. Contains subsystems, OI devices, and commands. */
 	public RobotContainer() {
+    // Initialize subsystems based on mode (REAL, SIM, or REPLAY)
 		switch (Constants.currentMode) {
+      // Real robot, instantiate hardware IO implementations
 			case REAL:
-				// Real robot, instantiate hardware IO implementations
-				// ModuleIOTalonFX is intended for modules with TalonFX drive, TalonFX turn, and
-				// a CANcoder
 				drive =
 						new Drive(
 								new GyroIOPigeon2(),
@@ -80,8 +91,13 @@ public class RobotContainer {
                 new VisionIOPhotonVision(camera1Name, robotToCamera1));
         break;
 
+			// Sim robot, instantiate physics sim IO implementations
 			case SIM:
-				// Sim robot, instantiate physics sim IO implementations
+        // Configure simulation timing for accurate physics
+        // 5 ticks per 20ms period = 4kHz effective control loop rate
+        SimulatedArena.overrideSimulationTimings(
+            edu.wpi.first.units.Units.Seconds.of(0.02), // 20ms robot period
+            5); // 5 simulation ticks per period
 
 				driveSimulation = new SwerveDriveSimulation(Drive.mapleSimConfig, new Pose2d(3, 3, new Rotation2d()));
 				SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
@@ -139,47 +155,95 @@ public class RobotContainer {
 		autoChooser.addOption(
 				"Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-		// Configure the button bindings
-		configureButtonBindings();
-	}
+    // Initialize face-target PID controller (using same constants as DriveCommands)
+    faceTargetController = new ProfiledPIDController(DriveCommands.getAngleKp(), 0.0, DriveCommands.getAngleKd(),
+        new TrapezoidProfile.Constraints(DriveCommands.getAngleMaxVelocity(), DriveCommands.getAngleMaxAcceleration()));
+    faceTargetController.enableContinuousInput(-Math.PI, Math.PI);
+
+    // Configure button bindings
+    configureDriveBindings(true); // False to disable driving
+    configureOperatorBindings(false); // False to disable operator controls
+  }
 
 
-	/**
-	 * Use this method to define your button->command mappings. Buttons can be created by
-	 * instantiating a {@link GenericHID} or one of its subclasses ({@link
-	 * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
-	 * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
-	 */
-	private void configureButtonBindings() {
-		// Default command, normal field-relative drive
-		drive.setDefaultCommand(
-				DriveCommands.joystickDrive(
-						drive,
-						() -> -controller.getLeftY(),
-						() -> -controller.getLeftX(),
-						() -> -controller.getRightX()));
+  /** Prints the current odometry pose of the robot to the console. */
+  public void printPose() {
+    Pose2d robotPose = drive.getPose();
+    System.out.println("=== Odometry Pose ===");
+    System.out.println("X:   " + String.format("%.3f", robotPose.getX()) + " m");
+    System.out.println("Y:   " + String.format("%.3f", robotPose.getY()) + " m");
+    System.out.println("Rot: " + String.format("%.2f", robotPose.getRotation().getDegrees()) + " deg");
+    System.out.println("====================");
+  } // End printPose
 
-		// Lock to 0° when A button is held
-		controller
-				.a()
-				.whileTrue(
-						DriveCommands.joystickDriveAtAngle(
-								drive,
-								() -> -controller.getLeftY(),
-								() -> -controller.getLeftX(),
-								() -> Rotation2d.kZero));
 
-		// Switch to X pattern when X button is pressed
-		controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+  /**
+   * Configure only the drive to enable or disable
+   *
+   * @param enableDriving true to enable driving, false to disable
+   */
+  private void configureDriveBindings(boolean enableDriving) {
+    // Can't configure if drive is null
+    if (drive == null) {return;}
 
-		// Reset gyro / odometry
-		final Runnable resetGyro = Constants.currentMode == Constants.Mode.SIM
-				? () -> drive.setPose(
-						driveSimulation.getSimulatedDriveTrainPose()) // reset odometry to actual robot pose during
-				// simulation
-				: () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), new Rotation2d())); // zero gyro
-		controller.start().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
-	}
+    // Drive disabled: stop all movement
+    if (!enableDriving) {      
+      drive.setDefaultCommand(
+          Commands.run(() -> drive.runVelocity(new ChassisSpeeds(0.0, 0.0, 0.0)), drive));
+      return;
+    }
+
+    // Drive enabled: field-relative drive with turbo control and optional face-target mode
+    drive.setDefaultCommand(
+        DriveCommands.joystickDriveWithTurboAndFaceTarget(
+            drive,
+            () -> -driverController.getLeftX(), // X-axis (left/right)
+            () -> -driverController.getLeftY(), // Y-axis (forward/backward)
+            () -> -driverController.getRightX(), // Omega (rotation)
+            () -> driverController.getRightTriggerAxis(), // Turbo
+            () -> isFacingHub, // Face-target enabled
+            faceTargetController,
+            false)); // usePhysicalMaxSpeed: false = use artificial limit (1.6 m/s), true = use physical max
+
+	// Switch to X pattern when X button is pressed
+	driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+
+	// Reset gyro / odometry
+	final Runnable resetGyro = Constants.currentMode == Constants.Mode.SIM
+			? () -> drive.setPose(
+					driveSimulation.getSimulatedDriveTrainPose()) // reset odometry to actual robot pose during
+			// simulation
+			: () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), new Rotation2d())); // zero gyro
+	driverController.start().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
+
+    // Toggle face-target mode when Y button is pressed
+    driverController.y().onTrue(Commands.runOnce(() -> {
+      isFacingHub = !isFacingHub;
+      if (isFacingHub) {
+        // Reset PID controller when enabling face-target mode
+        faceTargetController.reset(drive.getRotation().getRadians());
+      }
+    }, drive));
+
+    driverController.a().onTrue(Commands.runOnce(() -> printPose()));
+
+    // Pathfind then follow path to outpost when D-pad up is held
+    driverController.povUp().whileTrue(DriveCommands.pathfindThenFollowPath(drive, "DriveToOutpost"));
+
+    // Pathfind then follow path to hub when D-pad down is held
+    driverController.povDown().whileTrue(DriveCommands.pathfindThenFollowPath(drive, "DriveToHub"));
+  }
+
+  /** 
+   * Configure operator controls
+   */
+  private void configureOperatorBindings(boolean enableOperatorControls) {
+    // Operator Controls Enabled
+    if (enableOperatorControls){
+      // Add operator controls here
+    }
+  } // End configureOperatorBindings
+
 
 	/**
 	 * Use this to pass the autonomous command to the main {@link Robot} class.
@@ -190,6 +254,9 @@ public class RobotContainer {
 		return autoChooser.get();
 	}
 
+  /**
+   * Reset the simulation field for autonomous mode. Only works in SIM mode.
+   */
 	public void resetSimulationField() {
 		if (Constants.currentMode != Constants.Mode.SIM) return;
 
@@ -197,6 +264,10 @@ public class RobotContainer {
 		SimulatedArena.getInstance().resetFieldForAuto();
 	}
 
+  /**
+   * Update the simulation world. Should be called from Robot.simulationPeriodic().
+   * Only works in SIM mode.
+   */
 	public void updateSimulation() {
 		if (Constants.currentMode != Constants.Mode.SIM) return;
 

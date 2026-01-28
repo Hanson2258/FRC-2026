@@ -18,8 +18,8 @@ public class VisionConstants {
       AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
   // Camera names, must match names configured on coprocessor
-  public static String camera0Name = "camera_0";
-  public static String camera1Name = "camera_1";
+  public static String camera0Name = "Arducam_OV9821";
+  public static String camera1Name = "webcam_0";
 
   // Robot to camera transforms
   public static Transform3d robotToCamera0 =
