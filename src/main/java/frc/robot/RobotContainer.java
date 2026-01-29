@@ -83,13 +83,13 @@ public class RobotContainer {
 								new ModuleIOTalonFX(TunerConstants.BackLeft),
 								new ModuleIOTalonFX(TunerConstants.BackRight),
 								(pose) -> {});
-        // Initialize vision after drive (vision needs drive reference)
-        this.vision =
-            new Vision(
-                drive,
-                new VisionIOPhotonVision(camera0Name, robotToCamera0),
-                new VisionIOPhotonVision(camera1Name, robotToCamera1));
-        break;
+				// Initialize vision after drive (vision needs drive reference)
+				this.vision =
+					new Vision(
+						drive,
+						new VisionIOPhotonVision(camera0Name, robotToCamera0),
+						new VisionIOPhotonVision(camera1Name, robotToCamera1));
+				break;
 
 			// Sim robot, instantiate physics sim IO implementations
 			case SIM:
@@ -112,18 +112,18 @@ public class RobotContainer {
 						new ModuleIOSim(
 								TunerConstants.BackRight, driveSimulation.getModules()[3]),
 						driveSimulation::setSimulationWorldPose);
-					// Initialize vision after drive (vision needs drive reference)
-					this.vision =
-							new Vision(
-									drive,
-									new VisionIOPhotonVisionSim(
-											camera0Name, robotToCamera0, driveSimulation::getSimulatedDriveTrainPose),
-									new VisionIOPhotonVisionSim(
-											camera1Name, robotToCamera1, driveSimulation::getSimulatedDriveTrainPose));
-					break;
+				// Initialize vision after drive (vision needs drive reference)
+				this.vision =
+						new Vision(
+								drive,
+								new VisionIOPhotonVisionSim(
+										camera0Name, robotToCamera0, driveSimulation::getSimulatedDriveTrainPose),
+								new VisionIOPhotonVisionSim(
+										camera1Name, robotToCamera1, driveSimulation::getSimulatedDriveTrainPose));
+				break;
 
+			// Replayed robot, disable IO implementations
 			default:
-				// Replayed robot, disable IO implementations
 				drive = new Drive(
 						new GyroIO() {},
 						new ModuleIO() {},
