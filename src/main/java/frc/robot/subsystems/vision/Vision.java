@@ -81,6 +81,7 @@ public class Vision extends SubsystemBase {
       List<Pose3d> robotPoses = new LinkedList<>();
       List<Pose3d> robotPosesAccepted = new LinkedList<>();
       List<Pose3d> robotPosesRejected = new LinkedList<>();
+      List<Pose3d> cameraPoses = new LinkedList<>();
 
       // Add tag poses
       for (int tagId : inputs[cameraIndex].tagIds) {
@@ -112,6 +113,12 @@ public class Vision extends SubsystemBase {
           robotPosesRejected.add(observation.pose());
         } else {
           robotPosesAccepted.add(observation.pose());
+					// Calculate camera pose from robot pose for visualization
+					if (cameraIndex < robotToCamera.length) {
+						Pose3d cameraPose =
+								observation.pose().plus(robotToCamera[cameraIndex]);
+						cameraPoses.add(cameraPose);
+					}
         }
 
         // Skip if rejected
@@ -141,6 +148,9 @@ public class Vision extends SubsystemBase {
       }
 
       // Log camera metadata
+      Logger.recordOutput(
+          "Vision/Camera" + Integer.toString(cameraIndex) + "/CameraPose",
+          cameraPoses.toArray(new Pose3d[0]));
       Logger.recordOutput(
           "Vision/Camera" + Integer.toString(cameraIndex) + "/TagPoses",
           tagPoses.toArray(new Pose3d[0]));
