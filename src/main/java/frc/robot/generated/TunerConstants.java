@@ -23,15 +23,20 @@ public class TunerConstants {
 
     // The steer motor uses any SwerveModule.SteerRequestType control request with the
     // output type specified by SwerveModuleConstants.SteerMotorClosedLoopOutput
-    private static final Slot0Configs steerGains = new Slot0Configs()
-        .withKP(100).withKI(0).withKD(0.5)
-        .withKS(0.1).withKV(1.59).withKA(0)
+  private static final Slot0Configs steerGains =
+      new Slot0Configs()
+          .withKP(45)
+          .withKI(0)
+          .withKD(0.0)
+          .withKS(0.0)
+          .withKV(1.59)
+          .withKA(0)
         .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
     // When using closed-loop control, the drive motor uses the control
     // output type specified by SwerveModuleConstants.DriveMotorClosedLoopOutput
-    private static final Slot0Configs driveGains = new Slot0Configs()
-        .withKP(0.1).withKI(0).withKD(0)
-        .withKS(0).withKV(0.124);
+  private static final Slot0Configs driveGains =
+      new Slot0Configs().withKP(0.2).withKI(0).withKD(0.01)
+        .withKS(0.5).withKV(0.124).withKA(0.2);
 
     // The closed-loop output type to use for the steer motors;
     // This affects the PID/FF gains for the steer motors
@@ -55,15 +60,24 @@ public class TunerConstants {
 
     // Initial configs for the drive and steer motors and the azimuth encoder; these cannot be null.
     // Some configs will be overwritten; check the `with*InitialConfigs()` API documentation.
-    private static final TalonFXConfiguration driveInitialConfigs = new TalonFXConfiguration();
-    private static final TalonFXConfiguration steerInitialConfigs = new TalonFXConfiguration()
+  private static final TalonFXConfiguration driveInitialConfigs =
+      new TalonFXConfiguration()
         .withCurrentLimits(
             new CurrentLimitsConfigs()
-                // Swerve azimuth does not require much torque output, so we can set a relatively low
+                  // Swerve azimuth does not require much torque output, so we can set a relatively
+                  // low
                 // stator current limit to help avoid brownouts without impacting performance.
-                .withStatorCurrentLimit(Amps.of(60))
-                .withStatorCurrentLimitEnable(true)
-        );
+                  .withStatorCurrentLimit(Amps.of(13)) // TODO: Was 20, changebefore comp
+                  .withStatorCurrentLimitEnable(true));
+  private static final TalonFXConfiguration steerInitialConfigs =
+      new TalonFXConfiguration()
+          .withCurrentLimits(
+              new CurrentLimitsConfigs()
+                  // Swerve azimuth does not require much torque output, so we can set a relatively
+                  // low
+                  // stator current limit to help avoid brownouts without impacting performance.
+                  .withStatorCurrentLimit(Amps.of(13)) // TODO: Was 18, change before comp
+                  .withStatorCurrentLimitEnable(true));
     private static final CANcoderConfiguration encoderInitialConfigs = new CANcoderConfiguration();
     // Configs for the Pigeon 2; leave this null to skip applying Pigeon 2 configs
     private static final Pigeon2Configuration pigeonConfigs = null;
@@ -90,8 +104,8 @@ public class TunerConstants {
     private static final int kPigeonId = 0;
 
     // These are only used for simulation
-    private static final MomentOfInertia kSteerInertia = KilogramSquareMeters.of(0.004); // Changed to 0.004 for AdvantageKit
-    private static final MomentOfInertia kDriveInertia = KilogramSquareMeters.of(0.025); // Changed to 0.025 for AdvantageKit
+    private static final MomentOfInertia kSteerInertia = KilogramSquareMeters.of(0.01);
+    private static final MomentOfInertia kDriveInertia = KilogramSquareMeters.of(0.01);
     // Simulated voltage necessary to overcome friction
     private static final Voltage kSteerFrictionVoltage = Volts.of(0.2);
     private static final Voltage kDriveFrictionVoltage = Volts.of(0.2);
@@ -191,16 +205,15 @@ public class TunerConstants {
             kBackRightXPos, kBackRightYPos, kInvertRightSide, kBackRightSteerMotorInverted, kBackRightEncoderInverted
         );
 
-    // /**
-    //  * Creates a CommandSwerveDrivetrain instance.
-    //  * This should only be called once in your robot program,.
-    //  */
-    // public static CommandSwerveDrivetrain createDrivetrain() {
-    //     return new CommandSwerveDrivetrain(
-    //         DrivetrainConstants, FrontLeft, FrontRight, BackLeft, BackRight
-    //     );
+    /**
+//       * Creates a CommandSwerveDrivetrain instance.
+//       * This should only be called once in your robot program,.
+//       */
+//     public static CommandSwerveDrivetrain createDrivetrain() {
+//             return new CommandSwerveDrivetrain(
+//                     DrivetrainConstants, FrontLeft, FrontRight, BackLeft, BackRight
+//             );
     // } // Commented out for AdvantageKit - Drive subsystem creates drivetrain differently
-
 
     /**
      * Swerve Drive class utilizing CTR Electronics' Phoenix 6 API with the selected device types.
