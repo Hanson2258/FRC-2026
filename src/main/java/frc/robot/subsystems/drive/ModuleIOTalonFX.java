@@ -217,7 +217,7 @@ public class ModuleIOTalonFX implements ModuleIO {
         timestampQueue.stream().mapToDouble((Double value) -> value).toArray();
     inputs.odometryDrivePositionsRad =
         drivePositionQueue.stream()
-            .mapToDouble((Double value) -> Units.rotationsToRadians(value))
+            .mapToDouble((Double value) -> Units.rotationsToRadians(value) / constants.DriveMotorGearRatio)
             .toArray();
     inputs.odometryTurnPositions =
         turnPositionQueue.stream()
