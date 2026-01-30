@@ -157,7 +157,7 @@ public class RobotContainer {
 		// Turret aims at hub using robot pose (odometry); replace with hold-position command to disable
 		turret.setDefaultCommand(
 				Commands.run(
-						() -> turret.setGoalAngle(DriveCommands.getTurretAngleToHub(drive)),
+						() -> turret.setHubAngleRelativeToRobot(DriveCommands.getTurretAngleToHub(drive)),
 						turret));
 
 		// Field view: robot + turret so you can see turret direction in sim

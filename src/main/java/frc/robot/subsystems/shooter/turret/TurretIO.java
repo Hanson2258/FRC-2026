@@ -17,6 +17,12 @@ public interface TurretIO {
   /** Update inputs from the hardware. */
   default void updateInputs(TurretIOInputs inputs) {}
 
-  /** Set motor output voltage (e.g. from PID). */
-  default void setVoltage(double volts) {}
+  /**
+   * Set the target position (radians, encoder frame).
+   * Controller runs PID on-device at higher rate than robot loop.
+   */
+  default void setTargetPosition(double targetRads) {}
+
+  /** Stop the turret (no power). */
+  default void stop() {}
 }

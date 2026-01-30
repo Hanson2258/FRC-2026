@@ -20,7 +20,7 @@ public final class TurretConstants {
    */
   public static final double kEncoderZeroOffsetRad = 0.0;
 
-  /** PID gains for position control (voltage output). */
+  /** PID gains for onboard position control and for sim software control. */
   public static final double kP = 7.0;
   public static final double kI = 0.0;
   public static final double kD = 0.0;
