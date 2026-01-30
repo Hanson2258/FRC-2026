@@ -36,8 +36,8 @@ import frc.robot.subsystems.drive.ModuleIOTalonFX;
 import frc.robot.subsystems.shooter.ShooterConstants;
 import frc.robot.subsystems.shooter.turrent.Turret;
 import frc.robot.subsystems.shooter.turrent.TurretIO;
-import frc.robot.subsystems.shooter.turrent.TurretIOTalonFX;
 import frc.robot.subsystems.shooter.turrent.TurretIOSim;
+import frc.robot.subsystems.shooter.turrent.TurretIOSparkMax;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
@@ -104,7 +104,7 @@ public class RobotContainer {
 						drive,
 						new VisionIOPhotonVision(camera0Name, robotToCamera0),
 						new VisionIOPhotonVision(camera1Name, robotToCamera1));
-        this.turret = new Turret(new TurretIOTalonFX());
+        this.turret = new Turret(new TurretIOSparkMax());
 				break;
 
 			// Sim robot, instantiate physics sim IO implementations

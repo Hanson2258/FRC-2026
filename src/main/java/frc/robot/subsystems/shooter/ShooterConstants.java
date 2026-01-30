@@ -17,7 +17,7 @@ public final class ShooterConstants {
 
   /** Transform from robot center to turret pivot. +X = forward, +Y = left, +Z = up (meters). */
   public static final Transform3d robotToTurret =
-      new Transform3d(0.0, 0.0, 0.6, Rotation3d.kZero);
+      new Transform3d(0.27686, -0.0508, 0.6, Rotation3d.kZero);
 
   /** Transform from turret pivot to camera (when camera is on turret). */
   public static final Transform3d turretToCamera =

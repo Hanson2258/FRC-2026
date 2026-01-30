@@ -12,7 +12,7 @@ public final class TurretConstants {
   public static final int kMotorId = 5; // TODO: Add correct ID
 
   /** Turret radians per motor rotation (output / input). 1.0 = 1:1. */
-  public static final double kGearRatio = 1.0;
+  public static final double kGearRatio = 20.0;
 
   /**
    * Encoder zero offset (radians). Added to raw encoder so that 0 = turret pointing robot-forward.
@@ -21,9 +21,9 @@ public final class TurretConstants {
   public static final double kEncoderZeroOffsetRad = 0.0;
 
   /** PID gains for position control (voltage output). */
-  public static final double kP = 2.0;
+  public static final double kP = 7.0;
   public static final double kI = 0.0;
-  public static final double kD = 0.1;
+  public static final double kD = 0.0;
 
   /** Minimum turret angle (radians). */
   public static final double kMinAngleRad = Units.degreesToRadians(-180.0);
