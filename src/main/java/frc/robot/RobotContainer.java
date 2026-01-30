@@ -63,13 +63,19 @@ public class RobotContainer {
 	// Controller(s)
 	private final CommandXboxController driverController = new CommandXboxController(0);
 
+	// Subsystems Toggle
+	private boolean isDriveEnabled = true;
+	private boolean isVisionEnabled = true;
+	private boolean isFlywheelEnabled = true;
+	private boolean isTurretEnabled = true;
+	
 	// Subsystems
 	private final Drive drive;
 	@SuppressWarnings("unused")
 	private final Vision vision;
-	private final Turret turret;
 	@SuppressWarnings("unused")
 	private final Flywheel flywheel; 
+	private final Turret turret;
 
 	// Drive Simulation
 	private SwerveDriveSimulation driveSimulation = null;
@@ -97,22 +103,39 @@ public class RobotContainer {
 		switch (Constants.currentMode) {
       // Real robot, instantiate hardware IO implementations
 			case REAL:
-				drive =
-						new Drive(
-								new GyroIOPigeon2(),
-								new ModuleIOTalonFX(TunerConstants.FrontLeft),
-								new ModuleIOTalonFX(TunerConstants.FrontRight),
-								new ModuleIOTalonFX(TunerConstants.BackLeft),
-								new ModuleIOTalonFX(TunerConstants.BackRight),
-								(pose) -> {});
+				if (isDriveEnabled) {
+					drive =
+							new Drive(
+									new GyroIOPigeon2(),
+									new ModuleIOTalonFX(TunerConstants.FrontLeft),
+									new ModuleIOTalonFX(TunerConstants.FrontRight),
+									new ModuleIOTalonFX(TunerConstants.BackLeft),
+									new ModuleIOTalonFX(TunerConstants.BackRight),
+									(pose) -> {});
+				} else {
+					drive = new Drive(
+						new GyroIO() {},
+						new ModuleIO() {},
+						new ModuleIO() {},
+						new ModuleIO() {},
+						new ModuleIO() {},
+						(pose) -> {});
+				}
+				
 				// Initialize vision after drive (vision needs drive reference)
-				vision =
-					new Vision(
-						drive,
-						new VisionIOPhotonVision(camera0Name, robotToCamera0),
-						new VisionIOPhotonVision(camera1Name, robotToCamera1));
-        turret = new Turret(new TurretIOSparkMax());
-				flywheel = new Flywheel(new FlywheelIOTalonFX());
+				if (isVisionEnabled) {
+					vision =
+							new Vision(
+									drive,
+									new VisionIOPhotonVision(camera0Name, robotToCamera0),
+									new VisionIOPhotonVision(camera1Name, robotToCamera1));
+				} else {
+					vision = new Vision(drive, new VisionIO() {}, new VisionIO() {});
+				}
+
+				// Shooter subsystems
+				flywheel = isFlywheelEnabled ? new Flywheel(new FlywheelIOTalonFX()) : new Flywheel(new FlywheelIO() {});
+        turret = isTurretEnabled ? new Turret(new TurretIOSparkMax()) : new Turret(new TurretIO() {});
 				break;
 
 			// Sim robot, instantiate physics sim IO implementations
@@ -136,6 +159,7 @@ public class RobotContainer {
 						new ModuleIOSim(
 								TunerConstants.BackRight, driveSimulation.getModules()[3]),
 						driveSimulation::setSimulationWorldPose);
+				
 				// Initialize vision after drive (vision needs drive reference)
 				vision =
 						new Vision(
@@ -144,8 +168,10 @@ public class RobotContainer {
 										camera0Name, robotToCamera0, driveSimulation::getSimulatedDriveTrainPose),
 								new VisionIOPhotonVisionSim(
 										camera1Name, robotToCamera1, driveSimulation::getSimulatedDriveTrainPose));
-				turret = new Turret(new TurretIOSim());
+
+				// Shooter subsystems
 				flywheel = new Flywheel(new FlywheelIOSim());
+				turret = new Turret(new TurretIOSim());
 				break;
 
 			// Replayed robot, disable IO implementations
@@ -157,25 +183,40 @@ public class RobotContainer {
 						new ModuleIO() {},
 						new ModuleIO() {},
 						(pose) -> {});
+				
 				vision = new Vision(drive, new VisionIO() {}, new VisionIO() {});
-				turret = new Turret(new TurretIO() {});
-				flywheel = new Flywheel(new FlywheelIO() {});
 
+				// Shooter subsystems
+				flywheel = new Flywheel(new FlywheelIO() {});
+				turret = new Turret(new TurretIO() {});
 				break;
 		}
 
+		/// ---------------------------------------------------------------------------------------------------------------
+		/// ----------------------------------------------- Drive Commands ------------------------------------------------
+		/// ---------------------------------------------------------------------------------------------------------------		// Initialize face-target PID controller (using same constants as DriveCommands)
+		faceTargetController = new ProfiledPIDController(DriveCommands.getAngleKp(), 0.0, DriveCommands.getAngleKd(),
+		new TrapezoidProfile.Constraints(DriveCommands.getAngleMaxVelocity(), DriveCommands.getAngleMaxAcceleration()));
+    faceTargetController.enableContinuousInput(-Math.PI, Math.PI);
+
+		/// ---------------------------------------------------------------------------------------------------------------
+		/// ------------------------------------------ Shooter Subsystem Commands -----------------------------------------
+		/// ---------------------------------------------------------------------------------------------------------------
+		// Flywheel holds default target velocity whenever enabled
+		flywheel.setDefaultCommand(
+			Commands.run(
+					() -> flywheel.setTargetVelocity(FlywheelConstants.kDefaultTargetVelocityRadsPerSec),
+					flywheel));
+		
 		// Turret aims at hub using robot pose (odometry); replace with hold-position command to disable
 		turret.setDefaultCommand(
 				Commands.run(
 						() -> turret.setHubAngleRelativeToRobot(DriveCommands.getTurretAngleToHub(drive)),
 						turret));
 
-		// Flywheel holds default target velocity whenever enabled
-		flywheel.setDefaultCommand(
-				Commands.run(
-						() -> flywheel.setTargetVelocity(FlywheelConstants.kDefaultTargetVelocityRadsPerSec),
-						flywheel));
-
+		/// ---------------------------------------------------------------------------------------------------------------
+		/// ----------------------------------------------- Logger Dashboard ----------------------------------------------
+		/// ---------------------------------------------------------------------------------------------------------------
 		// Field view: robot + turret so you can see turret direction in sim
 		SmartDashboard.putData("Field", field);
 
@@ -197,11 +238,6 @@ public class RobotContainer {
 				"Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
 		autoChooser.addOption(
 				"Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-
-    // Initialize face-target PID controller (using same constants as DriveCommands)
-    faceTargetController = new ProfiledPIDController(DriveCommands.getAngleKp(), 0.0, DriveCommands.getAngleKd(),
-        new TrapezoidProfile.Constraints(DriveCommands.getAngleMaxVelocity(), DriveCommands.getAngleMaxAcceleration()));
-    faceTargetController.enableContinuousInput(-Math.PI, Math.PI);
 
     // Configure button bindings
     configureDriveBindings(true); // False to disable driving
