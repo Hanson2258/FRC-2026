@@ -229,7 +229,7 @@ public class DriveCommands {
   } // End calculateTargetHubAngle
 
   /**
-   * Calculates the turret goal angle (robot frame) to aim at the alliance hub using robot pose.
+   * Calculates the turret hub angle (robot frame) to aim at the alliance hub using robot pose.
    *
    * @param drive The drive subsystem to get current robot pose from
    * @return Desired turret angle in robot frame (0 = robot forward)
