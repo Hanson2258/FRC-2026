@@ -34,6 +34,11 @@ import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
 import frc.robot.subsystems.shooter.ShooterConstants;
+import frc.robot.subsystems.shooter.flywheel.Flywheel;
+import frc.robot.subsystems.shooter.flywheel.FlywheelConstants;
+import frc.robot.subsystems.shooter.flywheel.FlywheelIO;
+import frc.robot.subsystems.shooter.flywheel.FlywheelIOSim;
+import frc.robot.subsystems.shooter.flywheel.FlywheelIOTalonFX;
 import frc.robot.subsystems.shooter.turret.Turret;
 import frc.robot.subsystems.shooter.turret.TurretIO;
 import frc.robot.subsystems.shooter.turret.TurretIOSim;
@@ -62,7 +67,9 @@ public class RobotContainer {
 	private final Drive drive;
 	@SuppressWarnings("unused")
 	private final Vision vision;
-	private final Turret turret; 
+	private final Turret turret;
+	@SuppressWarnings("unused")
+	private final Flywheel flywheel; 
 
 	// Drive Simulation
 	private SwerveDriveSimulation driveSimulation = null;
@@ -99,12 +106,13 @@ public class RobotContainer {
 								new ModuleIOTalonFX(TunerConstants.BackRight),
 								(pose) -> {});
 				// Initialize vision after drive (vision needs drive reference)
-				this.vision =
+				vision =
 					new Vision(
 						drive,
 						new VisionIOPhotonVision(camera0Name, robotToCamera0),
 						new VisionIOPhotonVision(camera1Name, robotToCamera1));
-        this.turret = new Turret(new TurretIOSparkMax());
+        turret = new Turret(new TurretIOSparkMax());
+				flywheel = new Flywheel(new FlywheelIOTalonFX());
 				break;
 
 			// Sim robot, instantiate physics sim IO implementations
@@ -129,14 +137,15 @@ public class RobotContainer {
 								TunerConstants.BackRight, driveSimulation.getModules()[3]),
 						driveSimulation::setSimulationWorldPose);
 				// Initialize vision after drive (vision needs drive reference)
-				this.vision =
+				vision =
 						new Vision(
 								drive,
 								new VisionIOPhotonVisionSim(
 										camera0Name, robotToCamera0, driveSimulation::getSimulatedDriveTrainPose),
 								new VisionIOPhotonVisionSim(
 										camera1Name, robotToCamera1, driveSimulation::getSimulatedDriveTrainPose));
-				this.turret = new Turret(new TurretIOSim());
+				turret = new Turret(new TurretIOSim());
+				flywheel = new Flywheel(new FlywheelIOSim());
 				break;
 
 			// Replayed robot, disable IO implementations
@@ -150,6 +159,7 @@ public class RobotContainer {
 						(pose) -> {});
 				vision = new Vision(drive, new VisionIO() {}, new VisionIO() {});
 				turret = new Turret(new TurretIO() {});
+				flywheel = new Flywheel(new FlywheelIO() {});
 
 				break;
 		}
@@ -159,6 +169,12 @@ public class RobotContainer {
 				Commands.run(
 						() -> turret.setHubAngleRelativeToRobot(DriveCommands.getTurretAngleToHub(drive)),
 						turret));
+
+		// Flywheel holds default target velocity whenever enabled
+		flywheel.setDefaultCommand(
+				Commands.run(
+						() -> flywheel.setTargetVelocity(FlywheelConstants.kDefaultTargetVelocityRadsPerSec),
+						flywheel));
 
 		// Field view: robot + turret so you can see turret direction in sim
 		SmartDashboard.putData("Field", field);
@@ -232,16 +248,16 @@ public class RobotContainer {
             faceTargetController,
             false)); // usePhysicalMaxSpeed: false = use artificial limit (1.6 m/s), true = use physical max
 
-	// Switch to X pattern when X button is pressed
-	driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+		// Switch to X pattern when X button is pressed
+		driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
-	// Reset gyro / odometry
-	final Runnable resetGyro = Constants.currentMode == Constants.Mode.SIM
-			? () -> drive.setPose(
-					driveSimulation.getSimulatedDriveTrainPose()) // reset odometry to actual robot pose during
-			// simulation
-			: () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), new Rotation2d())); // zero gyro
-	driverController.start().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
+		// Reset gyro / odometry
+		final Runnable resetGyro = Constants.currentMode == Constants.Mode.SIM
+				? () -> drive.setPose(
+						driveSimulation.getSimulatedDriveTrainPose()) // reset odometry to actual robot pose during
+				// simulation
+				: () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), new Rotation2d())); // zero gyro
+		driverController.start().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
 
     // Toggle face-target mode when Y button is pressed
     driverController.y().onTrue(Commands.runOnce(() -> {

@@ -19,7 +19,7 @@ public class Turret extends SubsystemBase {
   private Rotation2d hubAngleRelativeToRobot = Rotation2d.kZero; // The angle to aim the turret at the hub
 
   public Turret(TurretIO io) {
-    this.turretIO = io;
+    turretIO = io;
   } // End Turret Constructor
 
   @Override
@@ -48,7 +48,7 @@ public class Turret extends SubsystemBase {
 
   /** Set the hub angle (robot frame: 0 = forward). Clamped to min/max in periodic. */
   public void setHubAngleRelativeToRobot(Rotation2d angle) {
-    this.hubAngleRelativeToRobot = angle;
+    hubAngleRelativeToRobot = angle;
   } // End setHubAngleRelativeToRobot
 
   /** Get the current hub angle. */
