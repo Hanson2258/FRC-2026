@@ -94,7 +94,6 @@ public class ModuleIOSim implements ModuleIO {
     var driveConfig = this.constants.DriveMotorInitialConfigs;
     driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     driveConfig.Slot0 = this.constants.DriveMotorGains;
-    driveConfig.Feedback.SensorToMechanismRatio = this.constants.DriveMotorGearRatio;
     driveConfig.TorqueCurrent.PeakForwardTorqueCurrent = this.constants.SlipCurrent;
     driveConfig.TorqueCurrent.PeakReverseTorqueCurrent = -this.constants.SlipCurrent;
     driveConfig.CurrentLimits.StatorCurrentLimit = this.constants.SlipCurrent;
