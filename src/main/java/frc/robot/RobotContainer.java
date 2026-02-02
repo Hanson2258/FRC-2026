@@ -242,6 +242,16 @@ public class RobotContainer {
 		autoChooser.addOption(
 				"Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
+
+		// Record zeroed robot components (model_0 shooter, model_1 extender)
+		Logger.recordOutput("ZeroedRobotComponents", new Pose3d[] {new Pose3d(), new Pose3d()});
+		Logger.recordOutput("FinalComponentPoses",
+				new Pose3d[] {
+					new Pose3d(0.03, 0.2, 0.35, new Rotation3d(0, 0, 0)), // model_0 shooter
+					new Pose3d(0.03, 0.2, 0.35, new Rotation3d(0, 0, 0))  // model_1 extender
+				});
+			
+
     // Configure button bindings
     configureDriveBindings(true); // False to disable driving
     configureOperatorBindings(false); // False to disable operator controls
