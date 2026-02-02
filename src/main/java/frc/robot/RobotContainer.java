@@ -39,6 +39,10 @@ import frc.robot.subsystems.shooter.flywheel.Flywheel.FlywheelState;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIO;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIOSim;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIOTalonFX;
+import frc.robot.subsystems.shooter.hood.Hood;
+import frc.robot.subsystems.shooter.hood.HoodIO;
+import frc.robot.subsystems.shooter.hood.HoodIOSim;
+import frc.robot.subsystems.shooter.hood.HoodIOSparkMax;
 import frc.robot.subsystems.shooter.turret.Turret;
 import frc.robot.subsystems.shooter.turret.TurretIO;
 import frc.robot.subsystems.shooter.turret.TurretIOSim;
@@ -67,14 +71,16 @@ public class RobotContainer {
 	private boolean isDriveEnabled = true;
 	private boolean isVisionEnabled = true;
 	private boolean isFlywheelEnabled = true;
+	private boolean isHoodEnabled = true;
 	private boolean isTurretEnabled = true;
-	
+
 	// Subsystems
 	private final Drive drive;
 	@SuppressWarnings("unused")
 	private final Vision vision;
 	@SuppressWarnings("unused")
-	private final Flywheel flywheel; 
+	private final Flywheel flywheel;
+	private final Hood hood;
 	private final Turret turret;
 
 	// Drive Simulation
@@ -135,7 +141,8 @@ public class RobotContainer {
 
 				// Shooter subsystems
 				flywheel = isFlywheelEnabled ? new Flywheel(new FlywheelIOTalonFX()) : new Flywheel(new FlywheelIO() {});
-        turret = isTurretEnabled ? new Turret(new TurretIOSparkMax()) : new Turret(new TurretIO() {});
+				hood = isHoodEnabled ? new Hood(new HoodIOSparkMax()) : new Hood(new HoodIO() {});
+				turret = isTurretEnabled ? new Turret(new TurretIOSparkMax()) : new Turret(new TurretIO() {});
 				break;
 
 			// Sim robot, instantiate physics sim IO implementations
@@ -171,6 +178,7 @@ public class RobotContainer {
 
 				// Shooter subsystems
 				flywheel = new Flywheel(new FlywheelIOSim());
+				hood = new Hood(new HoodIOSim());
 				turret = new Turret(new TurretIOSim());
 				break;
 
@@ -188,6 +196,7 @@ public class RobotContainer {
 
 				// Shooter subsystems
 				flywheel = new Flywheel(new FlywheelIO() {});
+				hood = new Hood(new HoodIO() {});
 				turret = new Turret(new TurretIO() {});
 				break;
 		}
