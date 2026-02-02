@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.FieldConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.util.AllianceUtil;
+import org.littletonrobotics.junction.Logger;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
@@ -278,6 +279,7 @@ public class DriveCommands {
    * @param omegaSupplier Supplier for omega (rotation) joystick input (only used when face-target is disabled)
    * @param turboSupplier Supplier for turbo level [0.0, 1.0] (typically right trigger)
    * @param faceTargetEnabledSupplier Supplier indicating if face-target mode is enabled
+   * @param isRobotCentricSupplier Supplier indicating if drive is robot-centric (true) or field-centric (false)
    * @param faceTargetController ProfiledPIDController for face-target rotation control
    * @param usePhysicalMaxSpeed If true, uses the robot's physical maximum speed from the drive subsystem.
    *     If false, uses the artificial MAX_CONTROL_SPEED limit for more controlled driving.
@@ -290,6 +292,7 @@ public class DriveCommands {
       DoubleSupplier omegaSupplier,
       DoubleSupplier turboSupplier,
       BooleanSupplier faceTargetEnabledSupplier,
+      BooleanSupplier isRobotCentricSupplier,
       ProfiledPIDController faceTargetController,
       boolean usePhysicalMaxSpeed) {
     return Commands.run(
@@ -335,8 +338,14 @@ public class DriveCommands {
             faceTargetController.reset(drive.getRotation().getRadians());
           }
 
-          // Convert to field-relative speeds and execute
-          driveFieldRelative(drive, velocityX, velocityY, rotationalRate);
+          boolean robotCentric = isRobotCentricSupplier.getAsBoolean();
+          Logger.recordOutput("Drive/CentricMode", robotCentric ? "Robot" : "Field");
+
+          if (robotCentric) {
+            drive.runVelocity(new ChassisSpeeds(velocityX, velocityY, rotationalRate));
+          } else {
+            driveFieldRelative(drive, velocityX, velocityY, rotationalRate);
+          }
         },
         drive);
   } // End joystickDriveWithTurboAndFaceTarget

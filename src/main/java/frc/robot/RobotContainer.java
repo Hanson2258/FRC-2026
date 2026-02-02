@@ -78,8 +78,8 @@ public class RobotContainer {
 	private final Drive drive;
 	@SuppressWarnings("unused")
 	private final Vision vision;
-	@SuppressWarnings("unused")
 	private final Flywheel flywheel;
+	@SuppressWarnings("unused")
 	private final Hood hood;
 	private final Turret turret;
 
@@ -101,6 +101,9 @@ public class RobotContainer {
   // Face Target mode
   private boolean isFacingHub = false;
   private ProfiledPIDController faceTargetController;
+
+  // Robot-centric vs field-centric drive
+  private boolean isRobotCentric = false;
 
 
 	/** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -285,7 +288,7 @@ public class RobotContainer {
       return;
     }
 
-    // Drive enabled: field-relative drive with turbo control and optional face-target mode
+    // Drive enabled: field/robot-centric drive with turbo and optional face-target
     drive.setDefaultCommand(
         DriveCommands.joystickDriveWithTurboAndFaceTarget(
             drive,
@@ -294,6 +297,7 @@ public class RobotContainer {
             () -> -driverController.getRightX(), // Omega (rotation)
             () -> driverController.getRightTriggerAxis(), // Turbo
             () -> isFacingHub, // Face-target enabled
+            () -> isRobotCentric, // Robot-centric (true) vs field-centric (false)
             faceTargetController,
             false)); // usePhysicalMaxSpeed: false = use artificial limit (1.6 m/s), true = use physical max
 
@@ -316,6 +320,9 @@ public class RobotContainer {
         faceTargetController.reset(drive.getRotation().getRadians());
       }
     }, drive));
+
+    // Toggle robot-centric (POV left) vs field-centric drive
+    driverController.povLeft().onTrue(Commands.runOnce(() -> isRobotCentric = !isRobotCentric, drive));
 
     driverController.a().onTrue(Commands.runOnce(() -> printPose()));
 
