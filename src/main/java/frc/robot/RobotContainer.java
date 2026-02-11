@@ -33,6 +33,10 @@ import frc.robot.subsystems.drive.GyroIOSim;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIO;
+import frc.robot.subsystems.intake.IntakeIOSim;
+import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import frc.robot.subsystems.shooter.ShooterConstants;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
 import frc.robot.subsystems.shooter.flywheel.Flywheel.FlywheelState;
@@ -71,6 +75,7 @@ public class RobotContainer {
 	// Subsystems Toggle
 	private boolean isDriveEnabled = true;
 	private boolean isVisionEnabled = true;
+	private boolean isIntakeEnabled = true;
 	private boolean isFlywheelEnabled = true;
 	private boolean isHoodEnabled = true;
 	private boolean isTurretEnabled = true;
@@ -79,6 +84,7 @@ public class RobotContainer {
 	private final Drive drive;
 	@SuppressWarnings("unused")
 	private final Vision vision;
+	private final Intake intake;
 	private final Flywheel flywheel;
 	@SuppressWarnings("unused")
 	private final Hood hood;
@@ -143,7 +149,8 @@ public class RobotContainer {
 					vision = new Vision(drive, new VisionIO() {}, new VisionIO() {});
 				}
 
-				// Shooter subsystems
+				// Subsystems
+				intake = isIntakeEnabled ? new Intake(new IntakeIOSparkMax()) : new Intake(new IntakeIO() {});
 				flywheel = isFlywheelEnabled ? new Flywheel(new FlywheelIOTalonFX()) : new Flywheel(new FlywheelIO() {});
 				hood = isHoodEnabled ? new Hood(new HoodIOSparkMax()) : new Hood(new HoodIO() {});
 				turret = isTurretEnabled ? new Turret(new TurretIOSparkMax()) : new Turret(new TurretIO() {});
@@ -183,7 +190,8 @@ public class RobotContainer {
 								new VisionIOPhotonVisionSim(
 										camera1Name, robotToCamera1, driveSimulation::getSimulatedDriveTrainPose));
 
-				// Shooter subsystems
+				// Subsystems
+				intake = new Intake(new IntakeIOSim());
 				flywheel = new Flywheel(new FlywheelIOSim());
 				hood = new Hood(new HoodIOSim());
 				turret = new Turret(new TurretIOSim());
@@ -203,7 +211,8 @@ public class RobotContainer {
 				
 				vision = new Vision(drive, new VisionIO() {}, new VisionIO() {});
 
-				// Shooter subsystems
+				// Subsystems
+				intake = new Intake(new IntakeIO() {});
 				flywheel = new Flywheel(new FlywheelIO() {});
 				hood = new Hood(new HoodIO() {});
 				turret = new Turret(new TurretIO() {});
