@@ -502,7 +502,8 @@ public class RobotContainer {
 		// Update field view
 		field.setRobotPose(robotPose);
 
-		// Shooter sim: timer-based launch and capacity-gated intake
+		// Shooter sim: timer-based launch and capacity-gated intake 
+		// TODO: Update Shooter logic to shoot only once shooter subsystems are ready, and update shooting target based on where we are on the field
 		if (shooterSim != null) {
 			shooterSim.update(turret, hood, flywheel);
 		}
