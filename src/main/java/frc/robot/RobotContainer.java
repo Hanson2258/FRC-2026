@@ -301,6 +301,7 @@ public class RobotContainer {
    * (length).
    */
   private void configureFuelSim() {
+    fuelSim.setShowHalfFuel(false);
     fuelSim.spawnStartingFuel();
 
     // Width (left to right): distance between front-left and front-right modules

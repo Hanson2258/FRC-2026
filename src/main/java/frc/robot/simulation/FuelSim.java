@@ -312,6 +312,9 @@ public class FuelSim {
     protected ArrayList<Fuel> fuels = new ArrayList<>();
     protected boolean running = false;
     protected boolean simulateAirResistance = false;
+
+    /** When true, only fuel on the blue side (x <= field center, left side) is spawned; red side fuel is omitted. */
+    protected boolean showHalfFuel = false;
     protected Supplier<Pose2d> robotPoseSupplier = null;
     protected Supplier<ChassisSpeeds> robotFieldSpeedsSupplier = null;
     protected double robotWidth; // size along the robot's y axis
@@ -352,29 +355,56 @@ public class FuelSim {
     }
 
     /**
-     * Spawns fuel in the neutral zone and depots
+     * Sets whether to spawn only blue-side fuel. When true, only fuel with x <= field center (blue
+     * / left side) is spawned on the next {@link #spawnStartingFuel()} (or when Reset Fuel is pressed).
+     * Does not affect existing fuel.
+     */
+    public void setShowHalfFuel(boolean showHalfFuel) {
+        this.showHalfFuel = showHalfFuel;
+    }
+
+    /** Returns true if only blue-side fuel is spawned. */
+    public boolean isShowHalfFuel() {
+        return showHalfFuel;
+    }
+
+    private static final double FIELD_HALF_LENGTH = FIELD_LENGTH / 2;
+
+    /**
+     * Adds fuel at the given position. When {@link #showHalfFuel} is true, only adds if the position
+     * is on the blue side (x <= field center, left side); red side fuel is skipped.
+     */
+    private void addFuelIfVisible(Translation3d pos) {
+        if (!showHalfFuel || pos.getX() <= FIELD_HALF_LENGTH) {
+            fuels.add(new Fuel(pos));
+        }
+    }
+
+    /**
+     * Spawns fuel in the neutral zone and depots. When {@link #showHalfFuel} is true, only fuel on
+     * the blue side of the field is spawned.
      */
     public void spawnStartingFuel() {
         // Center fuel
         Translation3d center = new Translation3d(FIELD_LENGTH / 2, FIELD_WIDTH / 2, FUEL_RADIUS);
         for (int i = 0; i < 15; i++) {
             for (int j = 0; j < 6; j++) {
-                fuels.add(new Fuel(center.plus(new Translation3d(0.076 + 0.152 * j, 0.0254 + 0.076 + 0.152 * i, 0))));
-                fuels.add(new Fuel(center.plus(new Translation3d(-0.076 - 0.152 * j, 0.0254 + 0.076 + 0.152 * i, 0))));
-                fuels.add(new Fuel(center.plus(new Translation3d(0.076 + 0.152 * j, -0.0254 - 0.076 - 0.152 * i, 0))));
-                fuels.add(new Fuel(center.plus(new Translation3d(-0.076 - 0.152 * j, -0.0254 - 0.076 - 0.152 * i, 0))));
+                addFuelIfVisible(center.plus(new Translation3d(0.076 + 0.152 * j, 0.0254 + 0.076 + 0.152 * i, 0)));
+                addFuelIfVisible(center.plus(new Translation3d(-0.076 - 0.152 * j, 0.0254 + 0.076 + 0.152 * i, 0)));
+                addFuelIfVisible(center.plus(new Translation3d(0.076 + 0.152 * j, -0.0254 - 0.076 - 0.152 * i, 0)));
+                addFuelIfVisible(center.plus(new Translation3d(-0.076 - 0.152 * j, -0.0254 - 0.076 - 0.152 * i, 0)));
             }
         }
 
-        // Depots
+        // Depots (low x = blue side, high x = red side)
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 4; j++) {
-                fuels.add(new Fuel(new Translation3d(0.076 + 0.152 * j, 5.95 + 0.076 + 0.152 * i, FUEL_RADIUS)));
-                fuels.add(new Fuel(new Translation3d(0.076 + 0.152 * j, 5.95 - 0.076 - 0.152 * i, FUEL_RADIUS)));
-                fuels.add(new Fuel(
-                        new Translation3d(FIELD_LENGTH - 0.076 - 0.152 * j, 2.09 + 0.076 + 0.152 * i, FUEL_RADIUS)));
-                fuels.add(new Fuel(
-                        new Translation3d(FIELD_LENGTH - 0.076 - 0.152 * j, 2.09 - 0.076 - 0.152 * i, FUEL_RADIUS)));
+                addFuelIfVisible(new Translation3d(0.076 + 0.152 * j, 5.95 + 0.076 + 0.152 * i, FUEL_RADIUS));
+                addFuelIfVisible(new Translation3d(0.076 + 0.152 * j, 5.95 - 0.076 - 0.152 * i, FUEL_RADIUS));
+                addFuelIfVisible(
+                        new Translation3d(FIELD_LENGTH - 0.076 - 0.152 * j, 2.09 + 0.076 + 0.152 * i, FUEL_RADIUS));
+                addFuelIfVisible(
+                        new Translation3d(FIELD_LENGTH - 0.076 - 0.152 * j, 2.09 - 0.076 - 0.152 * i, FUEL_RADIUS));
             }
         }
 
