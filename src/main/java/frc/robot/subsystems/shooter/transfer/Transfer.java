@@ -52,6 +52,7 @@ public class Transfer extends SubsystemBase {
         if (transferInputs.colorSensorTripped) {
           transferIO.stop();
           ballStaged = true;
+          mode = Mode.IDLE;
         } else {
           transferIO.setTargetVelocity(kStagingVelocityRadsPerSec);
         }
