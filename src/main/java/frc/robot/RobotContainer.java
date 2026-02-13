@@ -40,7 +40,8 @@ import frc.robot.subsystems.agitator.Agitator;
 import frc.robot.subsystems.agitator.AgitatorIO;
 import frc.robot.subsystems.agitator.AgitatorIOSim;
 import frc.robot.subsystems.agitator.AgitatorIOSparkMax;
-import frc.robot.subsystems.shooter.ShooterConstants;
+import frc.robot.subsystems.shooter.ShooterSim;
+import frc.robot.subsystems.shooter.ShooterSimVisualizer;
 import frc.robot.subsystems.shooter.transfer.Transfer;
 import frc.robot.subsystems.shooter.transfer.TransferIO;
 import frc.robot.subsystems.shooter.transfer.TransferIOSim;
@@ -55,6 +56,7 @@ import frc.robot.subsystems.shooter.hood.HoodIOSim;
 import frc.robot.subsystems.shooter.hood.HoodIOSparkMax;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
 import frc.robot.subsystems.shooter.flywheel.Flywheel.FlywheelState;
+import frc.robot.subsystems.shooter.flywheel.FlywheelConstants;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIO;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIOSim;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIOTalonFX;
@@ -63,6 +65,7 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.simulation.FuelSim;
+import java.util.function.BooleanSupplier;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
@@ -106,6 +109,10 @@ public class RobotContainer {
 
 	// Fuel simulation (robot-ball collision in sim)
 	private final FuelSim fuelSim = new FuelSim();
+
+	// Shooter sim and visualizer (only non-null in SIM)
+	private final ShooterSim shooterSim;
+	private final ShooterSimVisualizer shooterSimVisualizer;
 
 	// Field view (robot pose)
 	private final Field2d field = new Field2d();
@@ -169,6 +176,8 @@ public class RobotContainer {
 				turret = isTurretEnabled ? new Turret(new TurretIOSparkMax()) : new Turret(new TurretIO() {});
 				hood = isHoodEnabled ? new Hood(new HoodIOSparkMax()) : new Hood(new HoodIO() {});
 				flywheel = isFlywheelEnabled ? new Flywheel(new FlywheelIOTalonFX()) : new Flywheel(new FlywheelIO() {});
+				shooterSim = null;
+				shooterSimVisualizer = null;
 				break;
 
 			// Sim robot, instantiate physics sim IO implementations
@@ -213,7 +222,19 @@ public class RobotContainer {
 				hood = new Hood(new HoodIOSim());
 				flywheel = new Flywheel(new FlywheelIOSim());
 
+				shooterSim = new ShooterSim(fuelSim);
+				shooterSimVisualizer =
+						new ShooterSimVisualizer(
+								() ->
+										new Pose3d(
+												drive.getPose().getX(),
+												drive.getPose().getY(),
+												0,
+												new Rotation3d(0, 0, drive.getPose().getRotation().getRadians())),
+								drive::getFieldRelativeChassisSpeeds);
+
 				configureFuelSim();
+				configureFuelSimRobot(true, shooterSim::intakeFuel);
 				break;
 
 			// Replayed robot, disable IO implementations
@@ -235,8 +256,10 @@ public class RobotContainer {
 				turret = new Turret(new TurretIO() {});
 				hood = new Hood(new HoodIO() {});
 				flywheel = new Flywheel(new FlywheelIO() {});
+				shooterSim = null;
+				shooterSimVisualizer = null;
 				break;
-		}
+			}
 
 		/// ---------------------------------------------------------------------------------------------------------------
 		/// ----------------------------------------------- Drive Commands ------------------------------------------------
@@ -296,31 +319,14 @@ public class RobotContainer {
 
 
   /**
-   * Configures FuelSim for robot-ball collision in simulation. Robot dimensions are derived from
-   * TunerConstants front-left and front-right module positions (width) and front/back positions
-   * (length).
+   * Configures FuelSim for robot-ball collision in simulation.
    */
   private void configureFuelSim() {
     fuelSim.setShowHalfFuel(false);
+		fuelSim.enableAirResistance();
     fuelSim.spawnStartingFuel();
 
-    // Width (left to right): distance between front-left and front-right modules
-    double robotWidthMeters =
-        TunerConstants.FrontLeft.LocationY - TunerConstants.FrontRight.LocationY;
-    // Length (front to back): distance between front and back modules
-    double robotLengthMeters =
-        TunerConstants.FrontLeft.LocationX - TunerConstants.BackLeft.LocationX;
-    double bumperHeightMeters = 0.35;
-
-    fuelSim.registerRobot(
-        robotWidthMeters,
-        robotLengthMeters,
-        bumperHeightMeters,
-        drive::getPose,
-        drive::getFieldRelativeChassisSpeeds);
-
     fuelSim.start();
-
 		SmartDashboard.putData(Commands.runOnce(() -> {
 						fuelSim.clearFuel();
 						fuelSim.spawnStartingFuel();
@@ -328,6 +334,36 @@ public class RobotContainer {
 				.withName("Reset Fuel")
 				.ignoringDisable(true));
   }
+	
+	/** Configures the robot for fuel simulation. */ // TODO: change ableToIntake to BooleanSupplier when Extender is implemented
+	private void configureFuelSimRobot(boolean ableToIntake, Runnable intakeCallback) {
+    // Robot Sizing
+    double robotWidthMeters =
+        TunerConstants.FrontLeft.LocationY - TunerConstants.FrontRight.LocationY;
+    double robotLengthMeters =
+        TunerConstants.FrontLeft.LocationX - TunerConstants.BackLeft.LocationX;
+    double bumperHeightMeters = 0.35;
+
+		// Register a robot for collision with fuel
+    fuelSim.registerRobot(
+        robotWidthMeters,
+        robotLengthMeters,
+        bumperHeightMeters,
+        drive::getPose,
+        drive::getFieldRelativeChassisSpeeds);
+
+		// Register intakes for the robot
+		// Intake: 10.5" beyond front of frame (+X), full width minus 2" on each side
+		double intakeExtendMeters = 10.5 * 0.0254;
+		double intakeInsetMeters = 2.0 * 0.0254;
+    fuelSim.registerIntake(
+				robotLengthMeters / 2,
+				robotLengthMeters / 2 + intakeExtendMeters,
+				-robotWidthMeters / 2 + intakeInsetMeters,
+				robotWidthMeters / 2 - intakeInsetMeters,
+				// () -> intake.isRightDeployed() && ableToIntake, // TODO: Uncomment and fix when Extender is implemented
+				intakeCallback);
+	}
 
   /** Prints the current odometry pose of the robot to the console. */
   public void printPose() {
@@ -465,6 +501,21 @@ public class RobotContainer {
 
 		// Update field view
 		field.setRobotPose(robotPose);
+
+		// Shooter sim: timer-based launch and capacity-gated intake
+		if (shooterSim != null) {
+			shooterSim.update(turret, hood, flywheel);
+		}
+		if (shooterSimVisualizer != null) {
+			shooterSimVisualizer.updateFuel(
+					edu.wpi.first.units.Units.MetersPerSecond.of(
+							flywheel.getTargetVelocityRadsPerSec()
+									* FlywheelConstants.kFlywheelRadiusMeters),
+					edu.wpi.first.units.Units.Radians.of(hood.getAngleRad()));
+			shooterSimVisualizer.update3dPose(
+					edu.wpi.first.units.Units.Radians.of(turret.getPosition().getRadians()),
+					edu.wpi.first.units.Units.Radians.of(hood.getAngleRad()));
+		}
 
 		// Fuel sim (robot-ball collision)
 		fuelSim.updateSim();

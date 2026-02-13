@@ -10,6 +10,9 @@ public final class FlywheelConstants {
   /** CAN ID of the flywheel motor. */
   public static final int kMotorId = 6; // TODO: Add correct ID
 
+  /** Flywheel radius (m) for converting angular velocity to launch linear velocity. ~2 in. */
+  public static final double kFlywheelRadiusMeters = 0.0508;
+
   /** Flywheel radians per motor rotation (output / input). 1.0 = 1:1. */
   public static final double kGearRatio = 1.0;
 
