@@ -36,8 +36,8 @@ public final class FlywheelConstants { // TODO: Add correct values
 
   /** Velocity PIDF gains (onboard and sim). */
   public static final double kP = 0.1;
-  public static final double kI = 0.0;
+  public static final double kI = 0.00000;
   public static final double kD = 0.0;
-  public static final double kV = 0.0;
+  public static final double kV = 0.115;
   public static final double kS = 0.0;
 }
