@@ -73,7 +73,7 @@ public class Intake extends SubsystemBase {
     targetVoltage = -kReversingVoltage;
   } // End setReversingMode
 
-  /** Set the target voltage used when in INTAKING or REVERSING. */
+  /** Set the target voltage. */
   public void setTargetVoltage(double volts) {
     targetVoltage = volts;
   } // End setTargetVoltage

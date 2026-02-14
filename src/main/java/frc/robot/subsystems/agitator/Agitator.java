@@ -73,7 +73,7 @@ public class Agitator extends SubsystemBase {
     targetVoltage = kShootingVoltage;
   } // End setShootingMode
 
-  /** Set the target voltage used when in STAGING or SHOOTING. */
+  /** Set the target voltage. */
   public void setTargetVoltage(double volts) {
     targetVoltage = volts;
   } // End setTargetVoltage
