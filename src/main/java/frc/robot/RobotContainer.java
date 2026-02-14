@@ -11,6 +11,7 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -21,6 +22,8 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
@@ -37,12 +40,14 @@ import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import frc.robot.subsystems.agitator.Agitator;
+import frc.robot.subsystems.agitator.AgitatorConstants;
 import frc.robot.subsystems.agitator.AgitatorIO;
 import frc.robot.subsystems.agitator.AgitatorIOSim;
 import frc.robot.subsystems.agitator.AgitatorIOSparkMax;
 import frc.robot.subsystems.shooter.ShooterSim;
 import frc.robot.subsystems.shooter.ShooterSimVisualizer;
 import frc.robot.subsystems.shooter.transfer.Transfer;
+import frc.robot.subsystems.shooter.transfer.TransferConstants;
 import frc.robot.subsystems.shooter.transfer.TransferIO;
 import frc.robot.subsystems.shooter.transfer.TransferIOSim;
 import frc.robot.subsystems.shooter.transfer.TransferIOSparkMax;
@@ -65,7 +70,6 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.simulation.FuelSim;
-import java.util.function.BooleanSupplier;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
@@ -79,28 +83,29 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  */
 public class RobotContainer {
 
-	// Controller(s)
+	// Controller
 	private final CommandXboxController driverController = new CommandXboxController(0);
+	private final CommandXboxController operatorController = new CommandXboxController(1);
 
 	// Subsystems Toggle
 	private boolean isDriveEnabled = true;
-	private boolean isVisionEnabled = true;
-	private boolean isIntakeEnabled = true;
+	private boolean isVisionEnabled = false;
+	private boolean isIntakeEnabled = false;
 	private boolean isAgitatorEnabled = true;
 	private boolean isTransferEnabled = true;
 	private boolean isTurretEnabled = true;
-	private boolean isHoodEnabled = true;
+	private boolean isHoodEnabled = false;
 	private boolean isFlywheelEnabled = true;
 
 	// Subsystems
 	private final Drive drive;
 	@SuppressWarnings("unused")
 	private final Vision vision;
+	@SuppressWarnings("unused")
 	private final Intake intake;
 	private final Agitator agitator;
 	private final Transfer transfer;
 	private final Turret turret;
-	@SuppressWarnings("unused")
 	private final Hood hood;
 	private final Flywheel flywheel;
 
@@ -120,10 +125,8 @@ public class RobotContainer {
 	// Dashboard inputs
 	private final LoggedDashboardChooser<Command> autoChooser;
 
-  // Manual Override and Encoder Reset
+  // Manual Override
   public static boolean manualOverride = false;
-  @SuppressWarnings("unused")
-  private boolean encoderReset = false;
 
   // Face Target mode
   private boolean isFacingHub = false;
@@ -313,7 +316,7 @@ public class RobotContainer {
 			
 
     // Configure button bindings
-    configureDriveBindings(true); // False to disable driving
+    configureDriverBindings(true); // False to disable driving
     configureOperatorBindings(false); // False to disable operator controls
   }
 
@@ -381,58 +384,102 @@ public class RobotContainer {
    *
    * @param enableDriving true to enable driving, false to disable
    */
-  private void configureDriveBindings(boolean enableDriving) {
-    // Can't configure if drive is null
-    if (drive == null) {return;}
-
+  private void configureDriverBindings(boolean enableDriving) {
     // Drive disabled: stop all movement
     if (!enableDriving) {      
       drive.setDefaultCommand(
           Commands.run(() -> drive.runVelocity(new ChassisSpeeds(0.0, 0.0, 0.0)), drive));
       return;
     }
+		else {
+			// Drive enabled: field/robot-centric drive with turbo and optional face-target
+			drive.setDefaultCommand(
+					DriveCommands.joystickDriveWithTurboAndFaceTarget(
+							drive,
+							() -> -driverController.getLeftX(), // X-axis (left/right)
+							() -> -driverController.getLeftY(), // Y-axis (forward/backward)
+							() -> -driverController.getRightX(), // Omega (rotation)
+							() -> driverController.getRightTriggerAxis(), // Turbo
+							() -> isFacingHub, // Face-target enabled
+							() -> isRobotCentric, // Robot-centric (true) vs field-centric (false)
+							faceTargetController,
+							false)); // usePhysicalMaxSpeed: false = use artificial limit (1.6 m/s), true = use physical max
 
-    // Drive enabled: field/robot-centric drive with turbo and optional face-target
-    drive.setDefaultCommand(
-        DriveCommands.joystickDriveWithTurboAndFaceTarget(
-            drive,
-            () -> -driverController.getLeftX(), // X-axis (left/right)
-            () -> -driverController.getLeftY(), // Y-axis (forward/backward)
-            () -> -driverController.getRightX(), // Omega (rotation)
-            () -> driverController.getRightTriggerAxis(), // Turbo
-            () -> isFacingHub, // Face-target enabled
-            () -> isRobotCentric, // Robot-centric (true) vs field-centric (false)
-            faceTargetController,
-            false)); // usePhysicalMaxSpeed: false = use artificial limit (1.6 m/s), true = use physical max
+			// Switch to X pattern when X button is pressed
+			driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
-		// Switch to X pattern when X button is pressed
-		driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+			// Reset gyro / odometry
+			final Runnable resetGyro = Constants.currentMode == Constants.Mode.SIM
+					? () -> drive.setPose(
+							driveSimulation.getSimulatedDriveTrainPose()) // reset odometry to actual robot pose during
+					// simulation
+					: () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), new Rotation2d())); // zero gyro
+			driverController.start().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
 
-		// Reset gyro / odometry
-		final Runnable resetGyro = Constants.currentMode == Constants.Mode.SIM
-				? () -> drive.setPose(
-						driveSimulation.getSimulatedDriveTrainPose()) // reset odometry to actual robot pose during
-				// simulation
-				: () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), new Rotation2d())); // zero gyro
-		driverController.start().onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
+			// Toggle face-target mode when Y button is pressed
+			driverController.y().onTrue(Commands.runOnce(() -> {
+				isFacingHub = !isFacingHub;
+				if (isFacingHub) {
+					// Reset PID controller when enabling face-target mode
+					faceTargetController.reset(drive.getRotation().getRadians());
+				}
+			}, drive));
 
-    // Toggle face-target mode when Y button is pressed
-    driverController.y().onTrue(Commands.runOnce(() -> {
-      isFacingHub = !isFacingHub;
-      if (isFacingHub) {
-        // Reset PID controller when enabling face-target mode
-        faceTargetController.reset(drive.getRotation().getRadians());
-      }
-    }, drive));
+			// Toggle robot-centric vs field-centric drive
+			driverController.rightBumper().onTrue(Commands.runOnce(() -> isRobotCentric = !isRobotCentric, drive));
 
-    // Toggle robot-centric (POV left) vs field-centric drive
-    driverController.povLeft().onTrue(Commands.runOnce(() -> isRobotCentric = !isRobotCentric, drive));
 
-    driverController.a().onTrue(Commands.runOnce(() -> printPose()));
+			// -------- Auto Pathfind to Target --------
+			// Pathfind then follow path to outpost when D-pad up is held
+			driverController.leftStick().whileTrue(DriveCommands.pathfindThenFollowPath(drive, "DriveToOutpost"));
+			// Pathfind then follow path to hub when D-pad down is held
+			driverController.rightStick().whileTrue(DriveCommands.pathfindThenFollowPath(drive, "DriveToHub"));
+		} // End else (Drive enabled)
 
-    // Flywheel: RB toggles Idle ↔ Charging/AtSpeed (Charging auto-transitions to AtSpeed when at target)
+		// Shoot when flywheel is at speed
+		// Button held = shoot (Agitator and Transfer set to shooting mode, Agitator delays by 0.25s); on release, set both to staging mode
+		Command shootCommand =
+				Commands.parallel(
+						Commands.runOnce(
+								() -> {
+									if (transfer != null) transfer.setShootingMode();
+								},
+								transfer,
+								agitator),
+						Commands.sequence(
+								Commands.waitSeconds(0.25),
+								Commands.run(
+										() -> {
+											if (agitator != null) agitator.setShootingMode();
+										},
+										agitator)));
+		driverController.a().whileTrue(
+				Commands.either(
+						shootCommand,
+						Commands.none(),
+						() -> flywheel != null && flywheel.getState() == FlywheelState.AT_SPEED));
+		driverController.a().onFalse(
+				Commands.runOnce(
+						() -> {
+							if (transfer != null) transfer.setStagingMode();
+							if (agitator != null) agitator.setStagingMode();
+						},
+						transfer,
+						agitator));
+
+		// Set agitator and transfer to idle
+		driverController.b().onTrue(
+				Commands.runOnce(
+						() -> {
+							if (transfer != null) transfer.setStagingMode();
+							if (agitator != null) agitator.setStagingMode();
+						},
+						transfer,
+						agitator));
+
+    // Flywheel: Toggles Idle ↔ Charging/AtSpeed (Charging auto-transitions to AtSpeed when at target)
     if (flywheel != null) {
-      driverController.rightBumper().onTrue(
+      driverController.leftBumper().onTrue(
           Commands.runOnce(
               () -> {
                 if (flywheel.getState() == FlywheelState.IDLE) {
@@ -444,11 +491,18 @@ public class RobotContainer {
               flywheel));
     }
 
-    // Pathfind then follow path to outpost when D-pad up is held
-    driverController.povUp().whileTrue(DriveCommands.pathfindThenFollowPath(drive, "DriveToOutpost"));
-
-    // Pathfind then follow path to hub when D-pad down is held
-    driverController.povDown().whileTrue(DriveCommands.pathfindThenFollowPath(drive, "DriveToHub"));
+		// -------- Manual Override + Encoder Reset --------
+		// If Manual Override is false, become true
+		// If Manual Override is true, reset encoder positions, and then become false
+		driverController.back().onTrue(Commands.runOnce(() -> 
+			new ConditionalCommand(
+				new ParallelCommandGroup(
+					// TODO: Reset encoder positions
+					Commands.runOnce(() -> manualOverride = false)
+				), 
+				Commands.runOnce(() -> manualOverride = true),
+				() -> manualOverride)
+			));
   }
 
   /** 
@@ -456,8 +510,97 @@ public class RobotContainer {
    */
   private void configureOperatorBindings(boolean enableOperatorControls) {
     // Operator Controls Enabled
-    if (enableOperatorControls){
-      // Add operator controls here
+    if (enableOperatorControls) {
+			// Manual Override for Agitator Voltage (Y = +0.5 V, A = -0.5 V; from IDLE, Y enters STAGING so motor runs)
+			if (manualOverride && agitator != null) {
+				final double stepVoltage = 0.5;
+				operatorController.y().onTrue(
+						Commands.runOnce(
+								() -> {
+									if (agitator.getMode() == Agitator.Mode.IDLE) {
+										agitator.setStagingMode();
+										agitator.setTargetVoltage(stepVoltage);
+									} else {
+										agitator.setTargetVoltage(
+												Math.min(AgitatorConstants.kMaxVoltage, agitator.getTargetVoltage() + stepVoltage));
+									}
+								},
+								agitator));
+				operatorController.a().onTrue(
+						Commands.runOnce(
+								() -> {
+									double next = Math.max(0, agitator.getTargetVoltage() - stepVoltage);
+									agitator.setTargetVoltage(next);
+									if (next == 0) {
+										agitator.setIdleMode();
+									}
+								},
+								agitator));
+			}
+
+			// Manual Override for Transfer Voltage (left = +0.5 V, right = -0.5 V; from IDLE, left enters STAGING)
+			if (manualOverride && transfer != null) {
+				final double stepVoltage = 0.5;
+				operatorController.leftBumper().onTrue(
+						Commands.runOnce(
+								() -> {
+									if (transfer.getMode() == Transfer.Mode.IDLE) {
+										transfer.setStagingMode();
+										transfer.setTargetVoltage(stepVoltage);
+									} else {
+										transfer.setTargetVoltage(
+												Math.min(TransferConstants.kMaxVoltage, transfer.getTargetVoltage() + stepVoltage));
+									}
+								},
+								transfer));
+				operatorController.rightBumper().onTrue(
+						Commands.runOnce(
+								() -> {
+									double next = Math.max(0, transfer.getTargetVoltage() - stepVoltage);
+									transfer.setTargetVoltage(next);
+									if (next == 0) {
+										transfer.setIdleMode();
+									}
+								},
+								transfer));
+			}
+
+			// Manual Override for Flywheel Velocity
+      if (manualOverride && flywheel != null) {
+        final double stepRpm = 50.0;
+        final double stepRadsPerSec = Units.rotationsPerMinuteToRadiansPerSecond(stepRpm);
+        operatorController.povUp().onTrue(
+            Commands.runOnce(
+                () -> {
+                  double current = flywheel.getTargetVelocityRadsPerSec();
+                  double next = current + stepRadsPerSec;
+                  flywheel.setTargetVelocityRadsPerSec(next);
+                  flywheel.setState(FlywheelState.CHARGING);
+                },
+                flywheel));
+        operatorController.povDown().onTrue(
+            Commands.runOnce(
+                () -> {
+                  double current = flywheel.getTargetVelocityRadsPerSec();
+                  double next = Math.max(0, current - stepRadsPerSec);
+                  flywheel.setTargetVelocityRadsPerSec(next);
+                  flywheel.setState(next == 0 ? FlywheelState.IDLE : FlywheelState.CHARGING);
+                },
+                flywheel));
+      }
+
+			// -------- Manual Override + Encoder Reset --------
+			// If Manual Override is false, become true
+			// If Manual Override is true, reset encoder positions, and then become false
+			driverController.back().onTrue(Commands.runOnce(() -> 
+				new ConditionalCommand(
+					new ParallelCommandGroup(
+						// TODO: Reset encoder positions
+						Commands.runOnce(() -> manualOverride = false)
+					), 
+					Commands.runOnce(() -> manualOverride = true),
+					() -> manualOverride)
+				));
     }
   } // End configureOperatorBindings
 
