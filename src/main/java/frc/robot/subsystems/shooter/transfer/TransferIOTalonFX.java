@@ -27,16 +27,16 @@ public class TransferIOTalonFX implements TransferIO {
     motor = new TalonFX(kMotorId, TunerConstants.kCANBus);
     // colorSensor = new ColorSensorV3(I2C.Port.kOnboard);
 
-    var config = new TalonFXConfiguration();
-    config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-    config.MotorOutput.Inverted =
+    var talonFxConfig = new TalonFXConfiguration();
+    talonFxConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    talonFxConfig.MotorOutput.Inverted =
         kMotorInverted
             ? InvertedValue.Clockwise_Positive
             : InvertedValue.CounterClockwise_Positive;
-    config.CurrentLimits.StatorCurrentLimitEnable = true;
-    config.CurrentLimits.StatorCurrentLimit = kStatorCurrentLimitAmps;
+    talonFxConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+    talonFxConfig.CurrentLimits.StatorCurrentLimit = kStatorCurrentLimitAmps;
 
-    tryUntilOk(5, () -> motor.getConfigurator().apply(config, 0.25));
+    tryUntilOk(5, () -> motor.getConfigurator().apply(talonFxConfig, 0.25));
   } // End TransferIOTalonFX Constructor
 
   @Override

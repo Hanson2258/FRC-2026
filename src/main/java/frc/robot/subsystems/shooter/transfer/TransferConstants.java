@@ -16,16 +16,16 @@ public final class TransferConstants { // TODO: Add correct values
   /** Set true if positive voltage spins the Transfer the opposite direction. */
   public static final boolean kMotorInverted = false;
 
-  /** Smart current limit (amps). SPARK MAX only. */
+  /** Smart current limit. SPARK MAX only. */
   public static final int kSmartCurrentLimitAmps = 25;
 
-  /** Open-loop ramp time (s) from 0 to full output. Limits current spikes on step changes. SPARK MAX only. */
+  /** Open-loop ramp time from 0 to full output. Limits current spikes on step changes. SPARK MAX only. */
   public static final double kOpenLoopRampRateSec = 0.3;
 
   /** Max voltage magnitude applied to the motor. */
   public static final double kMaxVoltage = 10.0;
 
-  /** Stator current limit (amps). Talon FX only. */
+  /** Stator current limit. Talon FX only. */
   public static final double kStatorCurrentLimitAmps = 30.0;
 
   /** Voltage when idle. */
