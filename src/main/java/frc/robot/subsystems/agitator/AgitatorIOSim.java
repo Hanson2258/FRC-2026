@@ -28,7 +28,7 @@ public class AgitatorIOSim implements AgitatorIO {
       appliedVolts = 0.0;
       motorSim.setInputVoltage(0.0);
     } else {
-      motorSim.setInputVoltage(MathUtil.clamp(appliedVolts, -kMaxVoltage, kMaxVoltage));
+      motorSim.setInputVoltage(appliedVolts);
     }
     motorSim.update(kLoopPeriodSecs);
 

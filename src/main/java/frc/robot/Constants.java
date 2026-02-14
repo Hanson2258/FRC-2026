@@ -15,6 +15,11 @@ import edu.wpi.first.wpilibj.RobotBase;
  * (log replay from a file).
  */
 public final class Constants {
+  /** Nominal bus voltage for voltage compensation. */
+  public static final double kNominalVoltage = 12.0;
+
+
+  /** Runtime mode. */
   public static final Mode simMode = Mode.SIM;
   public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
 

@@ -2,12 +2,12 @@ package frc.robot.subsystems.agitator;
 
 import static frc.robot.subsystems.agitator.AgitatorConstants.*;
 
+import frc.robot.Constants;
 import com.revrobotics.REVLibError;
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkLowLevel;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 
@@ -20,8 +20,11 @@ public class AgitatorIOSparkMax implements AgitatorIO {
     motor = new SparkMax(kMotorId, SparkLowLevel.MotorType.kBrushless);
 
     var sparkMaxConfig = new SparkMaxConfig();
-    sparkMaxConfig.idleMode(SparkBaseConfig.IdleMode.kCoast);
+    sparkMaxConfig.idleMode(kIdleMode);
     sparkMaxConfig.inverted(kMotorInverted);
+    sparkMaxConfig.smartCurrentLimit(kSmartCurrentLimitAmps);
+    sparkMaxConfig.openLoopRampRate(kOpenLoopRampRateSec);
+    sparkMaxConfig.voltageCompensation(Constants.kNominalVoltage);
     motor.configure(sparkMaxConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
   } // End AgitatorIOSparkMax Constructor
 
@@ -35,7 +38,7 @@ public class AgitatorIOSparkMax implements AgitatorIO {
   @Override
   public void setVoltage(double volts) {
     double clamped = MathUtil.clamp(volts, -kMaxVoltage, kMaxVoltage);
-    motor.setVoltage(kMotorInverted ? -clamped : clamped);
+    motor.setVoltage(clamped);
   } // End setVoltage
 
   @Override

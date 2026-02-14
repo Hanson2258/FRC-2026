@@ -30,6 +30,7 @@ public class Agitator extends SubsystemBase {
   public void periodic() {
     agitatorIO.updateInputs(agitatorInputs);
     Logger.recordOutput("Agitator/Inputs/MotorConnected", agitatorInputs.motorConnected);
+    Logger.recordOutput("Agitator/Inputs/TargetVolts", getTargetVoltage());
     Logger.recordOutput("Agitator/Inputs/AppliedVolts", agitatorInputs.appliedVolts);
     Logger.recordOutput("Agitator/Inputs/SupplyCurrentAmps", agitatorInputs.supplyCurrentAmps);
     Logger.recordOutput("Agitator/Mode", mode.name());
@@ -39,13 +40,12 @@ public class Agitator extends SubsystemBase {
       return;
     }
 
+    // Set the agitator voltage based on the current mode
     switch (mode) {
       case IDLE:
         agitatorIO.stop();
         break;
       case STAGING:
-        agitatorIO.setVoltage(targetVoltage);
-        break;
       case SHOOTING:
         agitatorIO.setVoltage(targetVoltage);
         break;
@@ -58,26 +58,27 @@ public class Agitator extends SubsystemBase {
   /** Set mode to idle (motor stopped). */
   public void setIdleMode() {
     mode = Mode.IDLE;
+    targetVoltage = kIdleVoltage;
   } // End setIdleMode
 
-  /** Set mode to staging (low voltage). */
+  /** Set mode to staging (slow pre-load). */
   public void setStagingMode() {
     mode = Mode.STAGING;
     targetVoltage = kStagingVoltage;
   } // End setStagingMode
 
-  /** Set mode to shooting (high voltage). */
+  /** Set mode to shooting (fast loading). */
   public void setShootingMode() {
     mode = Mode.SHOOTING;
     targetVoltage = kShootingVoltage;
   } // End setShootingMode
 
-  /** Set the target voltage (V) used when in STAGING or SHOOTING. */
+  /** Set the target voltage used when in STAGING or SHOOTING. */
   public void setTargetVoltage(double volts) {
     targetVoltage = volts;
   } // End setTargetVoltage
 
-  /** Get the current target voltage (V). */
+  /** Get the current target voltage. */
   public double getTargetVoltage() {
     return mode == Mode.IDLE ? 0.0 : targetVoltage;
   } // End getTargetVoltage
