@@ -126,7 +126,7 @@ public class RobotContainer {
 	private final LoggedDashboardChooser<Command> autoChooser;
 
   // Manual Override
-  public static boolean manualOverride = true;
+  public static boolean manualOverride = true; // TODO: Implement manual override properly, and change back to false
 
   // Face Target mode
   private boolean isFacingHub = false;
@@ -446,16 +446,6 @@ public class RobotContainer {
 		driverController.a().onFalse(
 				Commands.runOnce(
 						() -> {
-							if (transfer != null) transfer.setStagingMode();
-							if (agitator != null) agitator.setStagingMode();
-						},
-						transfer,
-						agitator));
-
-		// Set agitator and transfer to idle
-		driverController.b().onTrue(
-				Commands.runOnce(
-						() -> {
 							if (transfer != null) transfer.setIdleMode();
 							if (agitator != null) agitator.setIdleMode();
 						},
@@ -498,7 +488,7 @@ public class RobotContainer {
     if (enableOperatorControls) {
 			// Manual Override for Agitator Voltage (Y = +0.5 V, A = -0.5 V; from IDLE, Y enters STAGING so motor runs)
 			if (manualOverride && agitator != null) {
-				final double stepVoltage = 0.25;
+				final double stepVoltage = 0.25; // TODO: Set step voltage
 				operatorController.y().onTrue(
 						Commands.runOnce(
 								() -> {
@@ -525,8 +515,8 @@ public class RobotContainer {
 
 			// Manual Override for Transfer Voltage (left = +0.5 V, right = -0.5 V; from IDLE, left enters STAGING)
 			if (manualOverride && transfer != null) {
-				final double stepVoltage = 0.25;
-				operatorController.x().onTrue(
+				final double stepVoltage = 0.25; // TODO: Set step voltage
+				operatorController.leftBumper().onTrue(
 						Commands.runOnce(
 								() -> {
 									if (transfer.getMode() == Transfer.Mode.IDLE) {
@@ -538,7 +528,7 @@ public class RobotContainer {
 									}
 								},
 								transfer));
-				operatorController.b().onTrue(
+				operatorController.rightBumper().onTrue(
 						Commands.runOnce(
 								() -> {
 									double next = Math.max(0, transfer.getTargetVoltage() - stepVoltage);
