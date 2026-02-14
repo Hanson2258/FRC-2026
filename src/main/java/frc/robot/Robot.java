@@ -87,6 +87,9 @@ public class Robot extends LoggedRobot {
     // the Command-based framework to work.
     CommandScheduler.getInstance().run();
 
+    // Update field view with robot pose (real robot odometry; sim updates in simulationPeriodic)
+    robotContainer.updateFieldPose();
+
     // Return to non-RT thread priority (do not modify the first argument)  // TODO: Could enable if Loop Time is under 1 ms
     // Threads.setCurrentThreadPriority(false, 10);
   }

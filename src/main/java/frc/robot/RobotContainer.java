@@ -623,6 +623,15 @@ public class RobotContainer {
 	}
 
   /**
+   * Update Field2d with the current robot pose. Call from Robot.robotPeriodic().
+   * In SIM mode the pose is set in updateSimulation(); on real robot we use drive odometry.
+   */
+	public void updateFieldPose() {
+		if (Constants.currentMode == Constants.Mode.SIM) return;
+		field.setRobotPose(drive.getPose());
+	}
+
+  /**
    * Update the simulation world. Should be called from Robot.simulationPeriodic().
    * Only works in SIM mode.
    */
