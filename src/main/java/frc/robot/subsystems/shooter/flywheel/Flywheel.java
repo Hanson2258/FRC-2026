@@ -4,6 +4,7 @@ import static frc.robot.subsystems.shooter.flywheel.FlywheelConstants.*;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
@@ -25,6 +26,13 @@ public class Flywheel extends SubsystemBase {
 
   public Flywheel(FlywheelIO io) {
     flywheelIO = io;
+    
+    // Publish default gains so SmartDashboard has keys for tuning (values read in IO layer)
+    SmartDashboard.putNumber("Flywheel/kP", kP);
+    SmartDashboard.putNumber("Flywheel/kI", kI);
+    SmartDashboard.putNumber("Flywheel/kD", kD);
+    SmartDashboard.putNumber("Flywheel/kV", kV);
+    SmartDashboard.putNumber("Flywheel/kS", kS);
   } // End Flywheel Constructor
 
   @Override

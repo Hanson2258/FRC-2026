@@ -1,16 +1,12 @@
 package frc.robot.subsystems.shooter.flywheel;
 
 import static frc.robot.subsystems.shooter.flywheel.FlywheelConstants.kGearRatio;
-import static frc.robot.subsystems.shooter.flywheel.FlywheelConstants.kP;
-import static frc.robot.subsystems.shooter.flywheel.FlywheelConstants.kI;
-import static frc.robot.subsystems.shooter.flywheel.FlywheelConstants.kD;
-import static frc.robot.subsystems.shooter.flywheel.FlywheelConstants.kV;
-import static frc.robot.subsystems.shooter.flywheel.FlywheelConstants.kS;
 import static frc.robot.subsystems.shooter.flywheel.FlywheelConstants.kMaxVoltage;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 
 /** Flywheel IO for simulation; software velocity PIDF. */
@@ -32,6 +28,12 @@ public class FlywheelIOSim implements FlywheelIO {
 
   @Override
   public void updateInputs(FlywheelIOInputs inputs) {
+    double p = SmartDashboard.getNumber("Flywheel/kP", FlywheelConstants.kP);
+    double i = SmartDashboard.getNumber("Flywheel/kI", FlywheelConstants.kI);
+    double d = SmartDashboard.getNumber("Flywheel/kD", FlywheelConstants.kD);
+    double v = SmartDashboard.getNumber("Flywheel/kV", FlywheelConstants.kV);
+    double s = SmartDashboard.getNumber("Flywheel/kS", FlywheelConstants.kS);
+
     if (isStopped) {
       integralRotSec = 0.0;
       appliedVolts = 0.0;
@@ -45,18 +47,17 @@ public class FlywheelIOSim implements FlywheelIO {
       double errorRotPerSec = targetRotPerSec - currentRotPerSec;
 
       integralRotSec += errorRotPerSec * kLoopPeriodSecs;
-      @SuppressWarnings("unused")
-      double maxIntegralSec = kI > 1e-9 ? kMaxVoltage / kI : 1e6;
+      double maxIntegralSec = i > 1e-9 ? kMaxVoltage / i : 1e6;
       integralRotSec = MathUtil.clamp(integralRotSec, -maxIntegralSec, maxIntegralSec);
 
       double velocityErrorDerivativeRotPerSecSq =
           -(currentRotPerSec - previousRotPerSec) / kLoopPeriodSecs;
       previousRotPerSec = currentRotPerSec;
 
-      double staticFf = Math.signum(targetRotPerSec) * kS;
-      double velocityFf = kV * targetRotPerSec;
+      double staticFf = Math.signum(targetRotPerSec) * s;
+      double velocityFf = v * targetRotPerSec;
       double pidOutput =
-          kP * errorRotPerSec + kI * integralRotSec + kD * velocityErrorDerivativeRotPerSecSq;
+          p * errorRotPerSec + i * integralRotSec + d * velocityErrorDerivativeRotPerSecSq;
       appliedVolts = MathUtil.clamp(staticFf + velocityFf + pidOutput, -kMaxVoltage, kMaxVoltage);
       motorSim.setInputVoltage(MathUtil.clamp(appliedVolts, -12.0, 12.0));
     }

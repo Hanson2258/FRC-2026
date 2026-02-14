@@ -4,6 +4,7 @@ import static frc.robot.subsystems.shooter.flywheel.FlywheelConstants.*;
 import static frc.robot.util.PhoenixUtil.tryUntilOk;
 
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
@@ -12,13 +13,26 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.StatusCode;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.generated.TunerConstants;
 
 /** Flywheel IO using a Talon FX with onboard velocity control. */
 public class FlywheelIOTalonFX implements FlywheelIO {
 
+  private static final String kPKey = "Flywheel/kP";
+  private static final String kIKey = "Flywheel/kI";
+  private static final String kDKey = "Flywheel/kD";
+  private static final String kVKey = "Flywheel/kV";
+  private static final String kSKey = "Flywheel/kS";
+
   private final TalonFX motor;
   private final VelocityVoltage velocityVoltageRequest = new VelocityVoltage(0.0);
+
+  private double lastP = kP;
+  private double lastI = kI;
+  private double lastD = kD;
+  private double lastV = kV;
+  private double lastS = kS;
 
   public FlywheelIOTalonFX() {
     motor = new TalonFX(kMotorId, TunerConstants.kCANBus);
@@ -43,6 +57,21 @@ public class FlywheelIOTalonFX implements FlywheelIO {
 
   @Override
   public void updateInputs(FlywheelIOInputs inputs) {
+    double p = SmartDashboard.getNumber(kPKey, kP);
+    double i = SmartDashboard.getNumber(kIKey, kI);
+    double d = SmartDashboard.getNumber(kDKey, kD);
+    double v = SmartDashboard.getNumber(kVKey, kV);
+    double s = SmartDashboard.getNumber(kSKey, kS);
+    if (p != lastP || i != lastI || d != lastD || v != lastV || s != lastS) {
+      lastP = p;
+      lastI = i;
+      lastD = d;
+      lastV = v;
+      lastS = s;
+      var slot0 = new Slot0Configs().withKP(p).withKI(i).withKD(d).withKV(v).withKS(s);
+      tryUntilOk(5, () -> motor.getConfigurator().apply(slot0, 0.25));
+    }
+
     var signalRefreshStatus =
         BaseStatusSignal.refreshAll(
             motor.getVelocity(),
