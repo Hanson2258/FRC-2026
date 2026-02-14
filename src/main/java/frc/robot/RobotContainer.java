@@ -438,11 +438,14 @@ public class RobotContainer {
 
     // Shoot when flywheel is at speed
     // Button held = shoot (Agitator and Transfer set to shooting mode, Agitator delays by 0.25s); on release, set both to staging mode
- 		driverController.a().whileTrue(
-				Commands.either(
-						new ShootCommandDeferred(transfer, agitator),
-						Commands.none(),
-						() -> flywheel != null && flywheel.getState() == FlywheelState.AT_SPEED));
+ 		driverController.a().onTrue(
+                Commands.runOnce(
+                    () -> {
+                        if (transfer != null) transfer.setShootingMode();
+                        if (agitator != null) agitator.setShootingMode();
+                    },
+                    transfer,
+                    agitator));
 		driverController.a().onFalse(
 				Commands.runOnce(
 						() -> {
@@ -686,7 +689,7 @@ public class RobotContainer {
 		ShootCommandDeferred(Transfer transfer, Agitator agitator) {
 			this.transfer = transfer;
 			this.agitator = agitator;
-			addRequirements(transfer, agitator);
+			//addRequirements(transfer, agitator);
 		}
 
 		@Override
@@ -720,5 +723,12 @@ public class RobotContainer {
 		public boolean isFinished() {
 			return false;
 		}
+	}
+
+	public void makeSystemSafe() {
+		intake.setIdleMode();
+		agitator.setIdleMode();
+		transfer.setIdleMode();
+		flywheel.setState(FlywheelState.IDLE);
 	}
 }

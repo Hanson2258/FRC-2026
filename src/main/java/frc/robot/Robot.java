@@ -98,6 +98,7 @@ public class Robot extends LoggedRobot {
   @Override
   public void disabledInit() {
 		robotContainer.resetSimulationField();
+    robotContainer.makeSystemSafe();
 	}
 
   /** This function is called periodically when disabled. */
