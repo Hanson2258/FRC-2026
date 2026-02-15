@@ -2,6 +2,7 @@ package frc.robot.util;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import frc.robot.FieldConstants;
 
 /** Alliance-related helpers used across the robot (drive, shooter, etc.). */
 public final class AllianceUtil {
@@ -17,4 +18,14 @@ public final class AllianceUtil {
     return DriverStation.getAlliance().isPresent()
         && DriverStation.getAlliance().get() == Alliance.Red;
   } // End isRedAlliance
+
+  /**
+   * Returns true if the robot X position (m) is inside the current alliance's zone (depth
+   * ALLIANCE_ZONE_M from that alliance's driver wall).
+   */
+  public static boolean isInAllianceZone(double robotXM) {
+    return isRedAlliance()
+        ? robotXM >= FieldConstants.FIELD_LENGTH_M - FieldConstants.ALLIANCE_ZONE_M
+        : robotXM <= FieldConstants.ALLIANCE_ZONE_M;
+  } // End isInAllianceZone
 }

@@ -58,6 +58,11 @@ public final class ShooterCommands {
     passingSpotOverride = null;
   }
 
+  /** True if current target is the hub (no passing-spot override). */
+  public static boolean isShooterTargetHub() {
+    return passingSpotOverride == null;
+  }
+
   private static Translation3d getPassingSpot3d(PassingSpot spot) {
     boolean red = AllianceUtil.isRedAlliance();
     return switch (spot) {

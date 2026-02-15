@@ -2,6 +2,7 @@ package frc.robot.subsystems.shooter;
 
 import frc.robot.commands.ShooterCommands;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.util.AllianceUtil;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
 import frc.robot.subsystems.shooter.flywheel.Flywheel.FlywheelState;
 import frc.robot.subsystems.shooter.hood.Hood;
@@ -55,6 +56,7 @@ public class Shooter extends SubsystemBase {
     ShooterCommands.setShooterTarget(drive, hood, flywheel, hoodEnabled);
     Logger.recordOutput("ShooterCommand/ShootWhenReadyCommandActive", shootCommandScheduledSupplier.getAsBoolean());
     Logger.recordOutput("ShooterCommand/Ready/IsReadyToShoot", isReadyToShoot());
+    Logger.recordOutput("ShooterCommand/Ready/AllianceZoneOk", !ShooterCommands.isShooterTargetHub() || AllianceUtil.isInAllianceZone(drive.getPose().getX()));
     Logger.recordOutput("ShooterCommand/Ready/TurretHubInRange", turret.isHubInRange());
     Logger.recordOutput("ShooterCommand/Ready/TurretAtTarget", turret.aimedAtHub());
     Logger.recordOutput("ShooterCommand/Ready/HoodAtTarget", !hoodEnabled || hood.atTarget());
@@ -62,8 +64,11 @@ public class Shooter extends SubsystemBase {
     Logger.recordOutput("ShooterCommand/Ready/FlywheelNotIdle", flywheel.getState() != FlywheelState.IDLE);
   } // End periodic
 
-  /** Turret aimed at hub (hub in range and at target), Flywheel not idle and at speed; (Optional) Hood at target. */
+  /** Turret aimed at hub (hub in range and at target), Flywheel not idle and at speed; (Optional) Hood at target. When target is hub, robot must be in alliance zone. */
   public boolean isReadyToShoot() {
+    if (ShooterCommands.isShooterTargetHub() && !AllianceUtil.isInAllianceZone(drive.getPose().getX())) {
+      return false;
+    }
     if (!turret.isHubInRange()) return false;
     if (!turret.aimedAtHub()) return false;
     if (flywheel.getState() == FlywheelState.IDLE) return false;
