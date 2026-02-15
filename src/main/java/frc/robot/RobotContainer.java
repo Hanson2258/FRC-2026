@@ -21,6 +21,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -275,6 +276,7 @@ public class RobotContainer {
 		// Shooter coordinator and shoot-when-ready command (Option B)
 		shooter = new Shooter(drive, agitator, transfer, turret, hood, flywheel, isHoodEnabled);
 		shootWhenReadyCommand = new ShootWhenReadyCommand(agitator, transfer, shooter);
+		shooter.setShootCommandScheduledSupplier(shootWhenReadyCommand::isScheduled);
 
 		/// ---------------------------------------------------------------------------------------------------------------
 		/// ----------------------------------------------- Drive Commands ------------------------------------------------
@@ -448,18 +450,17 @@ public class RobotContainer {
 			driverController.rightStick().whileTrue(DriveCommands.pathfindThenFollowPath(drive, "DriveToHub"));
 		} // End else (Drive enabled)
 
-    // Shoot toggle: on = schedule ShootWhenReadyCommand (transfer → 0.25 s → agitator when ready); off = cancel and idle both
-    // When toggling on, if flywheel is IDLE, set to CHARGING so spin-up starts
+    // Shoot toggle: on = schedule ShootWhenReadyCommand, set Flywheel to Charging if IDLE; off = cancel (command end() idles Transfer and Agitator)
 		driverController.a().onTrue(Commands.runOnce(() -> {
 			if (shootWhenReadyCommand.isScheduled()) {
-				shootWhenReadyCommand.cancel();
+				CommandScheduler.getInstance().cancel(shootWhenReadyCommand);
 			} else {
 				if (flywheel != null && flywheel.getState() == FlywheelState.IDLE) {
 					flywheel.setState(FlywheelState.CHARGING);
 				}
-				shootWhenReadyCommand.schedule();
+				CommandScheduler.getInstance().schedule(shootWhenReadyCommand);
 			}
-		}, shooter, flywheel));
+		}));
 
     // Flywheel: Toggles Idle ↔ Charging/AtSpeed (Charging auto-transitions to AtSpeed when at target)
     if (flywheel != null) {
@@ -731,7 +732,7 @@ public class RobotContainer {
 	}
 
 	public void makeSystemSafe() {
-		shootWhenReadyCommand.cancel();
+		CommandScheduler.getInstance().cancel(shootWhenReadyCommand);
 		intake.setIdleMode();
 		agitator.setIdleMode();
 		transfer.setIdleMode();

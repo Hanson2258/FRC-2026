@@ -9,6 +9,8 @@ import frc.robot.subsystems.shooter.turret.Turret;
 import frc.robot.subsystems.agitator.Agitator;
 import frc.robot.subsystems.shooter.transfer.Transfer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.function.BooleanSupplier;
+import org.littletonrobotics.junction.Logger;
 
 /** Coordinates Agitator, Transfer, Turret, Hood, Flywheel; updates targets from lookup; exposes ready-to-shoot. */
 public class Shooter extends SubsystemBase {
@@ -22,6 +24,8 @@ public class Shooter extends SubsystemBase {
   private final Hood hood;
   private final Flywheel flywheel;
   private final boolean hoodEnabled;
+
+  private BooleanSupplier shootCommandScheduledSupplier = () -> false;
 
   public Shooter(
       Drive drive,
@@ -40,13 +44,26 @@ public class Shooter extends SubsystemBase {
     this.hoodEnabled = hoodEnabled;
   } // End Shooter Constructor
 
+  /** Set by RobotContainer so Shooter can log whether shoot-when-ready is active. */
+  public void setShootCommandScheduledSupplier(BooleanSupplier supplier) {
+    shootCommandScheduledSupplier = supplier != null ? supplier : () -> false;
+  } // End setShootCommandScheduledSupplier
+
   @Override
   public void periodic() {
     ShooterCommands.setShooterTarget(drive, hood, flywheel, hoodEnabled);
+    Logger.recordOutput("ShooterCommand/ShootWhenReadyCommandActive", shootCommandScheduledSupplier.getAsBoolean());
+    Logger.recordOutput("ShooterCommand/Ready/IsReadyToShoot", isReadyToShoot());
+    Logger.recordOutput("ShooterCommand/Ready/TurretHubInRange", turret.isHubInRange());
+    Logger.recordOutput("ShooterCommand/Ready/TurretAtTarget", turret.aimedAtHub());
+    Logger.recordOutput("ShooterCommand/Ready/HoodAtTarget", !hoodEnabled || hood.atTarget());
+    Logger.recordOutput("ShooterCommand/Ready/FlywheelAtTarget", flywheel.atTargetVelocity());
+    Logger.recordOutput("ShooterCommand/Ready/FlywheelNotIdle", flywheel.getState() != FlywheelState.IDLE);
   } // End periodic
 
-  /** Turret aimed, Flywheel not idle and at speed; (Optional) Hood at target. */
+  /** Turret aimed at hub (hub in range and at target), Flywheel not idle and at speed; (Optional) Hood at target. */
   public boolean isReadyToShoot() {
+    if (!turret.isHubInRange()) return false;
     if (!turret.aimedAtHub()) return false;
     if (flywheel.getState() == FlywheelState.IDLE) return false;
     if (!flywheel.atTargetVelocity()) return false;

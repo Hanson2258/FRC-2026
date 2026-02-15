@@ -58,6 +58,12 @@ public class Turret extends SubsystemBase {
     return Rotation2d.fromRadians(turretInputs.positionRads + kEncoderZeroOffsetRad);
   } // End getPosition
 
+  /** Whether the requested hub angle is within turret physical limits (not clamped). */
+  public boolean isHubInRange() {
+    double hubRad = hubAngleRelativeToRobot.getRadians();
+    return hubRad >= kMinAngleRad && hubRad <= kMaxAngleRad;
+  } // End isHubInRange
+
   /** Whether the Turret is at the hub within tolerance. */
   public boolean aimedAtHub() {
     double hubRadClamped = getClampedHubAngleRad();
