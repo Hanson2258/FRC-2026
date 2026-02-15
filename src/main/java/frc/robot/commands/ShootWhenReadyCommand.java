@@ -32,6 +32,7 @@ public class ShootWhenReadyCommand extends Command {
   public void initialize() {
     transferOn = false;
     timerSec = 0.0;
+    shooter.setShootCommandActive(true);
   } // End initialize
 
   @Override
@@ -52,6 +53,7 @@ public class ShootWhenReadyCommand extends Command {
 
   @Override
   public void end(boolean interrupted) {
+    shooter.setShootCommandActive(false);
     transfer.setIdleMode();
     agitator.setIdleMode();
   } // End end

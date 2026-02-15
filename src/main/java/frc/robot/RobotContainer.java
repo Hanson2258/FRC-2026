@@ -10,6 +10,8 @@ package frc.robot;
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -299,6 +301,9 @@ public class RobotContainer {
 		/// ---------------------------------------------------------------------------------------------------------------
 		// Field view: robot + turret so you can see turret direction in sim
 		SmartDashboard.putData("Field", field);
+
+		// Register PathPlanner named commands
+		registerCommands();
 
 		// Set up auto routines
 		autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -711,7 +716,7 @@ public class RobotContainer {
 
 		// Shooter sim: launch fuel only when shooter is ready and shoot command is active
 		if (shooterSim != null) {
-			shooterSim.update(shooter, shootWhenReadyCommand::isScheduled, turret, hood, flywheel);
+			shooterSim.update(shooter, shooter::isShootCommandActive, turret, hood, flywheel);
 		}
 		if (shooterSimVisualizer != null) {
 			double hoodAngleRad = isHoodEnabled ? hood.getAngleRad() : HoodConstants.kMinAngleRad;
@@ -735,6 +740,26 @@ public class RobotContainer {
 		}
 		Logger.recordOutput("FuelSim/BlueHubScore", FuelSim.Hub.BLUE_HUB.getScore());
 		Logger.recordOutput("FuelSim/RedHubScore", FuelSim.Hub.RED_HUB.getScore());
+	}
+
+	private void registerCommands() {
+		// Register the commands here
+		// Intake Commands
+		NamedCommands.registerCommand("Intake On", Commands.runOnce(() -> intake.setIntakingMode(), intake));
+		NamedCommands.registerCommand("Intake Off", Commands.runOnce(() -> intake.setIdleMode(), intake));
+		NamedCommands.registerCommand("Intake Reverse", Commands.runOnce(() -> intake.setReversingMode(), intake));
+
+		// Flywheel Commands
+		NamedCommands.registerCommand("Flywheel On", Commands.runOnce(() -> flywheel.setState(FlywheelState.CHARGING), flywheel));
+		NamedCommands.registerCommand("Flywheel Off", Commands.runOnce(() -> flywheel.setState(FlywheelState.IDLE), flywheel));
+
+		// Shooter Target Commands
+		NamedCommands.registerCommand("Set Shooter Target Hub", Commands.runOnce(ShooterCommands::clearShooterTargetOverride));
+		NamedCommands.registerCommand("Set Shooter Target Passing Spot Left", Commands.runOnce(ShooterCommands::setPassingSpotLeft));
+		NamedCommands.registerCommand("Set Shooter Target Passing Spot Center", Commands.runOnce(ShooterCommands::setPassingSpotCenter));
+		NamedCommands.registerCommand("Set Shooter Target Passing Spot Right", Commands.runOnce(ShooterCommands::setPassingSpotRight));
+		// With timeout so the sequential auto can advance to path commands (reference codebases build autos in code with paths only)
+		NamedCommands.registerCommand("Shoot When Ready", shootWhenReadyCommand);
 	}
 
 	public void makeSystemSafe() {

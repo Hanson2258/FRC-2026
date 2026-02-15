@@ -27,6 +27,8 @@ public class Shooter extends SubsystemBase {
   private final boolean hoodEnabled;
 
   private BooleanSupplier shootCommandScheduledSupplier = () -> false;
+  /** Set by ShootWhenReadyCommand in initialize/end so active is true when running. */
+  private volatile boolean shootCommandActive = false;
 
   public Shooter(
       Drive drive,
@@ -50,11 +52,21 @@ public class Shooter extends SubsystemBase {
     shootCommandScheduledSupplier = supplier != null ? supplier : () -> false;
   } // End setShootCommandScheduledSupplier
 
+  /** Set by ShootWhenReadyCommand in initialize/end so active is true whenever the command is running. */
+  public void setShootCommandActive(boolean active) {
+    shootCommandActive = active;
+  } // End setShootCommandActive
+
+  /** True when ShootWhenReadyCommand is running. */
+  public boolean isShootCommandActive() {
+    return shootCommandScheduledSupplier.getAsBoolean() || shootCommandActive;
+  } // End isShootCommandActive
+
   @Override
   public void periodic() {
     Logger.recordOutput("ShooterCommand/Target", ShooterCommands.getShooterTargetName());
     ShooterCommands.setShooterTarget(drive, hood, flywheel, hoodEnabled);
-    Logger.recordOutput("ShooterCommand/ShootWhenReadyCommandActive", shootCommandScheduledSupplier.getAsBoolean());
+    Logger.recordOutput("ShooterCommand/ShootWhenReadyCommandActive", shootCommandScheduledSupplier.getAsBoolean() || shootCommandActive);
     Logger.recordOutput("ShooterCommand/Ready/IsReadyToShoot", isReadyToShoot());
     Logger.recordOutput("ShooterCommand/Ready/AllianceZoneOk", !ShooterCommands.isShooterTargetHub() || AllianceUtil.isInAllianceZone(drive.getPose().getX()));
     Logger.recordOutput("ShooterCommand/Ready/TurretHubInRange", turret.isHubInRange());
