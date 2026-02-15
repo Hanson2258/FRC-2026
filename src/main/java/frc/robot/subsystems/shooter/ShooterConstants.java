@@ -9,6 +9,7 @@ package frc.robot.subsystems.shooter;
 
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.util.Units;
 
 /** Constants for the shooter assembly (turret position on robot, camera on turret, etc.). */
 public final class ShooterConstants {
@@ -17,7 +18,16 @@ public final class ShooterConstants {
 
   /** Transform from robot center to turret pivot. +X = forward, +Y = left, +Z = up (meters). */
   public static final Transform3d robotToTurret =
-      new Transform3d(0.27686, -0.0508, 0.6, Rotation3d.kZero);
+      new Transform3d(-0.17, 0.05, 0.35, Rotation3d.kZero);
+
+  /** Distance above funnel the trajectory must pass (20 in), meters. */
+  public static final double kDistanceAboveFunnelM = Units.inchesToMeters(20.0);
+
+  /** Number of iterations for moving-shot lookahead. */
+  public static final int kLookaheadIterations = 3;
+
+  /** Phase delay (s) to predict pose forward so shot is for when ball leaves. */
+  public static final double kPhaseDelaySec = 0.03;
 
   /** Transform from turret pivot to camera (when camera is on turret). */
   public static final Transform3d turretToCamera =

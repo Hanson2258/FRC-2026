@@ -28,16 +28,14 @@ public class ShooterSimVisualizer {
         this.fieldSpeedsSupplier = fieldSpeedsSupplier;
     }
 
-    private Translation3d launchVel(LinearVelocity vel, Angle angle) {
-        Pose3d robot = poseSupplier.get();
+    private Translation3d launchVel(LinearVelocity vel, Angle elevationAngle, Angle shotYawFieldFrame) {
         ChassisSpeeds fieldSpeeds = fieldSpeedsSupplier.get();
 
-        double horizontalVel = Math.cos(angle.in(Radians)) * vel.in(MetersPerSecond);
-        double verticalVel = Math.sin(angle.in(Radians)) * vel.in(MetersPerSecond);
-        double xVel =
-                horizontalVel * Math.cos(robot.getRotation().toRotation2d().getRadians());
-        double yVel =
-                horizontalVel * Math.sin(robot.getRotation().toRotation2d().getRadians());
+        double horizontalVel = Math.cos(elevationAngle.in(Radians)) * vel.in(MetersPerSecond);
+        double verticalVel = Math.sin(elevationAngle.in(Radians)) * vel.in(MetersPerSecond);
+        double yawRad = shotYawFieldFrame.in(Radians);
+        double xVel = horizontalVel * Math.cos(yawRad);
+        double yVel = horizontalVel * Math.sin(yawRad);
 
         xVel += fieldSpeeds.vxMetersPerSecond;
         yVel += fieldSpeeds.vyMetersPerSecond;
@@ -45,15 +43,22 @@ public class ShooterSimVisualizer {
         return new Translation3d(xVel, yVel, verticalVel);
     }
 
-    public void updateFuel(LinearVelocity vel, Angle angle) {
-        Translation3d trajVel = launchVel(vel, Degrees.of(90).minus(angle));
+    /**
+     * @param vel Launch speed
+     * @param hoodAngleRad Hood angle from vertical (radians)
+     * @param turretYawRobotFrame Turret yaw in robot frame (radians); trajectory direction = robot heading + this
+     */
+    public void updateFuel(LinearVelocity vel, Angle hoodAngleRad, Angle turretYawRobotFrame) {
+        Angle elevationAngle = Degrees.of(90).minus(hoodAngleRad);
+        Angle shotYawFieldFrame =
+                Radians.of(poseSupplier.get().getRotation().toRotation2d().getRadians() + turretYawRobotFrame.in(Radians));
+        Translation3d trajVel = launchVel(vel, elevationAngle, shotYawFieldFrame);
+        Translation3d launchPos = poseSupplier.get().plus(ShooterConstants.robotToTurret).getTranslation();
         for (int i = 0; i < trajectory.length; i++) {
             double t = i * 0.04;
-            double x = trajVel.getX() * t + poseSupplier.get().getTranslation().getX();
-            double y = trajVel.getY() * t + poseSupplier.get().getTranslation().getY();
-            double z = trajVel.getZ() * t
-                    - 0.5 * 9.81 * t * t
-                    + poseSupplier.get().getTranslation().getZ();
+            double x = trajVel.getX() * t + launchPos.getX();
+            double y = trajVel.getY() * t + launchPos.getY();
+            double z = trajVel.getZ() * t - 0.5 * 9.81 * t * t + launchPos.getZ();
 
             trajectory[i] = new Translation3d(x, y, z);
         }

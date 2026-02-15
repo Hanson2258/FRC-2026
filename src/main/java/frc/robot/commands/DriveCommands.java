@@ -321,7 +321,7 @@ public class DriveCommands {
           double rotationalRate;
           if (faceTargetEnabledSupplier.getAsBoolean()) {
             // Calculate target angle and use PID controller to rotate toward it
-            Rotation2d targetAngle = calculateTargetHubAngle(drive);
+            Rotation2d targetAngle = ShooterCommands.getFieldAngleToHubFromPivot(drive);
             rotationalRate =
                 faceTargetController.calculate(drive.getRotation().getRadians(), targetAngle.getRadians());
           } else {

@@ -542,20 +542,25 @@ public class FuelSim {
     }
 
     /**
-     * Spawns a fuel onto the field with a specified launch velocity and angles, accounting for robot movement
+     * Spawns a fuel onto the field with a specified launch velocity and angles, accounting for robot movement.
+     * Launch position is robot pose + robotToLaunchPoint (e.g. robotToTurret so trajectory starts at turret).
+     *
      * @param launchVelocity Initial launch velocity
      * @param hoodAngle Hood angle where 0 is launching horizontally and 90 degrees is launching straight up
      * @param turretYaw <i>Robot-relative</i> turret yaw
-     * @param launchHeight Height of the fuel to launch at. Make sure this is higher than your robot's bumper height, or else it will collide with your robot immediately.
+     * @param robotToLaunchPoint Transform from robot center to launch point (e.g. turret pivot); used for launch position
      * @throws IllegalStateException if robot is not registered
      */
-    public void launchFuel(LinearVelocity launchVelocity, Angle hoodAngle, Angle turretYaw, Distance launchHeight) {
+    public void launchFuel(
+            LinearVelocity launchVelocity,
+            Angle hoodAngle,
+            Angle turretYaw,
+            Transform3d robotToLaunchPoint) {
         if (robotPoseSupplier == null || robotFieldSpeedsSupplier == null) {
             throw new IllegalStateException("Robot must be registered before launching fuel.");
         }
 
-        Pose3d launchPose = new Pose3d(this.robotPoseSupplier.get())
-                .plus(new Transform3d(new Translation3d(Meters.zero(), Meters.zero(), launchHeight), Rotation3d.kZero));
+        Pose3d launchPose = new Pose3d(this.robotPoseSupplier.get()).plus(robotToLaunchPoint);
         ChassisSpeeds fieldSpeeds = this.robotFieldSpeedsSupplier.get();
 
         double horizontalVel = Math.cos(hoodAngle.in(Radians)) * launchVelocity.in(MetersPerSecond);
@@ -571,6 +576,18 @@ public class FuelSim {
         yVel += fieldSpeeds.vyMetersPerSecond;
 
         spawnFuel(launchPose.getTranslation(), new Translation3d(xVel, yVel, verticalVel));
+    }
+
+    /**
+     * Spawns a fuel using only a height offset from robot center (legacy). Prefer
+     * {@link #launchFuel(LinearVelocity, Angle, Angle, Transform3d)} with robotToTurret so the trajectory starts at the turret.
+     */
+    public void launchFuel(LinearVelocity launchVelocity, Angle hoodAngle, Angle turretYaw, Distance launchHeight) {
+        launchFuel(
+                launchVelocity,
+                hoodAngle,
+                turretYaw,
+                new Transform3d(new Translation3d(0, 0, launchHeight.in(Meters)), Rotation3d.kZero));
     }
 
     protected void handleRobotCollision(Fuel fuel, Pose2d robot, Translation2d robotVel) {

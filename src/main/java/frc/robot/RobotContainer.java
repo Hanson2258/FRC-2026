@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.ShooterCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
@@ -45,6 +46,8 @@ import frc.robot.subsystems.agitator.AgitatorConstants;
 import frc.robot.subsystems.agitator.AgitatorIO;
 import frc.robot.subsystems.agitator.AgitatorIOSim;
 import frc.robot.subsystems.agitator.AgitatorIOSparkMax;
+import frc.robot.commands.ShootWhenReadyCommand;
+import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterSim;
 import frc.robot.subsystems.shooter.ShooterSimVisualizer;
 import frc.robot.subsystems.shooter.transfer.Transfer;
@@ -102,13 +105,16 @@ public class RobotContainer {
 	private final Drive drive;
 	@SuppressWarnings("unused")
 	private final Vision vision;
-	@SuppressWarnings("unused")
 	private final Intake intake;
 	private final Agitator agitator;
 	private final Transfer transfer;
 	private final Turret turret;
 	private final Hood hood;
 	private final Flywheel flywheel;
+
+	// Shooter Manag
+	private final Shooter shooter;
+	private final ShootWhenReadyCommand shootWhenReadyCommand;
 
 	// Drive Simulation
 	private SwerveDriveSimulation driveSimulation = null;
@@ -265,6 +271,10 @@ public class RobotContainer {
 				break;
 			}
 
+		// Shooter coordinator and shoot-when-ready command (Option B)
+		shooter = new Shooter(drive, agitator, transfer, turret, hood, flywheel, isHoodEnabled);
+		shootWhenReadyCommand = new ShootWhenReadyCommand(agitator, transfer, shooter);
+
 		/// ---------------------------------------------------------------------------------------------------------------
 		/// ----------------------------------------------- Drive Commands ------------------------------------------------
 		/// ---------------------------------------------------------------------------------------------------------------		// Initialize face-target PID controller (using same constants as DriveCommands)
@@ -278,7 +288,7 @@ public class RobotContainer {
 		// Turret aims at hub using robot pose (odometry); replace with hold-position command to disable
 		turret.setDefaultCommand(
 				Commands.run(
-						() -> turret.setHubAngleRelativeToRobot(DriveCommands.getTurretAngleToHub(drive)),
+						() -> turret.setHubAngleRelativeToRobot(ShooterCommands.getTurretAngleToHubFromPivot(drive)),
 						turret));
 
 		/// ---------------------------------------------------------------------------------------------------------------
@@ -437,24 +447,18 @@ public class RobotContainer {
 			driverController.rightStick().whileTrue(DriveCommands.pathfindThenFollowPath(drive, "DriveToHub"));
 		} // End else (Drive enabled)
 
-    // Shoot when flywheel is at speed
-    // Button held = shoot (Agitator and Transfer set to shooting mode, Agitator delays by 0.25s); on release, set both to staging mode
- 		driverController.a().onTrue(
-                Commands.runOnce(
-                    () -> {
-                        if (transfer != null) transfer.setShootingMode();
-                        if (agitator != null) agitator.setShootingMode();
-                    },
-                    transfer,
-                    agitator));
-		driverController.a().onFalse(
-				Commands.runOnce(
-						() -> {
-							if (transfer != null) transfer.setIdleMode();
-							if (agitator != null) agitator.setIdleMode();
-						},
-						transfer,
-						agitator));
+    // Shoot toggle: on = schedule ShootWhenReadyCommand (transfer → 0.25 s → agitator when ready); off = cancel and idle both
+    // When toggling on, if flywheel is IDLE, set to CHARGING so spin-up starts
+		driverController.a().onTrue(Commands.runOnce(() -> {
+			if (shootWhenReadyCommand.isScheduled()) {
+				shootWhenReadyCommand.cancel();
+			} else {
+				if (flywheel != null && flywheel.getState() == FlywheelState.IDLE) {
+					flywheel.setState(FlywheelState.CHARGING);
+				}
+				shootWhenReadyCommand.schedule();
+			}
+		}, shooter, flywheel));
 
     // Flywheel: Toggles Idle ↔ Charging/AtSpeed (Charging auto-transitions to AtSpeed when at target)
     if (flywheel != null) {
@@ -697,77 +701,36 @@ public class RobotContainer {
 		// Update field view
 		field.setRobotPose(robotPose);
 
-		// Shooter sim: timer-based launch and capacity-gated intake 
-		// TODO: Update Shooter logic to shoot only once shooter subsystems are ready, and update shooting target based on where we are on the field
+		// Shooter sim: launch fuel only when shooter is ready and shoot command is active
 		if (shooterSim != null) {
-			shooterSim.update(turret, hood, flywheel);
+			shooterSim.update(shooter, shootWhenReadyCommand::isScheduled, turret, hood, flywheel);
 		}
 		if (shooterSimVisualizer != null) {
+			double hoodAngleRad = isHoodEnabled ? hood.getAngleRad() : Units.degreesToRadians(40.0);
 			shooterSimVisualizer.updateFuel(
 					edu.wpi.first.units.Units.MetersPerSecond.of(
 							flywheel.getTargetVelocityRadsPerSec()
 									* FlywheelConstants.kFlywheelRadiusMeters),
-					edu.wpi.first.units.Units.Radians.of(hood.getAngleRad()));
+					edu.wpi.first.units.Units.Radians.of(hoodAngleRad),
+					edu.wpi.first.units.Units.Radians.of(turret.getPosition().getRadians()));
 			shooterSimVisualizer.update3dPose(
 					edu.wpi.first.units.Units.Radians.of(turret.getPosition().getRadians()),
-					edu.wpi.first.units.Units.Radians.of(hood.getAngleRad()));
+					edu.wpi.first.units.Units.Radians.of(hoodAngleRad));
 		}
 
 		// Fuel sim (robot-ball collision)
 		fuelSim.updateSim();
-	}
 
-	// TODO: Temporary inner Shooter class for testing, move to proper Shooter class later
-	/**
-	 * Wrapper that creates the shoot ParallelCommandGroup in initialize(), not at bind time, 
-	 * so the robot does not crash on startup. Cancels the inner command when the button
-	 * is released.
-	 */
-	private static final class ShootCommandDeferred extends Command {
-		private final Transfer transfer;
-		private final Agitator agitator;
-		private Command inner;
-
-		ShootCommandDeferred(Transfer transfer, Agitator agitator) {
-			this.transfer = transfer;
-			this.agitator = agitator;
-			//addRequirements(transfer, agitator);
+		// Log balls in robot and hub scores (FuelSim)
+		if (shooterSim != null) {
+			Logger.recordOutput("FuelSim/BallsInRobot", shooterSim.getFuelStored());
 		}
-
-		@Override
-		public void initialize() {
-			inner =
-					Commands.parallel(
-							Commands.runOnce(
-									() -> {
-										if (transfer != null) transfer.setShootingMode();
-									},
-									transfer,
-									agitator),
-							Commands.sequence(
-									Commands.waitSeconds(0.25),
-									Commands.run(
-											() -> {
-												if (agitator != null) agitator.setShootingMode();
-											},
-											agitator)));
-			inner.schedule();
-		}
-
-		@Override
-		public void end(boolean interrupted) {
-			if (inner != null) {
-				inner.cancel();
-			}
-		}
-
-		@Override
-		public boolean isFinished() {
-			return false;
-		}
+		Logger.recordOutput("FuelSim/BlueHubScore", FuelSim.Hub.BLUE_HUB.getScore());
+		Logger.recordOutput("FuelSim/RedHubScore", FuelSim.Hub.RED_HUB.getScore());
 	}
 
 	public void makeSystemSafe() {
+		shootWhenReadyCommand.cancel();
 		intake.setIdleMode();
 		agitator.setIdleMode();
 		transfer.setIdleMode();

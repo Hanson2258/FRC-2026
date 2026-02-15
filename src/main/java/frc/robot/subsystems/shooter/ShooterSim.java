@@ -6,12 +6,12 @@
 
 package frc.robot.subsystems.shooter;
 
-import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import java.util.function.BooleanSupplier;
 import frc.robot.simulation.FuelSim;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
 import frc.robot.subsystems.shooter.flywheel.FlywheelConstants;
@@ -35,6 +35,11 @@ public class ShooterSim {
     this.fuelSim = fuelSim;
     shootTimer.start();
   }
+
+  /** Current number of fuel (balls) stored in the robot. */
+  public int getFuelStored() {
+    return fuelStored;
+  } // End getFuelStored
 
   /** True when the shooter can accept more fuel (for FuelSim intake gating). */
   public boolean canIntake() {
@@ -60,21 +65,30 @@ public class ShooterSim {
     double flywheelRadPerSec = flywheel.getTargetVelocityRadsPerSec();
     double launchSpeedMetersPerSec =
         flywheelRadPerSec * FlywheelConstants.kFlywheelRadiusMeters;
-    double launchHeightMeters = ShooterConstants.robotToTurret.getZ();
 
+    // Hood angle is from vertical; FuelSim expects elevation (0 = horizontal, 90 = up)
+    double elevationRad = Math.PI / 2 - hoodAngleRad;
     fuelSim.launchFuel(
         MetersPerSecond.of(launchSpeedMetersPerSec),
-        Radians.of(hoodAngleRad),
+        Radians.of(elevationRad),
         Radians.of(turretYawRad),
-        Meters.of(launchHeightMeters));
+        ShooterConstants.robotToTurret);
   }
 
   /**
-   * Call from simulation periodic. Runs shoot timer and launches fuel when elapsed (enabled only).
+   * Call from simulation periodic. Launches fuel when timer elapsed, enabled, shooter ready, and shooting active.
    */
-  public void update(Turret turret, Hood hood, Flywheel flywheel) {
-    if (shootTimer.advanceIfElapsed(SHOOT_INTERVAL_SEC) && DriverStation.isEnabled()) {
+  public void update(
+      Shooter shooter,
+      BooleanSupplier isShootingActive,
+      Turret turret,
+      Hood hood,
+      Flywheel flywheel) {
+    if (shootTimer.advanceIfElapsed(SHOOT_INTERVAL_SEC)
+        && DriverStation.isEnabled()
+        && shooter.isReadyToShoot()
+        && isShootingActive.getAsBoolean()) {
       launchFuel(turret, hood, flywheel);
     }
-  }
+  } // End update
 }
