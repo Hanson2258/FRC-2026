@@ -98,12 +98,14 @@ public final class ShooterCommands {
     Logger.recordOutput("Shooter/DistanceToHubMeters", distanceM);
     Logger.recordOutput(
         "Shooter/CalculatorAngleDegrees", Units.radiansToDegrees(shot.getHoodAngle().in(Radians)));
+    double exitVelMps =
+        shot.getExitVelocity().in(MetersPerSecond) * ShooterConstants.kExitVelocityCompensationMultiplier;
     double flywheelRadsPerSec =
         ShooterCalculator.linearToAngularVelocity(
-                shot.getExitVelocity(), Meters.of(FlywheelConstants.kFlywheelRadiusMeters))
+                MetersPerSecond.of(exitVelMps), Meters.of(FlywheelConstants.kFlywheelRadiusMeters))
             .in(RadiansPerSecond);
     Logger.recordOutput("Shooter/CalculatorVelocityRpm", Units.radiansPerSecondToRotationsPerMinute(flywheelRadsPerSec));
-    Logger.recordOutput("Shooter/ExitVelocityMps", shot.getExitVelocity().in(MetersPerSecond));
+    Logger.recordOutput("Shooter/ExitVelocityMps", exitVelMps);
 
     double hoodRad =
         MathUtil.clamp(

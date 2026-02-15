@@ -30,7 +30,13 @@ public final class ShooterConstants {
   /** Phase delay (s) to predict pose forward so shot is for when ball leaves. */
   public static final double kPhaseDelaySec = 0.03;
 
-  /** Scale linear velocity: base in/s, multiplier, power for distance term. */
+  /**
+   * Multiplier on calculator exit velocity (e.g. for air resistance). 1.0 = no change; increase if it under
+   * is undershooting, decrease if it is overshooting. // TODO: tune this value
+   */
+  public static final double kExitVelocityCompensationMultiplier = 1.05;
+
+  /** Scale linear velocity: base in/s, multiplier, power for distance term (unused by current shot). */
   public static final double kScaleLinearVelocityBaseInPerS = 50.0;
   public static final double kScaleLinearVelocityMultiplier = 70.0;
   public static final double kScaleLinearVelocityPower = 0.3;

@@ -340,7 +340,7 @@ public class RobotContainer {
    */
   private void configureFuelSim() {
     fuelSim.setShowHalfFuel(false);
-		// fuelSim.enableAirResistance();
+		fuelSim.enableAirResistance();
     fuelSim.spawnStartingFuel();
 
     fuelSim.start();
