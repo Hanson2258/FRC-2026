@@ -70,7 +70,7 @@ public class Intake extends SubsystemBase {
   /** Set mode to reversing (spit out at reversing voltage). */
   public void setReversingMode() {
     mode = Mode.REVERSING;
-    targetVoltage = -kReversingVoltage;
+    targetVoltage = kReversingVoltage;
   } // End setReversingMode
 
   /** Set the target voltage. */

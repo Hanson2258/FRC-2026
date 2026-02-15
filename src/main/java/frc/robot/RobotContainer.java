@@ -90,7 +90,7 @@ public class RobotContainer {
 	// Subsystems Toggle
 	private boolean isDriveEnabled = true;
 	private boolean isVisionEnabled = true;
-	private boolean isIntakeEnabled = false;
+	private boolean isIntakeEnabled = true;
 	private boolean isAgitatorEnabled = true;
 	private boolean isTransferEnabled = true;
 	private boolean isTurretEnabled = true;
@@ -489,6 +489,12 @@ public class RobotContainer {
   private void configureOperatorBindings(boolean enableOperatorControls) {
     // Operator Controls Enabled
     if (enableOperatorControls) {
+			// Enable/ Disable Intake
+			operatorController.leftTrigger().onTrue(Commands.runOnce(() -> intake.setIntakingMode(), intake));
+			operatorController.leftTrigger().onFalse(Commands.runOnce(() -> intake.setIdleMode(), intake));
+			operatorController.rightTrigger().onTrue(Commands.runOnce(() -> intake.setReversingMode(), intake));
+			operatorController.rightTrigger().onFalse(Commands.runOnce(() -> intake.setIdleMode(), intake));
+
 			// Set Agitator, Transfer, and Flywheel to idle mode when B is pressed
 			operatorController.b().onTrue(Commands.runOnce(() -> {
 				if (agitator != null) agitator.setIdleMode();
