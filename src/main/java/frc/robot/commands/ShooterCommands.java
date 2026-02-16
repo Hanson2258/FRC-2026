@@ -156,6 +156,7 @@ public final class ShooterCommands {
         shot.getExitVelocity().in(MetersPerSecond) * ShooterConstants.kExitVelocityCompensationMultiplier;
     double flywheelRadsPerSec =
         ShooterCalculator.linearToAngularVelocity(
+          
                 MetersPerSecond.of(exitVelMps), Meters.of(FlywheelConstants.kFlywheelRadiusMeters))
             .in(RadiansPerSecond);
     Logger.recordOutput("Shooter/CalculatorVelocityRpm", Units.radiansPerSecondToRotationsPerMinute(flywheelRadsPerSec));
