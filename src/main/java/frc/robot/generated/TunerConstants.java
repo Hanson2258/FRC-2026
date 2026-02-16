@@ -36,7 +36,7 @@ public class TunerConstants {
     // output type specified by SwerveModuleConstants.DriveMotorClosedLoopOutput
   private static final Slot0Configs driveGains = // TODO: Tune driving vals
       new Slot0Configs().withKP(0.2).withKI(0).withKD(0.01)
-        .withKS(0.19).withKV(0.76).withKA(0.2);
+        .withKS(0.1).withKV(0.08).withKA(0.0);
 
     // The closed-loop output type to use for the steer motors;
     // This affects the PID/FF gains for the steer motors
@@ -285,7 +285,7 @@ public class TunerConstants {
         public TunerSwerveDrivetrain(
             SwerveDrivetrainConstants drivetrainConstants,
             double odometryUpdateFrequency,
-            Matrix<N3, N1> odometryStandardDeviation,
+            Matrix<N3, N1> odometryStandardDeviation,//set this TODO
             Matrix<N3, N1> visionStandardDeviation,
             SwerveModuleConstants<?, ?, ?>... modules
         ) {
