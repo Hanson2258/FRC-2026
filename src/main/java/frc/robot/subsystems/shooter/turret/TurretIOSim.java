@@ -6,21 +6,24 @@ import edu.wpi.first.math.MathUtil;
 public class TurretIOSim implements TurretIO {
 
   private static final double kLoopPeriodSecs = 0.02;
-  /** Max turret rate so that 1 rad takes ~0.3s. */
+  /** Max turret rate so that 1 rad takes ~0.2s. */
   private static final double kMaxRadPerSec = 1.0 / 0.2;
 
   private double targetPositionRad = 0.0;
+  private double velocityFeedforwardRadPerSec = 0.0;
   private double currentPositionRad = 0.0;
   private boolean isStopped = false;
 
   @Override
   public void updateInputs(TurretIOInputs inputs) {
     if (!isStopped) {
+      // Feedforward: drift at commanded velocity (e.g. -robot omega for spin compensation)
+      currentPositionRad += velocityFeedforwardRadPerSec * kLoopPeriodSecs;
       double errorRad = MathUtil.angleModulus(targetPositionRad - currentPositionRad);
       double maxStepRad = kMaxRadPerSec * kLoopPeriodSecs;
       double stepRad = MathUtil.clamp(errorRad, -maxStepRad, maxStepRad);
       currentPositionRad += stepRad;
-      inputs.velocityRadsPerSec = stepRad / kLoopPeriodSecs;
+      inputs.velocityRadsPerSec = velocityFeedforwardRadPerSec + stepRad / kLoopPeriodSecs;
     } else {
       inputs.velocityRadsPerSec = 0.0;
     }
@@ -34,6 +37,14 @@ public class TurretIOSim implements TurretIO {
   @Override
   public void setTargetPosition(double targetRads) {
     targetPositionRad = targetRads;
+    velocityFeedforwardRadPerSec = 0.0;
+    isStopped = false;
+  } // End setTargetPosition
+
+  @Override
+  public void setTargetPosition(double targetRads, double velocityFeedforwardRadPerSec) {
+    targetPositionRad = targetRads;
+    this.velocityFeedforwardRadPerSec = velocityFeedforwardRadPerSec;
     isStopped = false;
   } // End setTargetPosition
 

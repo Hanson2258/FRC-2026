@@ -21,6 +21,7 @@ import edu.wpi.first.math.MathUtil;
 import frc.robot.subsystems.shooter.flywheel.FlywheelConstants;
 import frc.robot.subsystems.shooter.hood.Hood;
 import frc.robot.subsystems.shooter.hood.HoodConstants;
+import frc.robot.subsystems.shooter.turret.Turret;
 import frc.robot.util.AllianceUtil;
 import org.littletonrobotics.junction.Logger;
 
@@ -31,6 +32,9 @@ public final class ShooterCommands {
 
   /** Which passing spot is selected; null = aim at hub. */
   private static volatile PassingSpot passingSpotOverride = null;
+
+  /** Turret angle to predicted target from last setShooterTarget (accounts for robot velocity). */
+  private static volatile Rotation2d lastTurretAngleFromShot = null;
 
   public enum PassingSpot {
     LEFT,
@@ -111,13 +115,22 @@ public final class ShooterCommands {
   }
 
   /**
+   * Turret angle from last shot solution (aim at predicted target so ball + robot velocity hits hub).
+   * Fallback to hub angle if shot not yet computed this cycle.
+   */
+  public static Rotation2d getTurretAngleFromShot(Drive drive) {
+    if (lastTurretAngleFromShot != null) return lastTurretAngleFromShot;
+    return getTurretAngleToHubFromPivot(drive);
+  }
+
+  /**
    * Sets hood and flywheel target from ShooterCalculator. When hoodEnabled is false, uses a fixed
    * hood angle and solves for velocity only so the shot matches the locked hood. When true, uses
    * funnel clearance + moving shot. Applies phase delay, then iterative moving shot; clamps hood to
-   * mechanism limits.
+   * mechanism limits. Turret aim uses predicted target and shortest-path azimuth.
    */
   public static void setShooterTarget(
-      Drive drive, Hood hood, Flywheel flywheel, boolean hoodEnabled) {
+      Drive drive, Turret turret, Hood hood, Flywheel flywheel, boolean hoodEnabled) {
     Pose2d pose = drive.getPose();
     ChassisSpeeds fieldSpeeds = drive.getFieldRelativeChassisSpeeds();
     Translation3d target3d = getShooterTarget3d();
@@ -156,7 +169,6 @@ public final class ShooterCommands {
         shot.getExitVelocity().in(MetersPerSecond) * ShooterConstants.kExitVelocityCompensationMultiplier;
     double flywheelRadsPerSec =
         ShooterCalculator.linearToAngularVelocity(
-          
                 MetersPerSecond.of(exitVelMps), Meters.of(FlywheelConstants.kFlywheelRadiusMeters))
             .in(RadiansPerSecond);
     Logger.recordOutput("Shooter/CalculatorVelocityRpm", Units.radiansPerSecondToRotationsPerMinute(flywheelRadsPerSec));
@@ -169,5 +181,12 @@ public final class ShooterCommands {
             HoodConstants.kMaxAngleRad);
     hood.setTargetAngleRad(hoodRad);
     flywheel.setTargetVelocityRadsPerSec(flywheelRadsPerSec);
+
+    // Turret aims at predicted target so ball + robot velocity hits hub
+    lastTurretAngleFromShot =
+        Rotation2d.fromRadians(
+            ShooterCalculator.calculateAzimuthAngle(
+                    estimatedPose, shot.getTarget(), turret.getPosition().getRadians())
+                .in(Radians));
   } // End setShooterTarget
 }

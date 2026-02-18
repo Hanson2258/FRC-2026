@@ -208,13 +208,15 @@ public class RobotContainer {
 
 				shooterSim = new ShooterSim(fuelSim);
 				shooterSimVisualizer =
-						new ShooterSimVisualizer(
-								() ->
-										new Pose3d(
-												drive.getPose().getX(),
-												drive.getPose().getY(),
-												0,
-												new Rotation3d(0, 0, drive.getPose().getRotation().getRadians())),
+							new ShooterSimVisualizer(
+								() -> {
+									Pose2d simPose = driveSimulation.getSimulatedDriveTrainPose();
+									return new Pose3d(
+											simPose.getX(),
+											simPose.getY(),
+											0,
+											new Rotation3d(0, 0, simPose.getRotation().getRadians()));
+								},
 								drive::getFieldRelativeChassisSpeeds);
 
 				configureFuelSim();
@@ -260,10 +262,13 @@ public class RobotContainer {
 		/// ---------------------------------------------------------------------------------------------------------------
 		/// ------------------------------------------ Shooter Subsystem Commands -----------------------------------------
 		/// ---------------------------------------------------------------------------------------------------------------
-		// Turret aims at hub using robot pose (odometry); replace with hold-position command to disable
+		// Turret aims at predicted target; velocity feedforward for spin compensation
 		turret.setDefaultCommand(
 				Commands.run(
-						() -> turret.setHubAngleRelativeToRobot(ShooterCommands.getTurretAngleToHubFromPivot(drive)),
+						() -> {
+							turret.setHubAngleRelativeToRobot(ShooterCommands.getTurretAngleFromShot(drive));
+							turret.setVelocityFeedforwardRadPerSec(-drive.getFieldRelativeChassisSpeeds().omegaRadiansPerSecond);
+						},
 						turret));
 
 		/// ---------------------------------------------------------------------------------------------------------------

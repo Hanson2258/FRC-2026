@@ -17,6 +17,7 @@ public class Turret extends SubsystemBase {
 
   private static final double kAtHubToleranceRad = Units.degreesToRadians(2.0);
   private Rotation2d hubAngleRelativeToRobot = Rotation2d.kZero;
+  private double velocityFeedforwardRadPerSec = 0.0;
 
   public Turret(TurretIO io) {
     turretIO = io;
@@ -36,12 +37,17 @@ public class Turret extends SubsystemBase {
     Logger.recordOutput("Subsystems/Shooter/Turret/Inputs/SupplyCurrentAmps", turretInputs.supplyCurrentAmps);
 
     if (DriverStation.isDisabled()) {
-      turretIO.setTargetPosition(0.0);
+      turretIO.setTargetPosition(0.0, 0.0);
       return;
     }
 
-    turretIO.setTargetPosition(targetPositionRad);
+    turretIO.setTargetPosition(targetPositionRad, velocityFeedforwardRadPerSec);
   } // End periodic
+
+  /** Set velocity feedforward (rad/s) for spin compensation; e.g. -robot omega. */
+  public void setVelocityFeedforwardRadPerSec(double radPerSec) {
+    velocityFeedforwardRadPerSec = radPerSec;
+  } // End setVelocityFeedforwardRadPerSec
 
   /** Set the hub angle (robot frame: 0 = forward). Clamped to min/max in periodic. */
   public void setHubAngleRelativeToRobot(Rotation2d angle) {

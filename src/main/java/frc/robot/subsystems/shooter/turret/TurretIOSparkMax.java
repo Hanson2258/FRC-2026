@@ -47,8 +47,14 @@ public class TurretIOSparkMax implements TurretIO {
 
   @Override
   public void setTargetPosition(double targetRads) {
+    setTargetPosition(targetRads, 0.0);
+  } // End setTargetPosition
+
+  @Override
+  public void setTargetPosition(double targetRads, double velocityFeedforwardRadPerSec) {
     double targetRot = Units.radiansToRotations(targetRads);
     closedLoopController.setSetpoint(targetRot, SparkBase.ControlType.kPosition);
+    // SPARK MAX position control does not expose velocity feedforward; ignore
   } // End setTargetPosition
 
   @Override
