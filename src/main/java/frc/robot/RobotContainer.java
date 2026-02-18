@@ -37,6 +37,7 @@ import frc.robot.subsystems.intake.*;
 import frc.robot.subsystems.agitator.*;
 import frc.robot.commands.ShootWhenReadyCommand;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.ShooterConstants;
 import frc.robot.subsystems.shooter.ShooterSim;
 import frc.robot.subsystems.shooter.ShooterSimVisualizer;
 import frc.robot.subsystems.shooter.transfer.*;
@@ -695,10 +696,11 @@ public class RobotContainer {
 		}
 		if (shooterSimVisualizer != null) {
 			double hoodAngleRad = isHoodEnabled ? hood.getAngleRad() : HoodConstants.kMinAngleRad;
+			double flywheelSurfaceMps =
+					flywheel.getTargetVelocityRadsPerSec() * FlywheelConstants.kFlywheelRadiusMeters;
+			double ballExitVelMps = flywheelSurfaceMps * ShooterConstants.kFlywheelSurfaceDivider;
 			shooterSimVisualizer.updateFuel(
-					edu.wpi.first.units.Units.MetersPerSecond.of(
-							flywheel.getTargetVelocityRadsPerSec()
-									* FlywheelConstants.kFlywheelRadiusMeters),
+					edu.wpi.first.units.Units.MetersPerSecond.of(ballExitVelMps),
 					edu.wpi.first.units.Units.Radians.of(hoodAngleRad),
 					edu.wpi.first.units.Units.Radians.of(turret.getPosition().getRadians()));
 			shooterSimVisualizer.update3dPose(
