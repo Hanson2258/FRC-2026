@@ -34,7 +34,7 @@ public final class ShooterConstants {
    * Multiplier on calculator exit velocity (e.g. for air resistance). 1.0 = no change; increase if it
    * is undershooting, decrease if overshooting. // TODO: tune this value
    */
-  public static final double kExitVelocityCompensationMultiplier = 1.05;
+  public static final double kExitVelocityCompensationMultiplier = 1.425;
 
   /**
    * Single flywheel at bottom: flywheel surface speed = exit velocity / this divider (e.g. 0.5
