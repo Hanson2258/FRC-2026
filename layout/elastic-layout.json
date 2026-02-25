@@ -1,182 +1,17 @@
 {
   "version": 1.0,
-  "grid_size": 128,
+  "grid_size": 95,
   "tabs": [
     {
       "name": "Autonomous",
       "grid_layout": {
         "layouts": [
           {
-            "title": "Flywheel",
-            "x": 1152.0,
-            "y": 512.0,
-            "width": 256.0,
-            "height": 256.0,
-            "type": "List Layout",
-            "properties": {
-              "label_position": "TOP"
-            },
-            "children": [
-              {
-                "title": "TargetVelocityRpm",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/TargetVelocityRpm",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": false
-                }
-              },
-              {
-                "title": "VelocityRpm",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/VelocityRpm",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": false
-                }
-              },
-              {
-                "title": "State",
-                "x": 768.0,
-                "y": 768.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/State",
-                  "period": 0.06,
-                  "data_type": "string",
-                  "show_submit_button": false
-                }
-              }
-            ]
-          },
-          {
-            "title": "Agitator",
-            "x": 640.0,
-            "y": 512.0,
-            "width": 256.0,
-            "height": 256.0,
-            "type": "List Layout",
-            "properties": {
-              "label_position": "TOP"
-            },
-            "children": [
-              {
-                "title": "Mode",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Agitator/Mode",
-                  "period": 0.06,
-                  "data_type": "string",
-                  "show_submit_button": false
-                }
-              },
-              {
-                "title": "TargetVolts",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Agitator/Inputs/TargetVolts",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": false
-                }
-              },
-              {
-                "title": "AppliedVolts",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Agitator/Inputs/AppliedVolts",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": false
-                }
-              }
-            ]
-          },
-          {
-            "title": "Transfer",
-            "x": 896.0,
-            "y": 512.0,
-            "width": 256.0,
-            "height": 256.0,
-            "type": "List Layout",
-            "properties": {
-              "label_position": "TOP"
-            },
-            "children": [
-              {
-                "title": "Mode",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Transfer/Mode",
-                  "period": 0.06,
-                  "data_type": "string",
-                  "show_submit_button": false
-                }
-              },
-              {
-                "title": "TargetVolts",
-                "x": 512.0,
-                "y": 768.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Transfer/Inputs/TargetVolts",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": false
-                }
-              },
-              {
-                "title": "AppliedVolts",
-                "x": 640.0,
-                "y": 768.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Transfer/Inputs/AppliedVolts",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": false
-                }
-              }
-            ]
-          },
-          {
             "title": "Intake",
-            "x": 384.0,
-            "y": 512.0,
-            "width": 256.0,
-            "height": 256.0,
+            "x": 475.0,
+            "y": 380.0,
+            "width": 285.0,
+            "height": 380.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -196,240 +31,6 @@
                   "show_submit_button": false
                 }
               },
-              {
-                "title": "TargetVolts",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Intake/Inputs/TargetVolts",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": false
-                }
-              },
-              {
-                "title": "AppliedVolts",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Intake/Inputs/AppliedVolts",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": false
-                }
-              }
-            ]
-          }
-        ],
-        "containers": [
-          {
-            "title": "FlywheelAtTarget",
-            "x": 896.0,
-            "y": 256.0,
-            "width": 256.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/FlywheelAtTarget",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "HoodAtTarget",
-            "x": 1152.0,
-            "y": 256.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/HoodAtTarget",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "TurretAtTarget",
-            "x": 1280.0,
-            "y": 256.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/TurretAtTarget",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "TurretHubInRange",
-            "x": 1152.0,
-            "y": 384.0,
-            "width": 256.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/TurretHubInRange",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "IsReadyToShoot",
-            "x": 896.0,
-            "y": 128.0,
-            "width": 512.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/IsReadyToShoot",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "FlywheelNotIdle",
-            "x": 896.0,
-            "y": 384.0,
-            "width": 256.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/FlywheelNotIdle",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "ShootWhenReadyCommandActive",
-            "x": 896.0,
-            "y": 0.0,
-            "width": 512.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/ShootWhenReadyCommandActive",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "Target",
-            "x": 640.0,
-            "y": 0.0,
-            "width": 256.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Target",
-              "period": 0.06,
-              "data_type": "string",
-              "show_submit_button": false
-            }
-          },
-          {
-            "title": "AllianceZoneOk",
-            "x": 768.0,
-            "y": 128.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/AllianceZoneOk",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "Auto Choices",
-            "x": 0.0,
-            "y": 0.0,
-            "width": 256.0,
-            "height": 128.0,
-            "type": "ComboBox Chooser",
-            "properties": {
-              "topic": "/SmartDashboard/Auto Choices",
-              "period": 0.06,
-              "sort_options": false
-            }
-          },
-          {
-            "title": "Field",
-            "x": 0.0,
-            "y": 128.0,
-            "width": 768.0,
-            "height": 384.0,
-            "type": "Field",
-            "properties": {
-              "topic": "/SmartDashboard/Field",
-              "period": 0.06,
-              "field_game": "Rebuilt",
-              "robot_width": 0.85,
-              "robot_length": 0.85,
-              "show_other_objects": true,
-              "show_trajectories": true,
-              "field_rotation": 0.0,
-              "robot_color": 4294198070,
-              "trajectory_color": 4294967295,
-              "show_robot_outside_widget": true
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "Teleoperated",
-      "grid_layout": {
-        "layouts": [
-          {
-            "title": "Intake",
-            "x": 0.0,
-            "y": 384.0,
-            "width": 256.0,
-            "height": 384.0,
-            "type": "List Layout",
-            "properties": {
-              "label_position": "TOP"
-            },
-            "children": [
               {
                 "title": "TargetVolts",
                 "x": 0.0,
@@ -471,29 +72,15 @@
                   "data_type": "double",
                   "show_submit_button": false
                 }
-              },
-              {
-                "title": "Mode",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Intake/Mode",
-                  "period": 0.06,
-                  "data_type": "string",
-                  "show_submit_button": false
-                }
               }
             ]
           },
           {
             "title": "Extender",
-            "x": 256.0,
-            "y": 384.0,
-            "width": 256.0,
-            "height": 384.0,
+            "x": 760.0,
+            "y": 380.0,
+            "width": 285.0,
+            "height": 380.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -502,15 +89,29 @@
           },
           {
             "title": "Agitator",
-            "x": 512.0,
-            "y": 384.0,
-            "width": 256.0,
-            "height": 384.0,
+            "x": 1045.0,
+            "y": 380.0,
+            "width": 285.0,
+            "height": 380.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
             },
             "children": [
+              {
+                "title": "Mode",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Agitator/Mode",
+                  "period": 0.06,
+                  "data_type": "string",
+                  "show_submit_button": false
+                }
+              },
               {
                 "title": "TargetVolts",
                 "x": 0.0,
@@ -552,7 +153,20 @@
                   "data_type": "double",
                   "show_submit_button": false
                 }
-              },
+              }
+            ]
+          },
+          {
+            "title": "Transfer",
+            "x": 1330.0,
+            "y": 380.0,
+            "width": 285.0,
+            "height": 380.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
               {
                 "title": "Mode",
                 "x": 0.0,
@@ -561,25 +175,12 @@
                 "height": 128.0,
                 "type": "Text Display",
                 "properties": {
-                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Agitator/Mode",
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Transfer/Mode",
                   "period": 0.06,
                   "data_type": "string",
                   "show_submit_button": false
                 }
-              }
-            ]
-          },
-          {
-            "title": "Transfer",
-            "x": 768.0,
-            "y": 384.0,
-            "width": 256.0,
-            "height": 384.0,
-            "type": "List Layout",
-            "properties": {
-              "label_position": "TOP"
-            },
-            "children": [
+              },
               {
                 "title": "TargetVolts",
                 "x": 0.0,
@@ -621,34 +222,34 @@
                   "data_type": "double",
                   "show_submit_button": false
                 }
-              },
+              }
+            ]
+          },
+          {
+            "title": "Flywheel",
+            "x": 1615.0,
+            "y": 380.0,
+            "width": 285.0,
+            "height": 380.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
               {
-                "title": "Mode",
+                "title": "State",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Text Display",
                 "properties": {
-                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Transfer/Mode",
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/State",
                   "period": 0.06,
                   "data_type": "string",
                   "show_submit_button": false
                 }
-              }
-            ]
-          },
-          {
-            "title": "Flywheel",
-            "x": 1024.0,
-            "y": 384.0,
-            "width": 256.0,
-            "height": 384.0,
-            "type": "List Layout",
-            "properties": {
-              "label_position": "TOP"
-            },
-            "children": [
+              },
               {
                 "title": "TargetVelocityRpm",
                 "x": 0.0,
@@ -658,20 +259,6 @@
                 "type": "Text Display",
                 "properties": {
                   "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/TargetVelocityRpm",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": false
-                }
-              },
-              {
-                "title": "VelocityRpm",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/VelocityRpm",
                   "period": 0.06,
                   "data_type": "double",
                   "show_submit_button": false
@@ -692,16 +279,16 @@
                 }
               },
               {
-                "title": "State",
+                "title": "VelocityRpm",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Text Display",
                 "properties": {
-                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/State",
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/VelocityRpm",
                   "period": 0.06,
-                  "data_type": "string",
+                  "data_type": "double",
                   "show_submit_button": false
                 }
               }
@@ -710,24 +297,109 @@
         ],
         "containers": [
           {
-            "title": "webcam_0-raw",
-            "x": 896.0,
-            "y": 0.0,
-            "width": 512.0,
-            "height": 384.0,
-            "type": "Camera Stream",
+            "title": "FlywheelAtTarget",
+            "x": 1330.0,
+            "y": 190.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Boolean Box",
             "properties": {
-              "topic": "/CameraPublisher/webcam_0-raw",
+              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/FlywheelAtTarget",
               "period": 0.06,
-              "rotation_turns": 0
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "HoodAtTarget",
+            "x": 1520.0,
+            "y": 190.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/HoodAtTarget",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "IsReadyToShoot",
+            "x": 1520.0,
+            "y": 95.0,
+            "width": 380.0,
+            "height": 95.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/IsReadyToShoot",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "FlywheelNotIdle",
+            "x": 1520.0,
+            "y": 285.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/FlywheelNotIdle",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "AllianceZoneOk",
+            "x": 1330.0,
+            "y": 285.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/AllianceZoneOk",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Auto Choices",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 285.0,
+            "height": 190.0,
+            "type": "ComboBox Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/Auto Choices",
+              "period": 0.06,
+              "sort_options": false
             }
           },
           {
             "title": "Field",
-            "x": 0.0,
+            "x": 285.0,
             "y": 0.0,
-            "width": 896.0,
-            "height": 384.0,
+            "width": 855.0,
+            "height": 380.0,
             "type": "Field",
             "properties": {
               "topic": "/SmartDashboard/Field",
@@ -742,75 +414,179 @@
               "trajectory_color": 4294967295,
               "show_robot_outside_widget": true
             }
+          },
+          {
+            "title": "ShootWhenReadyCommandActive",
+            "x": 1330.0,
+            "y": 0.0,
+            "width": 570.0,
+            "height": 95.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/ShootWhenReadyCommandActive",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Target",
+            "x": 1330.0,
+            "y": 95.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Target",
+              "period": 0.06,
+              "data_type": "string",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "TurretAtTarget",
+            "x": 1710.0,
+            "y": 190.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/TurretAtTarget",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "TurretHubInRange",
+            "x": 1710.0,
+            "y": 285.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/TurretHubInRange",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "webcam_0-raw",
+            "x": 0.0,
+            "y": 380.0,
+            "width": 475.0,
+            "height": 380.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/webcam_0-raw",
+              "period": 0.06,
+              "rotation_turns": 0
+            }
           }
         ]
       }
     },
     {
-      "name": "Shooting Test",
+      "name": "Teleoperated",
       "grid_layout": {
         "layouts": [
           {
-            "title": "Flywheel",
-            "x": 768.0,
-            "y": 512.0,
-            "width": 256.0,
-            "height": 256.0,
+            "title": "Intake",
+            "x": 475.0,
+            "y": 380.0,
+            "width": 285.0,
+            "height": 380.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
             },
             "children": [
               {
-                "title": "TargetVelocityRpm",
+                "title": "Mode",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Text Display",
                 "properties": {
-                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/TargetVelocityRpm",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": false
-                }
-              },
-              {
-                "title": "VelocityRpm",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/VelocityRpm",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": false
-                }
-              },
-              {
-                "title": "State",
-                "x": 768.0,
-                "y": 768.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/State",
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Intake/Mode",
                   "period": 0.06,
                   "data_type": "string",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "TargetVolts",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Intake/Inputs/TargetVolts",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "AppliedVolts",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Intake/Inputs/AppliedVolts",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "SupplyCurrentAmps",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Intake/Inputs/SupplyCurrentAmps",
+                  "period": 0.06,
+                  "data_type": "double",
                   "show_submit_button": false
                 }
               }
             ]
           },
           {
+            "title": "Extender",
+            "x": 760.0,
+            "y": 380.0,
+            "width": 285.0,
+            "height": 380.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": []
+          },
+          {
             "title": "Agitator",
-            "x": 256.0,
-            "y": 512.0,
-            "width": 256.0,
-            "height": 256.0,
+            "x": 1045.0,
+            "y": 380.0,
+            "width": 285.0,
+            "height": 380.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -857,15 +633,29 @@
                   "data_type": "double",
                   "show_submit_button": false
                 }
+              },
+              {
+                "title": "SupplyCurrentAmps",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Agitator/Inputs/SupplyCurrentAmps",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
               }
             ]
           },
           {
             "title": "Transfer",
-            "x": 512.0,
-            "y": 512.0,
-            "width": 256.0,
-            "height": 256.0,
+            "x": 1330.0,
+            "y": 380.0,
+            "width": 285.0,
+            "height": 380.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -887,8 +677,8 @@
               },
               {
                 "title": "TargetVolts",
-                "x": 512.0,
-                "y": 768.0,
+                "x": 0.0,
+                "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Text Display",
@@ -901,8 +691,8 @@
               },
               {
                 "title": "AppliedVolts",
-                "x": 640.0,
-                "y": 768.0,
+                "x": 0.0,
+                "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
                 "type": "Text Display",
@@ -912,15 +702,417 @@
                   "data_type": "double",
                   "show_submit_button": false
                 }
+              },
+              {
+                "title": "SupplyCurrentAmps",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Transfer/Inputs/SupplyCurrentAmps",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
               }
             ]
           },
           {
+            "title": "Flywheel",
+            "x": 1615.0,
+            "y": 380.0,
+            "width": 285.0,
+            "height": 380.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "State",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/State",
+                  "period": 0.06,
+                  "data_type": "string",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "TargetVelocityRpm",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/TargetVelocityRpm",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "SupplyCurrentAmps",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/Inputs/SupplyCurrentAmps",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "VelocityRpm",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/VelocityRpm",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              }
+            ]
+          }
+        ],
+        "containers": [
+          {
+            "title": "webcam_0-raw",
+            "x": 855.0,
+            "y": 0.0,
+            "width": 475.0,
+            "height": 380.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/webcam_0-raw",
+              "period": 0.06,
+              "rotation_turns": 0
+            }
+          },
+          {
+            "title": "Field",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 855.0,
+            "height": 380.0,
+            "type": "Field",
+            "properties": {
+              "topic": "/SmartDashboard/Field",
+              "period": 0.06,
+              "field_game": "Rebuilt",
+              "robot_width": 0.85,
+              "robot_length": 0.85,
+              "show_other_objects": true,
+              "show_trajectories": true,
+              "field_rotation": 0.0,
+              "robot_color": 4294198070,
+              "trajectory_color": 4294967295,
+              "show_robot_outside_widget": true
+            }
+          },
+          {
+            "title": "ShootWhenReadyCommandActive",
+            "x": 1330.0,
+            "y": 0.0,
+            "width": 570.0,
+            "height": 95.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/ShootWhenReadyCommandActive",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Target",
+            "x": 1330.0,
+            "y": 95.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Target",
+              "period": 0.06,
+              "data_type": "string",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "IsReadyToShoot",
+            "x": 1520.0,
+            "y": 95.0,
+            "width": 380.0,
+            "height": 95.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/IsReadyToShoot",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "FlywheelAtTarget",
+            "x": 1330.0,
+            "y": 190.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/FlywheelAtTarget",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "HoodAtTarget",
+            "x": 1520.0,
+            "y": 190.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/HoodAtTarget",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "TurretAtTarget",
+            "x": 1710.0,
+            "y": 190.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/TurretAtTarget",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "AllianceZoneOk",
+            "x": 1330.0,
+            "y": 285.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/AllianceZoneOk",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "FlywheelNotIdle",
+            "x": 1520.0,
+            "y": 285.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/FlywheelNotIdle",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "TurretHubInRange",
+            "x": 1710.0,
+            "y": 285.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/TurretHubInRange",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "ManualOverride",
+            "x": 0.0,
+            "y": 380.0,
+            "width": 285.0,
+            "height": 190.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ManualOverride",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Tuning",
+      "grid_layout": {
+        "layouts": [
+          {
+            "title": "Flywheel",
+            "x": 0.0,
+            "y": 95.0,
+            "width": 285.0,
+            "height": 475.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "kP",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Flywheel/kP",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              },
+              {
+                "title": "kI",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Flywheel/kI",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              },
+              {
+                "title": "kD",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Flywheel/kD",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              },
+              {
+                "title": "kV",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Flywheel/kV",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              },
+              {
+                "title": "kS",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Flywheel/kS",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              }
+            ]
+          }
+        ],
+        "containers": [
+          {
+            "title": "ManualOverride",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 285.0,
+            "height": 95.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ManualOverride",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Shooting Test",
+      "grid_layout": {
+        "layouts": [
+          {
             "title": "Sim Specific",
             "x": 0.0,
             "y": 0.0,
-            "width": 256.0,
-            "height": 384.0,
+            "width": 285.0,
+            "height": 380.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -985,11 +1177,11 @@
             ]
           },
           {
-            "title": "Intake",
+            "title": "Agitator",
             "x": 0.0,
-            "y": 512.0,
-            "width": 256.0,
-            "height": 256.0,
+            "y": 570.0,
+            "width": 285.0,
+            "height": 380.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -1003,7 +1195,7 @@
                 "height": 128.0,
                 "type": "Text Display",
                 "properties": {
-                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Intake/Mode",
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Agitator/Mode",
                   "period": 0.06,
                   "data_type": "string",
                   "show_submit_button": false
@@ -1017,7 +1209,7 @@
                 "height": 128.0,
                 "type": "Text Display",
                 "properties": {
-                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Intake/Inputs/TargetVolts",
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Agitator/Inputs/TargetVolts",
                   "period": 0.06,
                   "data_type": "double",
                   "show_submit_button": false
@@ -1031,7 +1223,159 @@
                 "height": 128.0,
                 "type": "Text Display",
                 "properties": {
-                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Intake/Inputs/AppliedVolts",
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Agitator/Inputs/AppliedVolts",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "SupplyCurrentAmps",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Agitator/Inputs/SupplyCurrentAmps",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              }
+            ]
+          },
+          {
+            "title": "Transfer",
+            "x": 285.0,
+            "y": 570.0,
+            "width": 285.0,
+            "height": 380.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Mode",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Transfer/Mode",
+                  "period": 0.06,
+                  "data_type": "string",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "TargetVolts",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Transfer/Inputs/TargetVolts",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "AppliedVolts",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Transfer/Inputs/AppliedVolts",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "SupplyCurrentAmps",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Transfer/Inputs/SupplyCurrentAmps",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              }
+            ]
+          },
+          {
+            "title": "Flywheel",
+            "x": 570.0,
+            "y": 570.0,
+            "width": 285.0,
+            "height": 380.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "State",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/State",
+                  "period": 0.06,
+                  "data_type": "string",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "TargetVelocityRpm",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/TargetVelocityRpm",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "SupplyCurrentAmps",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/Inputs/SupplyCurrentAmps",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "VelocityRpm",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/VelocityRpm",
                   "period": 0.06,
                   "data_type": "double",
                   "show_submit_button": false
@@ -1044,9 +1388,9 @@
           {
             "title": "DistanceToHubMeters",
             "x": 0.0,
-            "y": 384.0,
-            "width": 256.0,
-            "height": 128.0,
+            "y": 380.0,
+            "width": 855.0,
+            "height": 95.0,
             "type": "Text Display",
             "properties": {
               "topic": "/AdvantageKit/RealOutputs/Shooter/DistanceToHubMeters",
@@ -1056,113 +1400,11 @@
             }
           },
           {
-            "title": "FlywheelAtTarget",
-            "x": 512.0,
-            "y": 256.0,
-            "width": 256.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/FlywheelAtTarget",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "HoodAtTarget",
-            "x": 768.0,
-            "y": 256.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/HoodAtTarget",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "TurretAtTarget",
-            "x": 896.0,
-            "y": 256.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/TurretAtTarget",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "TurretHubInRange",
-            "x": 768.0,
-            "y": 384.0,
-            "width": 256.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/TurretHubInRange",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "IsReadyToShoot",
-            "x": 512.0,
-            "y": 128.0,
-            "width": 512.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/IsReadyToShoot",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "FlywheelNotIdle",
-            "x": 512.0,
-            "y": 384.0,
-            "width": 256.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/FlywheelNotIdle",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
             "title": "ShootWhenReadyCommandActive",
-            "x": 512.0,
+            "x": 285.0,
             "y": 0.0,
-            "width": 512.0,
-            "height": 128.0,
+            "width": 570.0,
+            "height": 95.0,
             "type": "Boolean Box",
             "properties": {
               "topic": "/AdvantageKit/RealOutputs/ShooterCommand/ShootWhenReadyCommandActive",
@@ -1176,10 +1418,10 @@
           },
           {
             "title": "Target",
-            "x": 256.0,
-            "y": 0.0,
-            "width": 256.0,
-            "height": 128.0,
+            "x": 285.0,
+            "y": 95.0,
+            "width": 190.0,
+            "height": 95.0,
             "type": "Text Display",
             "properties": {
               "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Target",
@@ -1189,14 +1431,133 @@
             }
           },
           {
+            "title": "IsReadyToShoot",
+            "x": 475.0,
+            "y": 95.0,
+            "width": 380.0,
+            "height": 95.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/IsReadyToShoot",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "FlywheelAtTarget",
+            "x": 285.0,
+            "y": 190.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/FlywheelAtTarget",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "HoodAtTarget",
+            "x": 475.0,
+            "y": 190.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/HoodAtTarget",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
             "title": "AllianceZoneOk",
-            "x": 384.0,
-            "y": 128.0,
-            "width": 128.0,
-            "height": 128.0,
+            "x": 285.0,
+            "y": 285.0,
+            "width": 190.0,
+            "height": 95.0,
             "type": "Boolean Box",
             "properties": {
               "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/AllianceZoneOk",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "TurretAtTarget",
+            "x": 665.0,
+            "y": 190.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/TurretAtTarget",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "FlywheelNotIdle",
+            "x": 475.0,
+            "y": 285.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/FlywheelNotIdle",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "TurretHubInRange",
+            "x": 665.0,
+            "y": 285.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/TurretHubInRange",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "ManualOverride",
+            "x": 0.0,
+            "y": 475.0,
+            "width": 380.0,
+            "height": 95.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ManualOverride",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4283215696,

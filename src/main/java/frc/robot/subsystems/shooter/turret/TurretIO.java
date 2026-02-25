@@ -20,6 +20,14 @@ public interface TurretIO {
   /** Set the target position. */
   default void setTargetPosition(double targetRads) {}
 
+  /**
+   * Set target position and velocity feedforward (e.g. -robot omega for spin compensation).
+   * Default ignores velocity; override in IO implementations that support it.
+   */
+  default void setTargetPosition(double targetRads, double velocityFeedforwardRadPerSec) {
+    setTargetPosition(targetRads);
+  }
+
   /** Stop the motor (coast). */
   default void stop() {}
 }

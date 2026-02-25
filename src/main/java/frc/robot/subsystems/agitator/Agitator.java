@@ -4,6 +4,7 @@ import static frc.robot.subsystems.agitator.AgitatorConstants.*;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
@@ -19,6 +20,8 @@ public class Agitator extends SubsystemBase {
 
   private final AgitatorIO agitatorIO;
   private final AgitatorIO.AgitatorIOInputs agitatorInputs = new AgitatorIO.AgitatorIOInputs();
+  private Timer dejamTimer = new Timer();
+  private boolean isDejamming = false;
 
   private Mode mode = Mode.IDLE;
   private double targetVoltage = kIdleVoltage;
@@ -48,7 +51,17 @@ public class Agitator extends SubsystemBase {
         break;
       case STAGING:
       case SHOOTING:
-        agitatorIO.setVoltage(targetVoltage);
+        if (dejamTimer.hasElapsed(3) && !isDejamming) {
+          agitatorIO.setVoltage(-targetVoltage/2);
+          isDejamming = true;
+        } else if(isDejamming && dejamTimer.hasElapsed(3.2)) {
+          dejamTimer.reset();
+          isDejamming = false;
+        } else if(!isDejamming) {
+          agitatorIO.setVoltage(targetVoltage);
+        }
+        
+
         break;
       default:
         agitatorIO.stop();
@@ -71,6 +84,8 @@ public class Agitator extends SubsystemBase {
   /** Set mode to shooting (fast loading). */
   public void setShootingMode() {
     mode = Mode.SHOOTING;
+    dejamTimer.reset();
+    dejamTimer.start();
     targetVoltage = kShootingVoltage;
   } // End setShootingMode
 

@@ -38,6 +38,7 @@ import frc.robot.subsystems.intake.*;
 import frc.robot.subsystems.agitator.*;
 import frc.robot.commands.ShootWhenReadyCommand;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.ShooterConstants;
 import frc.robot.subsystems.shooter.ShooterSim;
 import frc.robot.subsystems.shooter.ShooterSimVisualizer;
 import frc.robot.subsystems.shooter.transfer.*;
@@ -211,13 +212,15 @@ public class RobotContainer {
 
 				shooterSim = new ShooterSim(fuelSim);
 				shooterSimVisualizer =
-						new ShooterSimVisualizer(
-								() ->
-										new Pose3d(
-												drive.getPose().getX(),
-												drive.getPose().getY(),
-												0,
-												new Rotation3d(0, 0, drive.getPose().getRotation().getRadians())),
+							new ShooterSimVisualizer(
+								() -> {
+									Pose2d simPose = driveSimulation.getSimulatedDriveTrainPose();
+									return new Pose3d(
+											simPose.getX(),
+											simPose.getY(),
+											0,
+											new Rotation3d(0, 0, simPose.getRotation().getRadians()));
+								},
 								drive::getFieldRelativeChassisSpeeds);
 
 				configureFuelSim();
@@ -263,10 +266,13 @@ public class RobotContainer {
 		/// ---------------------------------------------------------------------------------------------------------------
 		/// ------------------------------------------ Shooter Subsystem Commands -----------------------------------------
 		/// ---------------------------------------------------------------------------------------------------------------
-		// Turret aims at hub using robot pose (odometry); replace with hold-position command to disable
+		// Turret aims at predicted target; velocity feedforward for spin compensation
 		turret.setDefaultCommand(
 				Commands.run(
-						() -> turret.setHubAngleRelativeToRobot(ShooterCommands.getTurretAngleToHubFromPivot(drive)),
+						() -> {
+							turret.setHubAngleRelativeToRobot(ShooterCommands.getTurretAngleFromShot(drive));
+							turret.setVelocityFeedforwardRadPerSec(-drive.getFieldRelativeChassisSpeeds().omegaRadiansPerSecond);
+						},
 						turret));
 
 		/// ---------------------------------------------------------------------------------------------------------------
@@ -384,16 +390,16 @@ public class RobotContainer {
 		else {
 			// Drive enabled: field/robot-centric drive with turbo and optional face-target
 			drive.setDefaultCommand(
-				DriveCommands.joystickDriveWithTurboAndFaceTarget(
-					drive,
-					() -> -driverController.getLeftX(), // X-axis (left/right)
-					() -> -driverController.getLeftY(), // Y-axis (forward/backward)
-					() -> -driverController.getRightX(), // Omega (rotation)
-					() -> driverController.getRightTriggerAxis(), // Turbo
-					() -> isFacingHub, // Face-target enabled
-					() -> isRobotCentric, // Robot-centric (true) vs field-centric (false)
-					faceTargetController,
-					true)); // usePhysicalMaxSpeed: false = use artificial limit (1.6 m/s), true = use physical max TODO enable truemax speed
+					DriveCommands.joystickDriveWithTurboAndFaceTarget(
+							drive,
+							() -> -driverController.getLeftX(), // X-axis (left/right)
+							() -> -driverController.getLeftY(), // Y-axis (forward/backward)
+							() -> -driverController.getRightX(), // Omega (rotation)
+							() -> driverController.getRightTriggerAxis(), // Turbo
+							() -> isFacingHub, // Face-target enabled
+							() -> isRobotCentric, // Robot-centric (true) vs field-centric (false)
+							faceTargetController,
+							true)); // usePhysicalMaxSpeed: false = use artificial limit (1.6 m/s), true = use physical max TODO enable truemax speed
 
 			// Switch to X pattern when X button is pressed
 			driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
@@ -642,10 +648,11 @@ public class RobotContainer {
 		}
 		if (shooterSimVisualizer != null) {
 			double hoodAngleRad = isHoodEnabled ? hood.getAngleRad() : HoodConstants.kMinAngleRad;
+			double flywheelSurfaceMps =
+					flywheel.getTargetVelocityRadsPerSec() * FlywheelConstants.kFlywheelRadiusMeters;
+			double ballExitVelMps = flywheelSurfaceMps * ShooterConstants.kFlywheelSurfaceDivider;
 			shooterSimVisualizer.updateFuel(
-					edu.wpi.first.units.Units.MetersPerSecond.of(
-							flywheel.getTargetVelocityRadsPerSec()
-									* FlywheelConstants.kFlywheelRadiusMeters),
+					edu.wpi.first.units.Units.MetersPerSecond.of(ballExitVelMps),
 					edu.wpi.first.units.Units.Radians.of(hoodAngleRad),
 					edu.wpi.first.units.Units.Radians.of(turret.getPosition().getRadians()));
 			shooterSimVisualizer.update3dPose(

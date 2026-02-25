@@ -65,7 +65,7 @@ public class Shooter extends SubsystemBase {
   @Override
   public void periodic() {
     Logger.recordOutput("ShooterCommand/Target", ShooterCommands.getShooterTargetName());
-    ShooterCommands.setShooterTarget(drive, hood, flywheel, hoodEnabled);
+    ShooterCommands.setShooterTarget(drive, turret, hood, flywheel, hoodEnabled);
     Logger.recordOutput("ShooterCommand/ShootWhenReadyCommandActive", shootCommandScheduledSupplier.getAsBoolean() || shootCommandActive);
     Logger.recordOutput("ShooterCommand/Ready/IsReadyToShoot", isReadyToShoot());
     Logger.recordOutput("ShooterCommand/Ready/AllianceZoneOk", !ShooterCommands.isShooterTargetHub() || AllianceUtil.isInAllianceZone(drive.getPose().getX()));
