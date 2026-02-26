@@ -54,6 +54,11 @@ public class Turret extends SubsystemBase {
     hubAngleRelativeToRobot = angle;
   } // End setHubAngleRelativeToRobot
 
+  /** Step the target voltage by the given amount. */
+  public void stepRads(double stepRads) {
+    setHubAngleRelativeToRobot(new Rotation2d(turretInputs.targetPositionRads).plus(new Rotation2d(stepRads)));
+  } // End stepVoltage
+
   /** Get the current hub angle. */
   public Rotation2d getHubAngleRelativeToRobot() {
     return hubAngleRelativeToRobot;
@@ -63,6 +68,10 @@ public class Turret extends SubsystemBase {
   public Rotation2d getPosition() {
     return Rotation2d.fromRadians(turretInputs.positionRads + kEncoderZeroOffsetRad);
   } // End getPosition
+
+  public Rotation2d getTargetPosition() {
+    return Rotation2d.fromRadians(turretInputs.targetPositionRads + kEncoderZeroOffsetRad);
+  }
 
   /** Whether the requested hub angle is within turret physical limits (not clamped). */
   public boolean isHubInRange() {
@@ -79,6 +88,11 @@ public class Turret extends SubsystemBase {
 
   /** Hub angle (robot frame) clamped to turret min/max, in radians. */
   private double getClampedHubAngleRad() {
-    return MathUtil.clamp(hubAngleRelativeToRobot.getRadians(), kMinAngleRad, kMaxAngleRad);
+    return clampAngleRad(hubAngleRelativeToRobot.getRadians());
   } // End getClampedHubAngleRad
+
+  /** inputted variable clamped to turret min/max, in radians.  */
+  private double clampAngleRad(double radians) {
+    return MathUtil.clamp(radians, kMinAngleRad, kMaxAngleRad);
+  } // End clampAngleRad
 }

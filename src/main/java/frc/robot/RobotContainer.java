@@ -274,13 +274,13 @@ public class RobotContainer {
 		/// ------------------------------------------ Shooter Subsystem Commands -----------------------------------------
 		/// ---------------------------------------------------------------------------------------------------------------
 		// Turret aims at predicted target; velocity feedforward for spin compensation
-		turret.setDefaultCommand(
-				Commands.run(
-						() -> {
-							turret.setHubAngleRelativeToRobot(ShooterCommands.getTurretAngleFromShot(drive));
-							turret.setVelocityFeedforwardRadPerSec(-drive.getFieldRelativeChassisSpeeds().omegaRadiansPerSecond);
-						},
-						turret));
+		// turret.setDefaultCommand(
+		// 		Commands.run(
+		// 				() -> {
+		// 					turret.setHubAngleRelativeToRobot(ShooterCommands.getTurretAngleFromShot(drive));
+		// 					turret.setVelocityFeedforwardRadPerSec(-drive.getFieldRelativeChassisSpeeds().omegaRadiansPerSecond);
+		// 				},
+		// 				turret));
 
 		/// ---------------------------------------------------------------------------------------------------------------
 		/// ----------------------------------------------- Logger Dashboard ----------------------------------------------
@@ -565,6 +565,34 @@ public class RobotContainer {
 				Commands.runOnce(() -> transfer.stepVoltage(-transferStepVoltage), transfer),
 				new InstantCommand(),
 				() -> (manualOverride && transfer != null)
+			)
+		);
+
+				// Reset Turret
+		operatorController.x().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> turret.setHubAngleRelativeToRobot(new Rotation2d(0)), turret), 
+				new InstantCommand(),
+				() -> (manualOverride && turret != null)
+			)
+		);
+		
+		double turretStepPosition = Units.degreesToRadians(5);
+		// Step turret position up
+		operatorController.leftStick().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> turret.stepRads(turretStepPosition), turret), 
+				new InstantCommand(), 
+				() -> (manualOverride && turret != null)
+			)
+		);
+		
+		// Step turret position down
+		operatorController.rightStick().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> turret.stepRads(-turretStepPosition), turret), 
+				new InstantCommand(), 
+				() -> (manualOverride && turret != null)
 			)
 		);
 

@@ -18,6 +18,8 @@ public class TurretIOTalonFX implements TurretIO {
   private final TalonFX motor;
   private final PositionVoltage positionVoltageRequest = new PositionVoltage(0.0);
 
+  private double targetPosition;
+
   public TurretIOTalonFX() {
     motor = new TalonFX(kMotorId, TunerConstants.kCANBus);
 
@@ -42,6 +44,7 @@ public class TurretIOTalonFX implements TurretIO {
     inputs.motorConnected = signalRefreshStatus.equals(StatusCode.OK);
     double motorShaftRotations = motor.getPosition().getValueAsDouble();
     inputs.positionRads = Units.rotationsToRadians(motorShaftRotations) / kGearRatio;
+    inputs.targetPositionRads = targetPosition;
     double motorShaftRps = motor.getVelocity().getValueAsDouble();
     inputs.velocityRadsPerSec = Units.rotationsToRadians(motorShaftRps) / kGearRatio;
     inputs.appliedVolts = motor.getMotorVoltage().getValueAsDouble();
@@ -64,6 +67,8 @@ public class TurretIOTalonFX implements TurretIO {
         positionVoltageRequest
             .withPosition(motorTargetRotations)
             .withVelocity(motorVelRotPerSec));
+
+    targetPosition = motorTargetRotations;
   } // End setTargetPosition
 
   @Override

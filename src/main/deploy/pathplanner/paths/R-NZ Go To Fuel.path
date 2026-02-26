@@ -47,7 +47,7 @@
   "rotationTargets": [
     {
       "waypointRelativePos": 1.2,
-      "rotationDegrees": -0.3822309622412949
+      "rotationDegrees": 90.0
     }
   ],
   "constraintZones": [],
@@ -69,7 +69,7 @@
   "folder": "R-NZ Full Sweep",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -1.2138629501455425
+    "rotation": 90.0
   },
   "useDefaultConstraints": false
 }

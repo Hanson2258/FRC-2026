@@ -14,6 +14,8 @@ public class TurretIOSim implements TurretIO {
   private double currentPositionRad = 0.0;
   private boolean isStopped = false;
 
+  private double targetPosition;
+
   @Override
   public void updateInputs(TurretIOInputs inputs) {
     if (!isStopped) {
@@ -30,6 +32,7 @@ public class TurretIOSim implements TurretIO {
 
     inputs.motorConnected = true;
     inputs.positionRads = currentPositionRad;
+    inputs.targetPositionRads = targetPositionRad;
     inputs.appliedVolts = 0.0;
     inputs.supplyCurrentAmps = 0.0;
   } // End updateInputs
@@ -46,6 +49,7 @@ public class TurretIOSim implements TurretIO {
     targetPositionRad = targetRads;
     this.velocityFeedforwardRadPerSec = velocityFeedforwardRadPerSec;
     isStopped = false;
+    targetPosition = targetRads;
   } // End setTargetPosition
 
   @Override
