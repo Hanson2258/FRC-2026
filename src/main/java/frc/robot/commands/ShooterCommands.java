@@ -128,9 +128,10 @@ public final class ShooterCommands {
    * hood angle and solves for velocity only so the shot matches the locked hood. When true, uses
    * funnel clearance + moving shot. Applies phase delay, then iterative moving shot; clamps hood to
    * mechanism limits. Turret aim uses predicted target and shortest-path azimuth.
+   * When {@code enableCalculator} is false (e.g. manual override), hood and flywheel targets are
+   * not updated so manual override controls are functional.
    */
-  public static void setShooterTarget(
-      Drive drive, Turret turret, Hood hood, Flywheel flywheel, boolean hoodEnabled) {
+  public static void setShooterTarget(Drive drive, Turret turret, Hood hood, Flywheel flywheel, boolean hoodEnabled, boolean enableCalculator) {
     Pose2d pose = drive.getPose();
     ChassisSpeeds fieldSpeeds = drive.getFieldRelativeChassisSpeeds();
     Translation3d target3d = getShooterTarget3d();
@@ -179,8 +180,10 @@ public final class ShooterCommands {
             shot.getHoodAngle().in(Radians),
             HoodConstants.kMinAngleRad,
             HoodConstants.kMaxAngleRad);
-    hood.setTargetAngleRad(hoodRad);
-    flywheel.setTargetVelocityRadsPerSec(flywheelRadsPerSec);
+    if (enableCalculator) {
+      hood.setTargetAngleRad(hoodRad);
+      flywheel.setTargetVelocityRadsPerSec(flywheelRadsPerSec);
+    }
 
     // Turret aims at predicted target so ball + robot velocity hits hub
     lastTurretAngleFromShot =

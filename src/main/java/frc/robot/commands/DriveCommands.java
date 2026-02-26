@@ -95,7 +95,19 @@ public class DriveCommands {
   public static double getMaxAngularRate() {
     return MAX_ANGULAR_RATE;
   } // End getMaxAngularRate
-  
+
+  /**
+   * Returns the angular rate (rad/s) to rotate the robot toward the alliance hub.
+   *
+   * @param drive Drive subsystem (for pose and heading)
+   * @param faceTargetController ProfiledPIDController for rotation
+   * @return Angular velocity in rad/s (positive = CCW)
+   */
+  public static double computeOmegaToFaceHub(Drive drive, ProfiledPIDController faceTargetController) {
+    Rotation2d targetAngle = ShooterCommands.getFieldAngleToHubFromPivot(drive);
+    return faceTargetController.calculate(drive.getRotation().getRadians(), targetAngle.getRadians());
+  } // End computeOmegaToFaceHub
+
   // ============================================================================
   // Private Helper Methods
   // ============================================================================
@@ -321,9 +333,7 @@ public class DriveCommands {
           double rotationalRate;
           if (faceTargetEnabledSupplier.getAsBoolean()) {
             // Calculate target angle and use PID controller to rotate toward it
-            Rotation2d targetAngle = ShooterCommands.getFieldAngleToHubFromPivot(drive);
-            rotationalRate =
-                faceTargetController.calculate(drive.getRotation().getRadians(), targetAngle.getRadians());
+            rotationalRate = computeOmegaToFaceHub(drive, faceTargetController);
           } else {
             // Apply rotation deadband
             double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), XBOX_JOYSTICK_DEADBAND);

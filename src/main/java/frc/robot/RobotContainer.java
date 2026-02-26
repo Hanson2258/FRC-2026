@@ -32,6 +32,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ShooterCommands;
+import frc.robot.commands.TeleopDrive;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.intake.*;
@@ -77,7 +78,8 @@ public class RobotContainer {
 	private boolean isHoodEnabled = false;
 	private boolean isFlywheelEnabled = true;
 
-	//region 
+	// Drive Commands
+	private final TeleopDrive teleopDrive;
 
 	// Subsystems
 	private final Drive drive;
@@ -111,7 +113,7 @@ public class RobotContainer {
 	private final LoggedDashboardChooser<Command> autoChooser;
 
 	// Manual Override
-	public static boolean manualOverride = true; // TODO: Implement manual override properly, and change back to false
+	public static boolean manualOverride = false;
 
 	// Face Target mode
 	private boolean isFacingHub = false;
@@ -255,13 +257,18 @@ public class RobotContainer {
 		shooter = new Shooter(drive, agitator, transfer, turret, hood, flywheel, isHoodEnabled);
 		shootWhenReadyCommand = new ShootWhenReadyCommand(agitator, transfer, shooter);
 		shooter.setShootCommandScheduledSupplier(shootWhenReadyCommand::isScheduled);
+		shooter.setManualOverrideSupplier(() -> manualOverride);
 
 		/// ---------------------------------------------------------------------------------------------------------------
 		/// ----------------------------------------------- Drive Commands ------------------------------------------------
-		/// ---------------------------------------------------------------------------------------------------------------		// Initialize face-target PID controller (using same constants as DriveCommands)
+		/// ---------------------------------------------------------------------------------------------------------------
+		// Initialize face-target PID controller
+		// Rotate so Turret pivot aims at hub, not robot center. Same PID constants as DriveCommands.
 		faceTargetController = new ProfiledPIDController(DriveCommands.getAngleKp(), 0.0, DriveCommands.getAngleKd(),
 		new TrapezoidProfile.Constraints(DriveCommands.getAngleMaxVelocity(), DriveCommands.getAngleMaxAcceleration()));
-    faceTargetController.enableContinuousInput(-Math.PI, Math.PI);
+		faceTargetController.enableContinuousInput(-Math.PI, Math.PI);
+
+		teleopDrive = new TeleopDrive(drive, driverController, () -> isRobotCentric, () -> isFacingHub, faceTargetController);
 
 		/// ---------------------------------------------------------------------------------------------------------------
 		/// ------------------------------------------ Shooter Subsystem Commands -----------------------------------------
@@ -383,23 +390,11 @@ public class RobotContainer {
   private void configureDriverBindings(boolean enableDriving) {
     // Drive disabled: stop all movement
     if (!enableDriving) {      
-      drive.setDefaultCommand(
-          Commands.run(() -> drive.runVelocity(new ChassisSpeeds(0.0, 0.0, 0.0)), drive));
-      return;
+      drive.setDefaultCommand(Commands.run(() -> drive.runVelocity(new ChassisSpeeds(0.0, 0.0, 0.0)), drive));
     }
 		else {
-			// Drive enabled: field/robot-centric drive with turbo and optional face-target
-			drive.setDefaultCommand(
-					DriveCommands.joystickDriveWithTurboAndFaceTarget(
-							drive,
-							() -> -driverController.getLeftX(), // X-axis (left/right)
-							() -> -driverController.getLeftY(), // Y-axis (forward/backward)
-							() -> -driverController.getRightX(), // Omega (rotation)
-							() -> driverController.getRightTriggerAxis(), // Turbo
-							() -> isFacingHub, // Face-target enabled
-							() -> isRobotCentric, // Robot-centric (true) vs field-centric (false)
-							faceTargetController,
-							true)); // usePhysicalMaxSpeed: false = use artificial limit (1.6 m/s), true = use physical max TODO enable truemax speed
+			// Drive enabled: TeleopDrive
+			drive.setDefaultCommand(teleopDrive);
 
 			// Switch to X pattern when X button is pressed
 			driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
@@ -423,7 +418,6 @@ public class RobotContainer {
 
 			// Toggle robot-centric vs field-centric drive
 			driverController.rightBumper().onTrue(Commands.runOnce(() -> isRobotCentric = !isRobotCentric, drive));
-
 
 			// -------- Auto Pathfind to Target --------
 			// Pathfind then follow path to outpost when D-pad up is held
@@ -465,18 +459,16 @@ public class RobotContainer {
     }
 
 		// --------------------------------------- Manual Override + Encoder Reset --------------------------------------
-		// If Manual Override is false, become true
-		// If Manual Override is true, reset encoder positions, and then become false
-		driverController.back().onTrue(Commands.runOnce(() -> 
+		// If Manual Override is false, become true. 
+		// If true, reset encoder positions and then become false.
+		driverController.back().onTrue(
 			new ConditionalCommand(
 				new ParallelCommandGroup(
 					// TODO: Reset encoder positions
 					Commands.runOnce(() -> manualOverride = false)
-				), 
+				),
 				Commands.runOnce(() -> manualOverride = true),
-				() -> manualOverride)
-			)
-		);
+				() -> manualOverride));
   }
 
   /** 
@@ -484,112 +476,117 @@ public class RobotContainer {
    */
   private void configureOperatorBindings(boolean enableOperatorControls) {
     // Operator Controls Enabled
-    if (enableOperatorControls) {
-			// Enable/ Disable Intake
-			operatorController.leftTrigger().onTrue(Commands.runOnce(() -> intake.setIntakingMode(), intake));
-			operatorController.leftTrigger().onFalse(Commands.runOnce(() -> intake.setIdleMode(), intake));
+    if (!enableOperatorControls) {
+			return;
+		}
 
-			operatorController.rightTrigger().onTrue(Commands.runOnce(() -> intake.setReversingMode(), intake));
-			operatorController.rightTrigger().onFalse(Commands.runOnce(() -> intake.setIdleMode(), intake));
+		// Enable/ Disable Intake
+		operatorController.leftTrigger().onTrue(Commands.runOnce(() -> intake.setIntakingMode(), intake));
+		operatorController.leftTrigger().onFalse(Commands.runOnce(() -> intake.setIdleMode(), intake));
 
-			// Set Agitator, Transfer, and Flywheel to idle mode when B is pressed
-			operatorController.b().onTrue(Commands.runOnce(() -> {
-				if (agitator != null) agitator.setIdleMode();
-				if (transfer != null) transfer.setIdleMode();
-				if (flywheel != null) flywheel.setState(FlywheelState.IDLE);
-			}, agitator, transfer, flywheel));
+		operatorController.rightTrigger().onTrue(Commands.runOnce(() -> intake.setReversingMode(), intake));
+		operatorController.rightTrigger().onFalse(Commands.runOnce(() -> intake.setIdleMode(), intake));
 
-			
-			// --------------------------------------- Manual Override + Encoder Reset --------------------------------------
-			// If Manual Override is false, become true
-			// If Manual Override is true, reset encoder positions, and then become false
-			driverController.back().onTrue(Commands.runOnce(() -> 
-				new ConditionalCommand(
-					new ParallelCommandGroup(
-						// TODO: Reset encoder positions
-						Commands.runOnce(() -> manualOverride = false)
-					), 
-					Commands.runOnce(() -> manualOverride = true),
-					() -> manualOverride)
-				));
-    	}
+		
+		// --------------------------------------- Manual Override + Encoder Reset --------------------------------------
+		// If Manual Override is false, become true. 
+		// If true, reset encoder positions and then become false.
+		operatorController.back().onTrue(
+			new ConditionalCommand(
+				new ParallelCommandGroup(
+					// TODO: Reset encoder positions
+					Commands.runOnce(() -> manualOverride = false)
+				),
+				Commands.runOnce(() -> manualOverride = true),
+				() -> manualOverride));
 
-			// Intake Manual Voltage Control
-			final double intakeStepVoltage = 0.25;
-			// Raise Intake voltage
-			operatorController.povLeft().onTrue(
-				new ConditionalCommand(
-					Commands.runOnce(() -> intake.stepVoltage(intakeStepVoltage), intake),
-					new InstantCommand(),
-					() -> (manualOverride && intake != null)
-				)
-			);
-			// Lower Intake voltage
-			operatorController.povRight().onTrue(
-				new ConditionalCommand(
-					Commands.runOnce(() -> intake.stepVoltage(-intakeStepVoltage), intake),
-					new InstantCommand(),
-					() -> (manualOverride && intake != null)
-				)
-			);
+		// Set Agitator, Transfer, and Flywheel to idle mode when B is pressed
+		operatorController.b().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> {
+					if (agitator != null) agitator.setIdleMode();
+					if (transfer != null) transfer.setIdleMode();
+					if (flywheel != null) flywheel.setState(FlywheelState.IDLE);
+				}, agitator, transfer, flywheel),
+				new InstantCommand(),
+				() -> manualOverride));
 
-			// Agitator Manual Voltage Control
-			final double agitatorStepVoltage = 0.25;
-			// Raise Agitator voltage
-			operatorController.y().onTrue(
-				new ConditionalCommand(
-					Commands.runOnce(() -> agitator.stepVoltage(agitatorStepVoltage), agitator),
-					new InstantCommand(),
-					() -> (manualOverride && agitator != null)
-				)
-			);
-			// Lower Agitator voltage
-			operatorController.a().onTrue(
-				new ConditionalCommand(
-					Commands.runOnce(() -> agitator.stepVoltage(-agitatorStepVoltage), agitator),
-					new InstantCommand(),
-					() -> (manualOverride && agitator != null)
-				)
-			);
+		// Intake Manual Voltage Control
+		final double intakeStepVoltage = 0.25;
+		// Raise Intake voltage
+		operatorController.povLeft().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> intake.stepVoltage(intakeStepVoltage), intake),
+				new InstantCommand(),
+				() -> (manualOverride && intake != null)
+			)
+		);
+		// Lower Intake voltage
+		operatorController.povRight().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> intake.stepVoltage(-intakeStepVoltage), intake),
+				new InstantCommand(),
+				() -> (manualOverride && intake != null)
+			)
+		);
 
-			// Transfer Manual Voltage Control
-			final double transferStepVoltage = 0.25;
-			// Raise Transfer voltage
-			operatorController.leftBumper().onTrue(
-				new ConditionalCommand(
-					Commands.runOnce(() -> transfer.stepVoltage(transferStepVoltage), transfer),
-					new InstantCommand(),
-					() -> (manualOverride && transfer != null)
-				)
-			);
-			// Lower Transfer voltage
-			operatorController.rightBumper().onTrue(
-				new ConditionalCommand(
-					Commands.runOnce(() -> transfer.stepVoltage(-transferStepVoltage), transfer),
-					new InstantCommand(),
-					() -> (manualOverride && transfer != null)
-				)
-			);
+		// Agitator Manual Voltage Control
+		final double agitatorStepVoltage = 0.25;
+		// Raise Agitator voltage
+		operatorController.y().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> agitator.stepVoltage(agitatorStepVoltage), agitator),
+				new InstantCommand(),
+				() -> (manualOverride && agitator != null)
+			)
+		);
+		// Lower Agitator voltage
+		operatorController.a().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> agitator.stepVoltage(-agitatorStepVoltage), agitator),
+				new InstantCommand(),
+				() -> (manualOverride && agitator != null)
+			)
+		);
 
-			// Flywheel Manual Velocity Control
-    	final double stepRpm = 50.0;
-    	final double stepRadsPerSec = Units.rotationsPerMinuteToRadiansPerSecond(stepRpm);
-			// Raise Flywheel rpm
-    	operatorController.povUp().onTrue(
-				new ConditionalCommand(
-    			Commands.runOnce(() -> flywheel.stepVelocityRadsPerSec(stepRadsPerSec), flywheel),
-					new InstantCommand(),
-					() -> (manualOverride && flywheel != null)
-				)
-			);
-			// Lower Flywheel rpm
-    	operatorController.povDown().onTrue(
-				new ConditionalCommand(
-    	  	Commands.runOnce(() -> flywheel.stepVelocityRadsPerSec(-stepRadsPerSec), flywheel),
-					new InstantCommand(),
-					() -> (manualOverride && flywheel != null)
-				)
-			);
+		// Transfer Manual Voltage Control
+		final double transferStepVoltage = 0.25;
+		// Raise Transfer voltage
+		operatorController.leftBumper().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> transfer.stepVoltage(transferStepVoltage), transfer),
+				new InstantCommand(),
+				() -> (manualOverride && transfer != null)
+			)
+		);
+		// Lower Transfer voltage
+		operatorController.rightBumper().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> transfer.stepVoltage(-transferStepVoltage), transfer),
+				new InstantCommand(),
+				() -> (manualOverride && transfer != null)
+			)
+		);
+
+		// Flywheel Manual Velocity Control
+		final double stepRpm = 50.0;
+		final double stepRadsPerSec = Units.rotationsPerMinuteToRadiansPerSecond(stepRpm);
+		// Raise Flywheel rpm
+		operatorController.povUp().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> flywheel.stepVelocityRadsPerSec(stepRadsPerSec), flywheel),
+				new InstantCommand(),
+				() -> (manualOverride && flywheel != null)
+			)
+		);
+		// Lower Flywheel rpm
+		operatorController.povDown().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> flywheel.stepVelocityRadsPerSec(-stepRadsPerSec), flywheel),
+				new InstantCommand(),
+				() -> (manualOverride && flywheel != null)
+			)
+		);
   } // End configureOperatorBindings
 
 

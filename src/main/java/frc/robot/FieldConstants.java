@@ -49,6 +49,25 @@ public final class FieldConstants {
   /** Field center Y (m). */
   public static final double FIELD_CENTER_Y_M = 4.021328;
 
+  /** Field width (m). */
+  public static final double FIELD_WIDTH_M = 2.0 * FIELD_CENTER_Y_M;
+
+  // ---------- Trench and bump (for zone-based drive assist) ----------
+  /** X position of center of trench/bump (m). ~181.56 in. */
+  public static final double TRENCH_BUMP_X_M = 4.611624;
+  /** Y width of trench (m). ~49.86 in. */
+  public static final double TRENCH_WIDTH_M = 1.266444;
+  /** X length of trench and bump (m). ~47 in. */
+  public static final double TRENCH_BUMP_LENGTH_M = 1.1938;
+  /** X width of trench bar (m). ~4 in. */
+  public static final double TRENCH_BAR_WIDTH_M = 0.1016;
+  /** Y width of block between bump and trench (m). ~12 in. */
+  public static final double TRENCH_BLOCK_WIDTH_M = 0.3048;
+  /** Y width of bump (m). ~73 in. */
+  public static final double BUMP_WIDTH_M = 1.8542;
+  /** Trench center Y (m). */
+  public static final double TRENCH_CENTER_M = TRENCH_WIDTH_M / 2.0;
+
   /** Passing spot left (90 in from blue driver wall, 85 in left of field center). */
   public static final Translation3d BLUE_PASSING_SPOT_LEFT = new Translation3d(2.286, 6.180328, 0);
 

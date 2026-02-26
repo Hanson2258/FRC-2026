@@ -269,6 +269,17 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
   }
 
   /**
+   * Runs the drive with field-relative velocities (same as sample driveFieldCentric).
+   *
+   * @param vxMetersPerSecond Field-relative X velocity (m/s)
+   * @param vyMetersPerSecond Field-relative Y velocity (m/s)
+   * @param omegaRadiansPerSecond Angular velocity (rad/s)
+   */
+  public void driveFieldCentric(double vxMetersPerSecond, double vyMetersPerSecond, double omegaRadiansPerSecond) {
+    runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(vxMetersPerSecond, vyMetersPerSecond, omegaRadiansPerSecond, getRotation()));
+  }
+
+  /**
    * Stops the drive and turns the modules to an X arrangement to resist movement. The modules will
    * return to their normal orientations the next time a nonzero velocity is requested.
    */
