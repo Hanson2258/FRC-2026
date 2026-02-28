@@ -505,7 +505,7 @@
             "x": 0.0,
             "y": 95.0,
             "width": 285.0,
-            "height": 570.0,
+            "height": 665.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -582,31 +582,31 @@
                 }
               },
               {
-                "title": "AppliedVolts",
+                "title": "TargetVelocityRadsPerSec",
                 "x": 0.0,
-                "y": 475.0,
+                "y": 0.0,
                 "width": 190.0,
                 "height": 190.0,
                 "type": "Text Display",
                 "properties": {
-                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/Inputs/AppliedVolts",
+                  "topic": "/SmartDashboard/Flywheel/TargetVelocityRadsPerSec",
                   "period": 0.06,
                   "data_type": "double",
                   "show_submit_button": true
                 }
               },
               {
-                "title": "VelocityRadsPerSec",
+                "title": "State",
                 "x": 0.0,
-                "y": 570.0,
+                "y": 0.0,
                 "width": 190.0,
                 "height": 190.0,
                 "type": "Text Display",
                 "properties": {
-                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/Inputs/VelocityRadsPerSec",
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/State",
                   "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": true
+                  "data_type": "string",
+                  "show_submit_button": false
                 }
               }
             ]
@@ -616,7 +616,7 @@
             "x": 285.0,
             "y": 95.0,
             "width": 190.0,
-            "height": 380.0,
+            "height": 475.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -637,14 +637,14 @@
                 }
               },
               {
-                "title": "kP",
-                "x": 0.0,
-                "y": 0.0,
+                "title": "PositionRads",
+                "x": 285.0,
+                "y": 285.0,
                 "width": 190.0,
                 "height": 190.0,
                 "type": "Text Display",
                 "properties": {
-                  "topic": "/SmartDashboard/Turret/kP",
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Turret/Inputs/PositionRads",
                   "period": 0.06,
                   "data_type": "double",
                   "show_submit_button": true
@@ -676,6 +676,34 @@
                   "period": 0.06,
                   "data_type": "double",
                   "show_submit_button": true
+                }
+              },
+              {
+                "title": "kP",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Turret/kP",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              },
+              {
+                "title": "kI",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Flywheel/kI",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
                 }
               }
             ]
