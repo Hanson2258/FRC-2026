@@ -5,7 +5,7 @@ import com.revrobotics.spark.config.SparkBaseConfig;
 import edu.wpi.first.math.util.Units;
 
 /** Constants for the Hood (position-controlled shooter angle) subsystem. */
-public final class HoodConstants { // TODO: Add correct values
+public final class HoodConstants { // XXX: Add correct values
 
   private HoodConstants() {}
 
@@ -36,7 +36,7 @@ public final class HoodConstants { // TODO: Add correct values
   public static final double kEncoderZeroOffsetRad = 0.0;
 
   /** Minimum Hood angle. */
-  public static final double kMinAngleRad = Units.degreesToRadians(30.0);
+  public static final double kMinAngleRad = Units.degreesToRadians(40.0);
 
   /** Maximum Hood angle. */
   public static final double kMaxAngleRad = Units.degreesToRadians(10.0);

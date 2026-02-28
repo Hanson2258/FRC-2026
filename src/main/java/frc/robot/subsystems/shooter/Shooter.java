@@ -29,6 +29,8 @@ public class Shooter extends SubsystemBase {
   private BooleanSupplier shootCommandScheduledSupplier = () -> false;
   /** Set by ShootWhenReadyCommand in initialize/end so active is true when running. */
   private volatile boolean shootCommandActive = false;
+  /** When true, ShooterCommands.setShooterTarget will not apply calculator to Hood/Flywheel (Manual Override). */
+  private BooleanSupplier manualOverrideSupplier = () -> false;
 
   public Shooter(
       Drive drive,
@@ -52,6 +54,11 @@ public class Shooter extends SubsystemBase {
     shootCommandScheduledSupplier = supplier != null ? supplier : () -> false;
   } // End setShootCommandScheduledSupplier
 
+  /** Set by RobotContainer so calculator does not overwrite hood/flywheel when operator is in manual override. */
+  public void setManualOverrideSupplier(BooleanSupplier supplier) {
+    manualOverrideSupplier = supplier != null ? supplier : () -> false;
+  } // End setManualOverrideSupplier
+
   /** Set by ShootWhenReadyCommand in initialize/end so active is true whenever the command is running. */
   public void setShootCommandActive(boolean active) {
     shootCommandActive = active;
@@ -65,7 +72,6 @@ public class Shooter extends SubsystemBase {
   @Override
   public void periodic() {
     Logger.recordOutput("ShooterCommand/Target", ShooterCommands.getShooterTargetName());
-    ShooterCommands.setShooterTarget(drive, hood, flywheel, hoodEnabled);
     Logger.recordOutput("ShooterCommand/ShootWhenReadyCommandActive", shootCommandScheduledSupplier.getAsBoolean() || shootCommandActive);
     Logger.recordOutput("ShooterCommand/Ready/IsReadyToShoot", isReadyToShoot());
     Logger.recordOutput("ShooterCommand/Ready/AllianceZoneOk", !ShooterCommands.isShooterTargetHub() || AllianceUtil.isInAllianceZone(drive.getPose().getX()));
@@ -74,6 +80,8 @@ public class Shooter extends SubsystemBase {
     Logger.recordOutput("ShooterCommand/Ready/HoodAtTarget", !hoodEnabled || hood.atTarget());
     Logger.recordOutput("ShooterCommand/Ready/FlywheelAtTarget", flywheel.atTargetVelocity());
     Logger.recordOutput("ShooterCommand/Ready/FlywheelNotIdle", flywheel.getState() != FlywheelState.IDLE);
+
+    ShooterCommands.setShooterTarget(drive, turret, hood, flywheel, hoodEnabled, !manualOverrideSupplier.getAsBoolean());
   } // End periodic
 
   /** Turret aimed at hub (hub in range and at target), Flywheel not idle and at speed; (Optional) Hood at target. When target is hub, robot must be in alliance zone. */

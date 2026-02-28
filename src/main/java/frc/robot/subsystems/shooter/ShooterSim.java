@@ -62,14 +62,13 @@ public class ShooterSim {
 
     double turretYawRad = turret.getPosition().getRadians();
     double hoodAngleRad = hood.getAngleRad();
-    double flywheelRadPerSec = flywheel.getTargetVelocityRadsPerSec();
-    double launchSpeedMetersPerSec =
-        flywheelRadPerSec * FlywheelConstants.kFlywheelRadiusMeters;
+    double flywheelSurfaceMps = flywheel.getTargetVelocityRadsPerSec() * FlywheelConstants.kFlywheelRadiusMeters;
+    double ballExitVelMps = flywheelSurfaceMps * ShooterConstants.kFlywheelSurfaceDivider;
 
     // Hood angle is from vertical; FuelSim expects elevation (0 = horizontal, 90 = up)
     double elevationRad = Math.PI / 2 - hoodAngleRad;
     fuelSim.launchFuel(
-        MetersPerSecond.of(launchSpeedMetersPerSec),
+        MetersPerSecond.of(ballExitVelMps),
         Radians.of(elevationRad),
         Radians.of(turretYawRad),
         ShooterConstants.robotToTurret);

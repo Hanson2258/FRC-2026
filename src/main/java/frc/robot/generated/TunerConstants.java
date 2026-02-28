@@ -23,7 +23,7 @@ public class TunerConstants {
 
     // The steer motor uses any SwerveModule.SteerRequestType control request with the
     // output type specified by SwerveModuleConstants.SteerMotorClosedLoopOutput
-  private static final Slot0Configs steerGains = // TODO: Tune steering vals
+  private static final Slot0Configs steerGains = // XXX: Tune steering vals
       new Slot0Configs()
           .withKP(45)
           .withKI(0)
@@ -34,7 +34,7 @@ public class TunerConstants {
         .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
     // When using closed-loop control, the drive motor uses the control
     // output type specified by SwerveModuleConstants.DriveMotorClosedLoopOutput
-  private static final Slot0Configs driveGains = // TODO: Tune driving vals
+  private static final Slot0Configs driveGains = // XXX: Tune driving vals
       new Slot0Configs().withKP(0.2).withKI(0).withKD(0.01)
         .withKS(0.1).withKV(0.08).withKA(0.0);
 
@@ -67,7 +67,7 @@ public class TunerConstants {
                   // Swerve azimuth does not require much torque output, so we can set a relatively
                   // low
                 // stator current limit to help avoid brownouts without impacting performance.
-                  .withStatorCurrentLimit(Amps.of(25)) // TODO: Was 20, changebefore comp
+                  .withStatorCurrentLimit(Amps.of(25)) // XXX: Was 20, changebefore comp
                   .withStatorCurrentLimitEnable(true));
   private static final TalonFXConfiguration steerInitialConfigs =
       new TalonFXConfiguration()
@@ -76,7 +76,7 @@ public class TunerConstants {
                   // Swerve azimuth does not require much torque output, so we can set a relatively
                   // low
                   // stator current limit to help avoid brownouts without impacting performance.
-                  .withStatorCurrentLimit(Amps.of(13)) // TODO: Was 18, change before comp
+                  .withStatorCurrentLimit(Amps.of(13)) // XXX: Was 18, change before comp
                   .withStatorCurrentLimitEnable(true));
     private static final CANcoderConfiguration encoderInitialConfigs = new CANcoderConfiguration();
     // Configs for the Pigeon 2; leave this null to skip applying Pigeon 2 configs
@@ -285,7 +285,7 @@ public class TunerConstants {
         public TunerSwerveDrivetrain(
             SwerveDrivetrainConstants drivetrainConstants,
             double odometryUpdateFrequency,
-            Matrix<N3, N1> odometryStandardDeviation,//set this TODO
+            Matrix<N3, N1> odometryStandardDeviation,
             Matrix<N3, N1> visionStandardDeviation,
             SwerveModuleConstants<?, ?, ?>... modules
         ) {

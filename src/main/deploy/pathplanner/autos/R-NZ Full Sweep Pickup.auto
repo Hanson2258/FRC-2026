@@ -1,0 +1,68 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Intake On"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Flywheel On"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Set Shooter Target Hub"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "R-NZ Go To Fuel"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Collect Fuel"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Shooting Position"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot When Ready"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 7.0
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "Neutral Zone Sweeps",
+  "choreoAuto": false
+}

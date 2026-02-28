@@ -19,7 +19,7 @@ public final class ShooterConstants {
 
   /** Transform from robot center to turret pivot. +X = forward, +Y = left, +Z = up (meters). */
   public static final Transform3d robotToTurret =
-      new Transform3d(-0.17, 0.05, 0.35, Rotation3d.kZero);
+      new Transform3d(-0.127, -0.2286, 0.3556, Rotation3d.kZero);
 
   /** Distance above funnel the trajectory must pass (20 in), meters. */
   public static final double kDistanceAboveFunnelM = Units.inchesToMeters(20.0);
@@ -31,10 +31,16 @@ public final class ShooterConstants {
   public static final double kPhaseDelaySec = 0.03;
 
   /**
-   * Multiplier on calculator exit velocity (e.g. for air resistance). 1.0 = no change; increase if it under
-   * is undershooting, decrease if it is overshooting. // TODO: tune this value
+   * Multiplier on calculator exit velocity (e.g. for air resistance). 1.0 = no change; increase if it
+   * is undershooting, decrease if overshooting.
    */
-  public static final double kExitVelocityCompensationMultiplier = 3.1;
+  public static final double kExitVelocityCompensationMultiplier = 1.2;
+
+  /**
+   * Single flywheel at bottom: flywheel surface speed = exit velocity / this divider (e.g. 0.5
+   * means spin flywheel 2x so ball gets desired speed).
+   */
+  public static final double kFlywheelSurfaceDivider = 0.5;
 
   /** Scale linear velocity: base in/s, multiplier, power for distance term (unused by current shot). */
   public static final double kScaleLinearVelocityBaseInPerS = 50.0;

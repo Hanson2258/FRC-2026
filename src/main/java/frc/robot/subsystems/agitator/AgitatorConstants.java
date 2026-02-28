@@ -3,7 +3,7 @@ package frc.robot.subsystems.agitator;
 import com.revrobotics.spark.config.SparkBaseConfig;
 
 /** Constants for the Agitator (intake-to-transfer) subsystem. */
-public final class AgitatorConstants { // TODO: Add correct values
+public final class AgitatorConstants { // XXX: Add correct values
 
   private AgitatorConstants() {}
 

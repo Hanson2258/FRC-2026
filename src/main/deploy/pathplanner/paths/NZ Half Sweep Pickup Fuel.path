@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.334901610017889,
-        "y": 5.844132379248658
+        "x": 7.272,
+        "y": 1.3027329192546575
       },
       "prevControl": null,
       "nextControl": {
-        "x": 8.334901610017889,
-        "y": 5.131381705397561
+        "x": 7.272086627810203,
+        "y": 1.552732904245902
       },
       "isLocked": false,
-      "linkedName": "Center Left"
+      "linkedName": "Path1End"
     },
     {
       "anchor": {
-        "x": 8.27,
-        "y": 2.6023522727272734
+        "x": 7.272,
+        "y": 3.9263531499556343
       },
       "prevControl": {
-        "x": 8.27,
-        "y": 3.237536831951448
+        "x": 7.263407269378097,
+        "y": 3.6765008636333767
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Center Right After Collect"
+      "linkedName": "NZHalfSweepPickupFuel"
     }
   ],
   "rotationTargets": [],
@@ -41,14 +41,14 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 1.0,
-    "rotation": -116.56505117707792
+    "velocity": 0,
+    "rotation": 51.234
   },
   "reversed": false,
-  "folder": null,
+  "folder": "R-NZ Half Sweep",
   "idealStartingState": {
-    "velocity": 1.0,
-    "rotation": -118.49563861824491
+    "velocity": 0,
+    "rotation": 51.234
   },
   "useDefaultConstraints": true
 }

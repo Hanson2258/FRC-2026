@@ -1,13 +1,19 @@
 package frc.robot.subsystems.shooter.turret;
 
-import static frc.robot.subsystems.shooter.turret.TurretConstants.*;
+import java.util.function.BooleanSupplier;
+
+import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import org.littletonrobotics.junction.Logger;
+import frc.robot.commands.ShooterCommands;
+import frc.robot.subsystems.drive.Drive;
+import static frc.robot.subsystems.shooter.turret.TurretConstants.kEncoderZeroOffsetRad;
+import static frc.robot.subsystems.shooter.turret.TurretConstants.kMaxAngleRad;
+import static frc.robot.subsystems.shooter.turret.TurretConstants.kMinAngleRad;
 
 /** Turret subsystem: one motor with onboard position control, aimed at a hub angle. */
 public class Turret extends SubsystemBase {
@@ -17,14 +23,33 @@ public class Turret extends SubsystemBase {
 
   private static final double kAtHubToleranceRad = Units.degreesToRadians(2.0);
   private Rotation2d hubAngleRelativeToRobot = Rotation2d.kZero;
+  private double velocityFeedforwardRadPerSec = 0.0;
+
+  /** When false, the turret will automatically aim towards the hub */
+  private BooleanSupplier manualOverrideSupplier = () -> false;
+  private Drive drive;
 
   public Turret(TurretIO io) {
     turretIO = io;
   } // End Turret Constructor
 
+  public void setManualOverrideSupplier(BooleanSupplier supplier) {
+    manualOverrideSupplier = supplier != null ? supplier : () -> false;
+  } // End setManualOverrideSupplier
+
+  public void setDrive(Drive drive) {
+    this.drive = drive;
+  } // End setDrive
+
   @Override
   public void periodic() {
     turretIO.updateInputs(turretInputs);
+
+    if (!manualOverrideSupplier.getAsBoolean()) {
+		  setHubAngleRelativeToRobot(ShooterCommands.getTurretAngleFromShot(drive));
+		  setVelocityFeedforwardRadPerSec(-drive.getFieldRelativeChassisSpeeds().omegaRadiansPerSecond);
+    }
+
     double targetPositionRad = DriverStation.isDisabled() ? 0.0 : getClampedHubAngleRad() - kEncoderZeroOffsetRad;
     Logger.recordOutput("Subsystems/Shooter/Turret/Inputs/MotorConnected", turretInputs.motorConnected);
     Logger.recordOutput("Subsystems/Shooter/Turret/Inputs/TargetPositionRads", targetPositionRad);
@@ -36,17 +61,32 @@ public class Turret extends SubsystemBase {
     Logger.recordOutput("Subsystems/Shooter/Turret/Inputs/SupplyCurrentAmps", turretInputs.supplyCurrentAmps);
 
     if (DriverStation.isDisabled()) {
-      turretIO.setTargetPosition(0.0);
+      turretIO.setTargetPosition(0.0, 0.0);
       return;
     }
 
-    turretIO.setTargetPosition(targetPositionRad);
+    turretIO.setTargetPosition(targetPositionRad, velocityFeedforwardRadPerSec);
   } // End periodic
+
+  /** Set velocity feedforward (rad/s) for spin compensation; e.g. -robot omega. */
+  public void setVelocityFeedforwardRadPerSec(double radPerSec) {
+    velocityFeedforwardRadPerSec = radPerSec;
+  } // End setVelocityFeedforwardRadPerSec
+
+  /** Resets the motors position to 0 */
+  public void resetMotorEncoder() {
+
+  } // End resetMotorEncoder
 
   /** Set the hub angle (robot frame: 0 = forward). Clamped to min/max in periodic. */
   public void setHubAngleRelativeToRobot(Rotation2d angle) {
     hubAngleRelativeToRobot = angle;
   } // End setHubAngleRelativeToRobot
+
+  /** Step the target voltage by the given amount. */
+  public void stepRads(double stepRads) {
+    setHubAngleRelativeToRobot(new Rotation2d(turretInputs.targetPositionRads).plus(new Rotation2d(stepRads)));
+  } // End stepVoltage
 
   /** Get the current hub angle. */
   public Rotation2d getHubAngleRelativeToRobot() {
@@ -57,6 +97,10 @@ public class Turret extends SubsystemBase {
   public Rotation2d getPosition() {
     return Rotation2d.fromRadians(turretInputs.positionRads + kEncoderZeroOffsetRad);
   } // End getPosition
+
+  public Rotation2d getTargetPosition() {
+    return Rotation2d.fromRadians(turretInputs.targetPositionRads + kEncoderZeroOffsetRad);
+  }
 
   /** Whether the requested hub angle is within turret physical limits (not clamped). */
   public boolean isHubInRange() {
@@ -73,6 +117,11 @@ public class Turret extends SubsystemBase {
 
   /** Hub angle (robot frame) clamped to turret min/max, in radians. */
   private double getClampedHubAngleRad() {
-    return MathUtil.clamp(hubAngleRelativeToRobot.getRadians(), kMinAngleRad, kMaxAngleRad);
+    return clampAngleRad(hubAngleRelativeToRobot.getRadians());
   } // End getClampedHubAngleRad
+
+  /** inputted variable clamped to turret min/max, in radians.  */
+  private double clampAngleRad(double radians) {
+    return MathUtil.clamp(radians, kMinAngleRad, kMaxAngleRad);
+  } // End clampAngleRad
 }

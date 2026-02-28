@@ -1,10 +1,10 @@
 {
   "hubs": [
     {
-      "x": -8,
-      "y": -8,
-      "width": 2576,
-      "height": 1048,
+      "x": 0,
+      "y": 245,
+      "width": 1920,
+      "height": 835,
       "state": {
         "sidebar": {
           "width": 452,
@@ -25,7 +25,6 @@
             "/Tuning/Turret/Flywheel",
             "/AdvantageKit",
             "/AdvantageKit/RealOutputs/Intake",
-            "/RealOutputs",
             "/Vision/Camera0",
             "/RealOutputs/ShooterVisualizer/HoodPose/rotation",
             "/RealOutputs/ShooterVisualizer/TurretPose",
@@ -35,7 +34,12 @@
             "/RealOutputs/Subsystems/Shooter/Flywheel",
             "/RealOutputs/Subsystems/Shooter/Flywheel/Inputs",
             "/RealOutputs/Shooter/Ready",
-            "/RealOutputs/Vision/Camera0"
+            "/RealOutputs/Vision/Camera0",
+            "/SmartDashboard",
+            "/SmartDashboard/Flywheel",
+            "/RealOutputs/Odometry",
+            "/RealOutputs",
+            "/RealOutputs/ComponentPoses"
           ]
         },
         "tabs": {
@@ -97,14 +101,14 @@
                 "cameraIndex": -1,
                 "orbitFov": 50,
                 "cameraPosition": [
-                  -13.568270152910971,
-                  9.617067206500463,
-                  0.3011809527323575
+                  -11.63367988479383,
+                  7.338858546364048,
+                  0.5958366881804233
                 ],
                 "cameraTarget": [
-                  -11.77546425430797,
-                  8.408785204610474,
-                  0.3108779170092054
+                  -10.8312003844299,
+                  6.742190650403799,
+                  0.5995881447012256
                 ]
               },
               "controlsHeight": 324
@@ -116,7 +120,7 @@
                 "sources": [
                   {
                     "type": "robot",
-                    "logKey": "/RealOutputs/FieldSimulation/RobotPosition",
+                    "logKey": "/RealOutputs/Odometry/Robot",
                     "logType": "Pose2d",
                     "visible": true,
                     "options": {
@@ -154,7 +158,7 @@
                     "type": "cone",
                     "logKey": "/RealOutputs/Vision/Camera0/CameraPose",
                     "logType": "Pose3d[]",
-                    "visible": true,
+                    "visible": false,
                     "options": {
                       "color": "#ff0000",
                       "position": "center"
@@ -168,17 +172,17 @@
                 "cameraIndex": -1,
                 "orbitFov": 50,
                 "cameraPosition": [
-                  -7.179875222337188,
-                  4.802124775857537,
-                  6.944314968195055
+                  12.654203393600216,
+                  8.35696380870955,
+                  -0.13116698044091893
                 ],
                 "cameraTarget": [
-                  -3.3571900648806063,
-                  0.35247648156800515,
-                  2.987327670335547
+                  -0.9395775970270397,
+                  -1.540142295692766,
+                  -0.037442022454950374
                 ]
               },
-              "controlsHeight": 200
+              "controlsHeight": 285
             }
           ]
         }

@@ -3,7 +3,7 @@ package frc.robot.subsystems.shooter.flywheel;
 import edu.wpi.first.math.util.Units;
 
 /** Constants for the flywheel subsystem. */
-public final class FlywheelConstants { // TODO: Add correct values
+public final class FlywheelConstants { // XXX: Add correct values
 
   private FlywheelConstants() {}
 

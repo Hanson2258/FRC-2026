@@ -28,7 +28,7 @@ public final class ShooterLookup {
 
   /** Distance (m), Hood Angle (deg), Flywheel Velocity (rpm) */
   private static final Entry[] TABLE = {
-    // TODO: Fill with tuned values from testing. Example: Entry.of(distanceM, angleDeg, rpm),
+    // XXX: Fill with tuned values from testing. Example: Entry.of(distanceM, angleDeg, rpm),
     Entry.of(2.0, 25.0, 3000.0),
     Entry.of(4.0, 35.0, 3500.0),
     Entry.of(6.0, 45.0, 4000.0),

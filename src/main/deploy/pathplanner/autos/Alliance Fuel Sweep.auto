@@ -1,0 +1,62 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Intake On"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Flywheel On"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Set Shooter Target Hub"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Alliance Sweep Pickup"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Alliance Sweep Shoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot When Ready"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 10.0
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

@@ -31,6 +31,7 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
 import frc.robot.FieldConstants;
+import frc.robot.subsystems.shooter.turret.TurretConstants;
 
 /**
  * Physics-based shooter calculator: funnel clearance parabola and iterative moving shot.
@@ -47,8 +48,7 @@ public class ShooterCalculator {
         double g = MetersPerSecondPerSecond.of(9.81).in(InchesPerSecondPerSecond);
         double vel = velocity.in(InchesPerSecond);
         double x_dist = getDistanceToTarget(robot, target).in(Inches);
-        double y_dist =
-                Units.metersToInches(target.getZ() - robotToTurret.getZ());
+        double y_dist = Units.metersToInches(target.getZ() - robotToTurret.getZ());
         double angle = Math.atan(
                 ((vel * vel) + Math.sqrt(Math.pow(vel, 4) - g * (g * x_dist * x_dist + 2 * y_dist * vel * vel)))
                         / (g * x_dist));
@@ -73,15 +73,34 @@ public class ShooterCalculator {
 
     // calculates the angle of a turret relative to the robot to hit a target
     public static Angle calculateAzimuthAngle(Pose2d robot, Translation3d target) {
+        return calculateAzimuthAngle(robot, target, 0.0);
+    }
+
+    /**
+     * Same as above but picks shortest path using current turret angle so the turret does not spin
+     * the long way; respects TurretConstants min/max.
+     */
+    public static Angle calculateAzimuthAngle(
+            Pose2d robot, Translation3d target, double currentTurretAngleRad) {
         Translation2d turretTranslation = new Pose3d(robot)
                 .transformBy(robotToTurret)
                 .toPose2d()
                 .getTranslation();
-
         Translation2d direction = target.toTranslation2d().minus(turretTranslation);
-
-        return Radians.of(MathUtil.angleModulus(
-                direction.getAngle().minus(robot.getRotation()).getRadians()));
+        double angleRad =
+                MathUtil.inputModulus(
+                        direction.getAngle().minus(robot.getRotation()).getRadians(),
+                        -Math.PI,
+                        Math.PI);
+        // Prefer ±2π so we stay within limits and take the shorter rotation
+        if (currentTurretAngleRad > 0
+                && angleRad + 2 * Math.PI <= TurretConstants.kMaxAngleRad) {
+            angleRad += 2 * Math.PI;
+        } else if (currentTurretAngleRad < 0
+                && angleRad - 2 * Math.PI >= TurretConstants.kMinAngleRad) {
+            angleRad -= 2 * Math.PI;
+        }
+        return Radians.of(angleRad);
     }
 
     // Move a target a set time in the future along a velocity defined by fieldSpeeds
@@ -94,10 +113,8 @@ public class ShooterCalculator {
 
     // Custom velocity ramp meant to minimize how fast the flywheels have to change speed
     public static LinearVelocity scaleLinearVelocity(Distance distanceToTarget) {
-        double velocity =
-                kScaleLinearVelocityBaseInPerS
-                        + kScaleLinearVelocityMultiplier
-                                * Math.pow(distanceToTarget.in(Inches), kScaleLinearVelocityPower);
+        double velocity =  kScaleLinearVelocityBaseInPerS + kScaleLinearVelocityMultiplier
+                             * Math.pow(distanceToTarget.in(Inches), kScaleLinearVelocityPower);
         return InchesPerSecond.of(velocity);
     }
 

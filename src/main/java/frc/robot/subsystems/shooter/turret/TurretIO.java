@@ -9,6 +9,7 @@ public interface TurretIO {
   class TurretIOInputs {
     public boolean motorConnected = false;
     public double positionRads = 0.0;
+    public double targetPositionRads = 0.0;
     public double velocityRadsPerSec = 0.0;
     public double appliedVolts = 0.0;
     public double supplyCurrentAmps = 0.0;
@@ -19,6 +20,17 @@ public interface TurretIO {
 
   /** Set the target position. */
   default void setTargetPosition(double targetRads) {}
+
+  /**
+   * Set target position and velocity feedforward (e.g. -robot omega for spin compensation).
+   * Default ignores velocity; override in IO implementations that support it.
+   */
+  default void setTargetPosition(double targetRads, double velocityFeedforwardRadPerSec) {
+    setTargetPosition(targetRads);
+  }
+
+  /** Sets the encoder position to 0 */
+  default void resetEncoder() {}
 
   /** Stop the motor (coast). */
   default void stop() {}
