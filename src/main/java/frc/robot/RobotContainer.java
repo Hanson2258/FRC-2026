@@ -410,8 +410,8 @@ public class RobotContainer {
 		}
 
 		// Enable/ Disable Intake
-		operatorController.leftTrigger().onTrue(Commands.runOnce(() -> intake.setIntakingMode(), intake));
-		operatorController.leftTrigger().onFalse(Commands.runOnce(() -> intake.setIdleMode(), intake));
+		//operatorController.leftTrigger().onTrue(Commands.runOnce(() -> intake.setIntakingMode(), intake));
+		//operatorController.leftTrigger().onFalse(Commands.runOnce(() -> intake.setIdleMode(), intake));
 
 		operatorController.rightTrigger().onTrue(Commands.runOnce(() -> intake.setReversingMode(), intake));
 		operatorController.rightTrigger().onFalse(Commands.runOnce(() -> intake.setIdleMode(), intake));
@@ -545,6 +545,8 @@ public class RobotContainer {
 				() -> (manualOverride && flywheel != null)
 			)
 		);
+
+		operatorController.leftTrigger().onTrue(Commands.runOnce(() -> {flywheel.setState(FlywheelState.CHARGING);}));
 		// Lower Flywheel rpm
 		operatorController.povDown().onTrue(
 			new ConditionalCommand(

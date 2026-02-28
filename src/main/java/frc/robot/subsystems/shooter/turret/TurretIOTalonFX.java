@@ -4,12 +4,14 @@ import static frc.robot.subsystems.shooter.turret.TurretConstants.*;
 import static frc.robot.util.PhoenixUtil.tryUntilOk;
 
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.StatusCode;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.generated.TunerConstants;
 
 /** Turret IO using Talon FX with onboard position control. */
@@ -19,6 +21,9 @@ public class TurretIOTalonFX implements TurretIO {
   private final PositionVoltage positionVoltageRequest = new PositionVoltage(0.0);
 
   private double targetPosition;
+  private double lastP = kP;
+  private double lastI = kI;
+  private double lastD = kD;
 
   public TurretIOTalonFX() {
     motor = new TalonFX(kMotorId, TunerConstants.kCANBus);
@@ -35,12 +40,27 @@ public class TurretIOTalonFX implements TurretIO {
 
   @Override
   public void updateInputs(TurretIOInputs inputs) {
+    double p = SmartDashboard.getNumber("Turret/kP", kP);
+    double i = SmartDashboard.getNumber("Turret/kI", kI);
+    double d = SmartDashboard.getNumber("Turret/kD", kD);
+    if (p != lastP || i != lastI || d != lastD) {
+      
+      lastP = p;
+      lastI = i;
+      lastD = d;
+
+      var slot0 = new Slot0Configs().withKP(p).withKI(i).withKD(d);
+      tryUntilOk(5, () -> motor.getConfigurator().apply(slot0, 0.25));
+
+    }
+    
+    
     var signalRefreshStatus =
         BaseStatusSignal.refreshAll(
             motor.getPosition(),
             motor.getVelocity(),
             motor.getMotorVoltage(),
-            motor.getSupplyCurrent());
+            motor.getSupplyCurrent());     
     inputs.motorConnected = signalRefreshStatus.equals(StatusCode.OK);
     double motorShaftRotations = motor.getPosition().getValueAsDouble();
     inputs.positionRads = Units.rotationsToRadians(motorShaftRotations) / kGearRatio;

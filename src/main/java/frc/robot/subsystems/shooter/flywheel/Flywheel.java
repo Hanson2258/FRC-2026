@@ -30,7 +30,6 @@ public class Flywheel extends SubsystemBase {
 
   private FlywheelState state = FlywheelState.IDLE;
   private double targetVelocityRadsPerSec = kDefaultTargetVelocityRadsPerSec;
-
   public Flywheel(FlywheelIO io) {
     flywheelIO = io;
     
@@ -56,11 +55,6 @@ public class Flywheel extends SubsystemBase {
     Logger.recordOutput("Subsystems/Shooter/Flywheel/State", state.name());
   
 
-    if (DriverStation.isDisabled()) {
-      flywheelIO.stop();
-      return;
-    }
-
     // Auto-transition Charging → AtSpeed when at target velocity
     if (state == FlywheelState.CHARGING && atTargetVelocity()) {
       state = FlywheelState.AT_SPEED;
@@ -71,13 +65,24 @@ public class Flywheel extends SubsystemBase {
       state = FlywheelState.CHARGING;
     }
 
+    targetVelocityRadsPerSec = SmartDashboard.getNumber("Flywheel/TargetVelocityRadsPerSec", kDefaultTargetVelocityRadsPerSec);
+  
     double velocityToUse = state == FlywheelState.IDLE ? kIdleVelocityRadsPerSec : targetVelocityRadsPerSec;
+    
+    if (DriverStation.isDisabled()) {
+      flywheelIO.stop();
+      return;
+    }
+    
     flywheelIO.setTargetVelocity(velocityToUse);
+
   } // End periodic
 
   /** Set the flywheel state. */
   public void setState(FlywheelState newState) {
     state = newState;
+
+    
   } // End setState
 
   /** Set the target velocity (rad/s) used when state is Charging or AtSpeed. */
