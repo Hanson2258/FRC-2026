@@ -33,6 +33,7 @@ public class Flywheel extends SubsystemBase {
     SmartDashboard.putNumber("Flywheel/kD", kD);
     SmartDashboard.putNumber("Flywheel/kV", kV);
     SmartDashboard.putNumber("Flywheel/kS", kS);
+    SmartDashboard.putNumber("Flywheel/TargetVelocityRadsPerSec", targetVelocityRadsPerSec);
   } // End Flywheel Constructor
 
   @Override
@@ -46,6 +47,7 @@ public class Flywheel extends SubsystemBase {
     Logger.recordOutput("Subsystems/Shooter/Flywheel/VelocityRpm", getVelocityRpm());
     Logger.recordOutput("Subsystems/Shooter/Flywheel/TargetVelocityRpm", getTargetVelocityRpm());
     Logger.recordOutput("Subsystems/Shooter/Flywheel/State", state.name());
+  
 
     if (DriverStation.isDisabled()) {
       flywheelIO.stop();
