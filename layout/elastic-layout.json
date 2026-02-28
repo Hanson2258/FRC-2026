@@ -497,218 +497,12 @@
       }
     },
     {
-      "name": "Tuning",
-      "grid_layout": {
-        "layouts": [
-          {
-            "title": "Flywheel",
-            "x": 0.0,
-            "y": 95.0,
-            "width": 285.0,
-            "height": 570.0,
-            "type": "List Layout",
-            "properties": {
-              "label_position": "TOP"
-            },
-            "children": [
-              {
-                "title": "kP",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 190.0,
-                "height": 190.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/SmartDashboard/Flywheel/kP",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": true
-                }
-              },
-              {
-                "title": "kI",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 190.0,
-                "height": 190.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/SmartDashboard/Flywheel/kI",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": true
-                }
-              },
-              {
-                "title": "kD",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 190.0,
-                "height": 190.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/SmartDashboard/Flywheel/kD",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": true
-                }
-              },
-              {
-                "title": "kV",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 190.0,
-                "height": 190.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/SmartDashboard/Flywheel/kV",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": true
-                }
-              },
-              {
-                "title": "kS",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 190.0,
-                "height": 190.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/SmartDashboard/Flywheel/kS",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": true
-                }
-              },
-              {
-                "title": "AppliedVolts",
-                "x": 0.0,
-                "y": 475.0,
-                "width": 190.0,
-                "height": 190.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/Inputs/AppliedVolts",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": true
-                }
-              },
-              {
-                "title": "VelocityRadsPerSec",
-                "x": 0.0,
-                "y": 570.0,
-                "width": 190.0,
-                "height": 190.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/Inputs/VelocityRadsPerSec",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": true
-                }
-              }
-            ]
-          },
-          {
-            "title": "Turret",
-            "x": 285.0,
-            "y": 95.0,
-            "width": 190.0,
-            "height": 380.0,
-            "type": "List Layout",
-            "properties": {
-              "label_position": "TOP"
-            },
-            "children": [
-              {
-                "title": "TargetPositionRads",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 190.0,
-                "height": 190.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Turret/Inputs/TargetPositionRads",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": true
-                }
-              },
-              {
-                "title": "kP",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 190.0,
-                "height": 190.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/SmartDashboard/Turret/kP",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": true
-                }
-              },
-              {
-                "title": "kI",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 190.0,
-                "height": 190.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/SmartDashboard/Turret/kI",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": true
-                }
-              },
-              {
-                "title": "kD",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 190.0,
-                "height": 190.0,
-                "type": "Text Display",
-                "properties": {
-                  "topic": "/SmartDashboard/Turret/kD",
-                  "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": true
-                }
-              }
-            ]
-          }
-        ],
-        "containers": [
-          {
-            "title": "ManualOverride",
-            "x": 0.0,
-            "y": 0.0,
-            "width": 285.0,
-            "height": 95.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/AdvantageKit/RealOutputs/ManualOverride",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          }
-        ]
-      }
-    },
-    {
       "name": "Teleoperated",
       "grid_layout": {
         "layouts": [
           {
             "title": "Intake",
-            "x": 475.0,
+            "x": 190.0,
             "y": 380.0,
             "width": 285.0,
             "height": 380.0,
@@ -751,12 +545,11 @@
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
-                "type": "Text Display",
+                "type": "Large Text Display",
                 "properties": {
                   "topic": "/AdvantageKit/RealOutputs/Subsystems/Intake/Inputs/AppliedVolts",
                   "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": false
+                  "data_type": "double"
                 }
               },
               {
@@ -776,20 +569,8 @@
             ]
           },
           {
-            "title": "Extender",
-            "x": 760.0,
-            "y": 380.0,
-            "width": 285.0,
-            "height": 380.0,
-            "type": "List Layout",
-            "properties": {
-              "label_position": "TOP"
-            },
-            "children": []
-          },
-          {
             "title": "Agitator",
-            "x": 1045.0,
+            "x": 475.0,
             "y": 380.0,
             "width": 285.0,
             "height": 380.0,
@@ -828,24 +609,23 @@
               },
               {
                 "title": "AppliedVolts",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Text Display",
+                "x": 855.0,
+                "y": 570.0,
+                "width": 95.0,
+                "height": 190.0,
+                "type": "Large Text Display",
                 "properties": {
                   "topic": "/AdvantageKit/RealOutputs/Subsystems/Agitator/Inputs/AppliedVolts",
                   "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": false
+                  "data_type": "double"
                 }
               },
               {
                 "title": "SupplyCurrentAmps",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
+                "x": 855.0,
+                "y": 665.0,
+                "width": 95.0,
+                "height": 95.0,
                 "type": "Text Display",
                 "properties": {
                   "topic": "/AdvantageKit/RealOutputs/Subsystems/Agitator/Inputs/SupplyCurrentAmps",
@@ -858,7 +638,7 @@
           },
           {
             "title": "Transfer",
-            "x": 1330.0,
+            "x": 760.0,
             "y": 380.0,
             "width": 285.0,
             "height": 380.0,
@@ -897,37 +677,40 @@
               },
               {
                 "title": "AppliedVolts",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Text Display",
+                "x": 1140.0,
+                "y": 570.0,
+                "width": 95.0,
+                "height": 190.0,
+                "type": "Large Text Display",
                 "properties": {
                   "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Transfer/Inputs/AppliedVolts",
                   "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": false
+                  "data_type": "double"
                 }
               },
               {
                 "title": "SupplyCurrentAmps",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
-                "type": "Text Display",
+                "x": 1140.0,
+                "y": 665.0,
+                "width": 95.0,
+                "height": 95.0,
+                "type": "Voltage View",
                 "properties": {
                   "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Transfer/Inputs/SupplyCurrentAmps",
                   "period": 0.06,
                   "data_type": "double",
-                  "show_submit_button": false
+                  "min_value": 4.0,
+                  "max_value": 13.0,
+                  "divisions": 4,
+                  "inverted": false,
+                  "orientation": "horizontal"
                 }
               }
             ]
           },
           {
             "title": "Flywheel",
-            "x": 1615.0,
+            "x": 1045.0,
             "y": 380.0,
             "width": 285.0,
             "height": 380.0,
@@ -965,34 +748,103 @@
                 }
               },
               {
-                "title": "SupplyCurrentAmps",
+                "title": "VelocityRpm",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
-                "type": "Text Display",
+                "type": "Large Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/VelocityRpm",
+                  "period": 0.06,
+                  "data_type": "double"
+                }
+              },
+              {
+                "title": "SupplyCurrentAmps",
+                "x": 1425.0,
+                "y": 665.0,
+                "width": 95.0,
+                "height": 190.0,
+                "type": "Voltage View",
                 "properties": {
                   "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/Inputs/SupplyCurrentAmps",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "min_value": 4.0,
+                  "max_value": 13.0,
+                  "divisions": 4,
+                  "inverted": false,
+                  "orientation": "horizontal"
+                }
+              }
+            ]
+          },
+          {
+            "title": "Turret",
+            "x": 1330.0,
+            "y": 380.0,
+            "width": 285.0,
+            "height": 380.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "SupplyCurrentAmps",
+                "x": 1615.0,
+                "y": 570.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Turret/Inputs/SupplyCurrentAmps",
                   "period": 0.06,
                   "data_type": "double",
                   "show_submit_button": false
                 }
               },
               {
-                "title": "VelocityRpm",
-                "x": 0.0,
-                "y": 0.0,
-                "width": 128.0,
-                "height": 128.0,
+                "title": "TargetPositionRads",
+                "x": 1615.0,
+                "y": 570.0,
+                "width": 190.0,
+                "height": 190.0,
                 "type": "Text Display",
                 "properties": {
-                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/VelocityRpm",
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Turret/Inputs/TargetPositionRads",
                   "period": 0.06,
                   "data_type": "double",
                   "show_submit_button": false
                 }
+              },
+              {
+                "title": "PositionRads",
+                "x": 1615.0,
+                "y": 570.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Large Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Turret/Inputs/PositionRads",
+                  "period": 0.06,
+                  "data_type": "double"
+                }
               }
             ]
+          },
+          {
+            "title": "Extender",
+            "x": 0.0,
+            "y": 570.0,
+            "width": 190.0,
+            "height": 190.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": []
           }
         ],
         "containers": [
@@ -1184,7 +1036,243 @@
             "title": "ManualOverride",
             "x": 0.0,
             "y": 380.0,
+            "width": 190.0,
+            "height": 190.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ManualOverride",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Tuning",
+      "grid_layout": {
+        "layouts": [
+          {
+            "title": "Flywheel Tuning",
+            "x": 0.0,
+            "y": 0.0,
             "width": 285.0,
+            "height": 475.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "kP",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Flywheel/kP",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              },
+              {
+                "title": "kI",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Flywheel/kI",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              },
+              {
+                "title": "kD",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Flywheel/kD",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              },
+              {
+                "title": "kV",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Flywheel/kV",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              },
+              {
+                "title": "kS",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Flywheel/kS",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              }
+            ]
+          },
+          {
+            "title": "Turret Tuning",
+            "x": 285.0,
+            "y": 0.0,
+            "width": 285.0,
+            "height": 475.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "kP",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Turret/kP",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              },
+              {
+                "title": "kI",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Turret/kI",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              },
+              {
+                "title": "kD",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Turret/kD",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              }
+            ]
+          },
+          {
+            "title": "List Layout",
+            "x": 0.0,
+            "y": 475.0,
+            "width": 285.0,
+            "height": 285.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "VelocityRadsPerSec",
+                "x": 95.0,
+                "y": 570.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/Inputs/VelocityRadsPerSec",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              },
+              {
+                "title": "AppliedVolts",
+                "x": 95.0,
+                "y": 570.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Voltage View",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/Inputs/AppliedVolts",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "min_value": 4.0,
+                  "max_value": 13.0,
+                  "divisions": 4,
+                  "inverted": false,
+                  "orientation": "horizontal"
+                }
+              }
+            ]
+          },
+          {
+            "title": "List Layout",
+            "x": 285.0,
+            "y": 475.0,
+            "width": 285.0,
+            "height": 285.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "TargetPositionRads",
+                "x": 285.0,
+                "y": 570.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Turret/Inputs/TargetPositionRads",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              }
+            ]
+          }
+        ],
+        "containers": [
+          {
+            "title": "ManualOverride",
+            "x": 570.0,
+            "y": 0.0,
+            "width": 380.0,
             "height": 190.0,
             "type": "Boolean Box",
             "properties": {
@@ -1650,7 +1738,7 @@
             "title": "ManualOverride",
             "x": 0.0,
             "y": 475.0,
-            "width": 380.0,
+            "width": 855.0,
             "height": 95.0,
             "type": "Boolean Box",
             "properties": {
