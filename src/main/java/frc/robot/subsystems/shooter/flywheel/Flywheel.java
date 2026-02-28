@@ -1,12 +1,19 @@
 package frc.robot.subsystems.shooter.flywheel;
 
-import static frc.robot.subsystems.shooter.flywheel.FlywheelConstants.*;
+import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import org.littletonrobotics.junction.Logger;
+import static frc.robot.subsystems.shooter.flywheel.FlywheelConstants.kAtTargetVelocityToleranceRadsPerSec;
+import static frc.robot.subsystems.shooter.flywheel.FlywheelConstants.kD;
+import static frc.robot.subsystems.shooter.flywheel.FlywheelConstants.kDefaultTargetVelocityRadsPerSec;
+import static frc.robot.subsystems.shooter.flywheel.FlywheelConstants.kI;
+import static frc.robot.subsystems.shooter.flywheel.FlywheelConstants.kIdleVelocityRadsPerSec;
+import static frc.robot.subsystems.shooter.flywheel.FlywheelConstants.kP;
+import static frc.robot.subsystems.shooter.flywheel.FlywheelConstants.kS;
+import static frc.robot.subsystems.shooter.flywheel.FlywheelConstants.kV;
 
 /** Flywheel subsystem: one motor with onboard velocity control; state machine Idle / Charging / AtSpeed. */
 public class Flywheel extends SubsystemBase {

@@ -558,12 +558,11 @@
                 "y": 0.0,
                 "width": 128.0,
                 "height": 128.0,
-                "type": "Text Display",
+                "type": "Large Text Display",
                 "properties": {
                   "topic": "/AdvantageKit/RealOutputs/Subsystems/Intake/Inputs/SupplyCurrentAmps",
                   "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": false
+                  "data_type": "double"
                 }
               }
             ]
@@ -626,12 +625,11 @@
                 "y": 665.0,
                 "width": 95.0,
                 "height": 95.0,
-                "type": "Text Display",
+                "type": "Large Text Display",
                 "properties": {
                   "topic": "/AdvantageKit/RealOutputs/Subsystems/Agitator/Inputs/SupplyCurrentAmps",
                   "period": 0.06,
-                  "data_type": "double",
-                  "show_submit_button": false
+                  "data_type": "double"
                 }
               }
             ]
@@ -694,16 +692,11 @@
                 "y": 665.0,
                 "width": 95.0,
                 "height": 95.0,
-                "type": "Voltage View",
+                "type": "Large Text Display",
                 "properties": {
                   "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Transfer/Inputs/SupplyCurrentAmps",
                   "period": 0.06,
-                  "data_type": "double",
-                  "min_value": 4.0,
-                  "max_value": 13.0,
-                  "divisions": 4,
-                  "inverted": false,
-                  "orientation": "horizontal"
+                  "data_type": "double"
                 }
               }
             ]
@@ -766,16 +759,11 @@
                 "y": 665.0,
                 "width": 95.0,
                 "height": 190.0,
-                "type": "Voltage View",
+                "type": "Large Text Display",
                 "properties": {
                   "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/Inputs/SupplyCurrentAmps",
                   "period": 0.06,
-                  "data_type": "double",
-                  "min_value": 4.0,
-                  "max_value": 13.0,
-                  "divisions": 4,
-                  "inverted": false,
-                  "orientation": "horizontal"
+                  "data_type": "double"
                 }
               }
             ]
@@ -1195,7 +1183,7 @@
             ]
           },
           {
-            "title": "List Layout",
+            "title": "Flywheel",
             "x": 0.0,
             "y": 475.0,
             "width": 285.0,
@@ -1225,22 +1213,17 @@
                 "y": 570.0,
                 "width": 190.0,
                 "height": 190.0,
-                "type": "Voltage View",
+                "type": "Large Text Display",
                 "properties": {
                   "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Flywheel/Inputs/AppliedVolts",
                   "period": 0.06,
-                  "data_type": "double",
-                  "min_value": 4.0,
-                  "max_value": 13.0,
-                  "divisions": 4,
-                  "inverted": false,
-                  "orientation": "horizontal"
+                  "data_type": "double"
                 }
               }
             ]
           },
           {
-            "title": "List Layout",
+            "title": "Turret",
             "x": 285.0,
             "y": 475.0,
             "width": 285.0,
@@ -1262,6 +1245,19 @@
                   "period": 0.06,
                   "data_type": "double",
                   "show_submit_button": true
+                }
+              },
+              {
+                "title": "PositionRads",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Large Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Turret/Inputs/PositionRads",
+                  "period": 0.06,
+                  "data_type": "double"
                 }
               }
             ]
@@ -1752,6 +1748,147 @@
             }
           }
         ]
+      }
+    },
+    {
+      "name": "Swerve Drive Visual",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "Front Right Angle",
+            "x": 570.0,
+            "y": 95.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Swerve Drive/Front Right Angle",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Front Left Angle",
+            "x": 0.0,
+            "y": 95.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Swerve Drive/Front Left Angle",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Swerve Drive",
+            "x": 190.0,
+            "y": 0.0,
+            "width": 380.0,
+            "height": 380.0,
+            "type": "SwerveDrive",
+            "properties": {
+              "topic": "/SmartDashboard/Swerve Drive",
+              "period": 0.06,
+              "show_robot_rotation": true,
+              "rotation_unit": "Radians"
+            }
+          },
+          {
+            "title": "Front Left Velocity",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Swerve Drive/Front Left Velocity",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Front Right Velocity",
+            "x": 570.0,
+            "y": 0.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Swerve Drive/Front Right Velocity",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Back Left Angle",
+            "x": 0.0,
+            "y": 285.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Swerve Drive/Back Left Angle",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Back Left Velocity",
+            "x": 0.0,
+            "y": 190.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Swerve Drive/Back Left Velocity",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Back Right Velocity",
+            "x": 570.0,
+            "y": 190.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Swerve Drive/Back Right Velocity",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Back Right Angle",
+            "x": 570.0,
+            "y": 285.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Swerve Drive/Back Right Angle",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Testing",
+      "grid_layout": {
+        "layouts": [],
+        "containers": []
       }
     }
   ]
