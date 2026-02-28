@@ -144,7 +144,7 @@ public class RobotContainer {
 
 	// Manual Override
 	@AutoLogOutput(key = "ManualOverride")
-	public static boolean manualOverride = true;
+	public static boolean manualOverride = false;
 
 	// Dashboard inputs
 	private final LoggedDashboardChooser<Command> autoChooser;
