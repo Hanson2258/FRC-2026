@@ -32,6 +32,13 @@ public class Turret extends SubsystemBase {
 
   public Turret(TurretIO io) {
     turretIO = io;
+    
+    // Publish default gains so SmartDashboard has keys for tuning (values read in IO layer)
+    SmartDashboard.putNumber("Turret/kP", kP);
+    SmartDashboard.putNumber("Turret/kI", kI);
+    SmartDashboard.putNumber("Turret/kD", kD);
+    //SmartDashboard.putNumber("Turret/Velocity", kV);
+    //SmartDashboard.putNumber("Turret/Voltage", kS);
   } // End Turret Constructor
 
   public void setManualOverrideSupplier(BooleanSupplier supplier) {
@@ -55,6 +62,7 @@ public class Turret extends SubsystemBase {
     Logger.recordOutput("Subsystems/Shooter/Turret/Inputs/MotorConnected", turretInputs.motorConnected);
     Logger.recordOutput("Subsystems/Shooter/Turret/Inputs/TargetPositionRads", targetPositionRad);
     Logger.recordOutput("Subsystems/Shooter/Turret/Inputs/PositionRads", turretInputs.positionRads);
+    
     Logger.recordOutput("Subsystems/Shooter/Turret/PositionDegrees", getPosition().getDegrees());
     Logger.recordOutput("Subsystems/Shooter/Turret/HubDegrees", getHubAngleRelativeToRobot().getDegrees());
     Logger.recordOutput("Subsystems/Shooter/Turret/Inputs/VelocityRadsPerSec", turretInputs.velocityRadsPerSec);
