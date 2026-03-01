@@ -32,13 +32,6 @@ public class Turret extends SubsystemBase {
 
   public Turret(TurretIO io) {
     turretIO = io;
-    
-    // Publish default gains so SmartDashboard has keys for tuning (values read in IO layer)
-    SmartDashboard.putNumber("Turret/kP", kP);
-    SmartDashboard.putNumber("Turret/kI", kI);
-    SmartDashboard.putNumber("Turret/kD", kD);
-    //SmartDashboard.putNumber("Turret/Velocity", kV);
-    //SmartDashboard.putNumber("Turret/Voltage", kS);
   } // End Turret Constructor
 
   public void setManualOverrideSupplier(BooleanSupplier supplier) {
