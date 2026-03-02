@@ -115,6 +115,7 @@ public class RobotContainer {
 	// Manual Override
 	@AutoLogOutput(key = "ManualOverride")
 	public static boolean driverManualOverride = false;
+	@AutoLogOutput(key = "ManualOverride")
 	public static boolean operatorManualOverride = false;
 
 	// Dashboard inputs
