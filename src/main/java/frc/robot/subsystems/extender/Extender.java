@@ -42,8 +42,8 @@ public class Extender extends SubsystemBase {
     Logger.recordOutput("Subsystems/Extender/Inputs/MotorConnected", extenderInputs.motorConnected);
     Logger.recordOutput("Subsystems/Extender/Inputs/AppliedVolts", extenderInputs.appliedVolts);
     Logger.recordOutput("Subsystems/Extender/Inputs/SupplyCurrentAmps", extenderInputs.supplyCurrentAmps);
-    Logger.recordOutput("Subsystems/Extender/Inputs/TargetPositionRads", extenderInputs.targetPosition);
-    Logger.recordOutput("Subsystems/Extender/Inputs/PositionRads", extenderInputs.position);
+    Logger.recordOutput("Subsystems/Extender/Inputs/TargetPositionRads", extenderInputs.targetPositionRads);
+    Logger.recordOutput("Subsystems/Extender/Inputs/PositionRads", extenderInputs.positionRads);
     Logger.recordOutput("Subsystems/Extender/Inputs/VelocityRadsPerSec", extenderInputs.velocityRadsPerSec);
 
     if (DriverStation.isDisabled()) {
@@ -55,7 +55,7 @@ public class Extender extends SubsystemBase {
     switch (state) {
       case RETRACTED:
       case EXTENDED:
-        setTargetPosition(extenderInputs.targetPosition);
+        setTargetPosition(extenderInputs.targetPositionRads);
         break;
       default:
         extenderIO.stop();
@@ -82,24 +82,24 @@ public class Extender extends SubsystemBase {
     setTargetPosition(0);
   } // End resetEncoders
 
-  /** Set the target degrees, used in RETRACTED/EXTENDED state */
-  public void setTargetPosition(double degeres) {
-    extenderInputs.targetPosition = degeres;
+  /** Set the target rads, used in RETRACTED/EXTENDED state */
+  public void setTargetPosition(double rads) {
+    extenderInputs.targetPositionRads = rads;
   } // End setTargetPosition
 
-  /** Returns the target degrees */
+  /** Returns the target rads */
   public double getTargetPosition() {
-    return extenderInputs.targetPosition;
+    return extenderInputs.targetPositionRads;
   } // End getTargetPosition
 
-  /** Get the motors current degrees */
+  /** Get the motors current rads */
   public double getPosition() {
-    return extenderInputs.position;
+    return extenderInputs.positionRads;
   } // End getPosition
 
-  /** Increases the target degrees by "steps" */
+  /** Increases the target rads by "steps" */
   public void stepPosition(double steps) {
-    setTargetPosition(extenderInputs.targetPosition + steps);
+    setTargetPosition(getPosition() + steps);
   } // End stepPosition
 
   /** Whether the extender is at the target position within tolerance */

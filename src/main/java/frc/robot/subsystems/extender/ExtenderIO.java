@@ -8,8 +8,8 @@ public interface ExtenderIO {
   @AutoLog
   class ExtenderIOInputs {
     public boolean motorConnected = false;
-    public double position = 0.0;
-    public double targetPosition = 0.0;
+    public double positionRads = 0.0;
+    public double targetPositionRads = 0.0;
     public double velocityRadsPerSec = 0.0;
     public double appliedVolts = 0.0;
     public double supplyCurrentAmps = 0.0;

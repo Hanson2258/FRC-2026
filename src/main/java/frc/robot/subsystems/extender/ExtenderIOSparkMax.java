@@ -3,11 +3,13 @@ package frc.robot.subsystems.extender;
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
+import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import edu.wpi.first.math.util.Units;
 import static frc.robot.subsystems.extender.ExtenderConstants.kD;
 import static frc.robot.subsystems.extender.ExtenderConstants.kGearRatio;
 import static frc.robot.subsystems.extender.ExtenderConstants.kI;
@@ -51,7 +53,9 @@ public class ExtenderIOSparkMax implements ExtenderIO {
 
   @Override
   public void setTargetPosition(double rads) {
-     
+     double targetRot = Units.radiansToRotations(rads);
+     closedLoopController.setSetpoint(targetRot, SparkBase.ControlType.kPosition);
+     targetPosition = rads;
   } // End setTargetPosition
 
   @Override
