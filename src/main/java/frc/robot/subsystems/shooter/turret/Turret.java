@@ -62,11 +62,13 @@ public class Turret extends SubsystemBase {
     Logger.recordOutput("Subsystems/Shooter/Turret/Inputs/AppliedVolts", turretInputs.appliedVolts);
     Logger.recordOutput("Subsystems/Shooter/Turret/Inputs/SupplyCurrentAmps", turretInputs.supplyCurrentAmps);
 
+    targetPositionRad = SmartDashboard.getNumber("Turret/targetPositionRads", targetPositionRad);
+
     if (DriverStation.isDisabled()) {
       turretIO.setTargetPosition(0.0, 0.0);
       return;
     }
-    targetPositionRad = SmartDashboard.getNumber("Turret/targetPositionRad", targetPositionRad);
+
     turretIO.setTargetPosition(targetPositionRad, velocityFeedforwardRadPerSec);
   } // End periodic
 
