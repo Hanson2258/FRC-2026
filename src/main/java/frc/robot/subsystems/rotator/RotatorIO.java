@@ -3,7 +3,7 @@ package frc.robot.subsystems.extender;
 import org.littletonrobotics.junction.AutoLog;
 
 /** IO interface for the Extender (one motor, position controlled). */
-public interface ExtenderIO {
+public interface RotatorIO {
 
   @AutoLog
   class ExtenderIOInputs {
@@ -19,7 +19,7 @@ public interface ExtenderIO {
   default void updateInputs(ExtenderIOInputs inputs) { }
 
   /** Set the target position. */
-  default void setTargetPosition(double targetRads) { }
+  default void setTargetRads(double targetRads) { }
 
   /** Sets the encoder position to 0 */
   default void resetEncoders() { }

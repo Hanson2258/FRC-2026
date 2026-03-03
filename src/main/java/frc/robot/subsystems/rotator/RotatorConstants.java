@@ -2,12 +2,13 @@ package frc.robot.subsystems.extender;
 
 import com.revrobotics.spark.config.SparkBaseConfig;
 
-public class ExtenderConstants {
+public class RotatorConstants {
 
   // TODO: get motor id
   public static final double kMotorId = 0;
-  
+
   // TODO: tune position
+  /** Target position when the  */
   public static final double kUpExtenderRads = 0;
 
   // TODO: tune position
