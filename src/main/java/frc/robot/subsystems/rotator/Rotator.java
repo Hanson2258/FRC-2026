@@ -3,9 +3,13 @@ package frc.robot.subsystems.rotator;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import static frc.robot.subsystems.rotator.RotatorConstants.kAtTargetRadsTolerance;
+import static frc.robot.subsystems.rotator.RotatorConstants.kD;
 import static frc.robot.subsystems.rotator.RotatorConstants.kDownRotatorRads;
+import static frc.robot.subsystems.rotator.RotatorConstants.kI;
+import static frc.robot.subsystems.rotator.RotatorConstants.kP;
 import static frc.robot.subsystems.rotator.RotatorConstants.kUpRotatorRads;
 
 public class Rotator extends SubsystemBase {
@@ -19,7 +23,7 @@ public class Rotator extends SubsystemBase {
     IDLE,
     UP,
     DOWN
-    }
+  }
 
   private final RotatorIO rotatorIO;
   private final RotatorIO.ExtenderIOInputs rotatorInputs = new RotatorIO.ExtenderIOInputs();
@@ -28,13 +32,21 @@ public class Rotator extends SubsystemBase {
 
   public Rotator(RotatorIO io) {
     rotatorIO = io; 
+
+    SmartDashboard.putNumber("Flywheel/kP", kP);
+    SmartDashboard.putNumber("Flywheel/kI", kI);
+    SmartDashboard.putNumber("Flywheel/kD", kD);
   }
 
   @Override
   public void periodic() {
     rotatorIO.updateInputs(rotatorInputs);
     Logger.recordOutput("Subsystems/Rotator/Inputs/MotorConnected", rotatorInputs.motorConnected);
-    // TODO: add more inputs
+    Logger.recordOutput("Subsystems/Rotator/Inputs/AppliedVolts", rotatorInputs.appliedVolts);
+    Logger.recordOutput("Subsystems/Rotator/Inputs/SupplyCurrentAmps", rotatorInputs.supplyCurrentAmps);
+    Logger.recordOutput("Subsystems/Rotator/Inputs/TargetPositionRads", rotatorInputs.targetPositionRads);
+    Logger.recordOutput("Subsystems/Rotator/Inputs/PositionRads", rotatorInputs.positionRads);
+    Logger.recordOutput("Subsystems/Rotator/Inputs/VelocityRadsPerSec", rotatorInputs.velocityRadsPerSec);
 
     if (DriverStation.isDisabled()) {
       rotatorIO.stop();

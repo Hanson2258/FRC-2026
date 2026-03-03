@@ -17,7 +17,7 @@ public class RotatorConstants {
   public static final double kDownRotatorRads = 0;
 
   // TODO: tune PID
-  /** PID values to ensure */
+  /** PID values for to-position target */
   public static final double kP = 0;
   public static final double kI = 0;
   public static final double kD = 0;
