@@ -8,8 +8,8 @@ public interface ExtenderIO {
   @AutoLog
   class ExtenderIOInputs {
     public boolean motorConnected = false;
-    public double positionRads = 0.0;
-    public double targetPositionRads = 0.0;
+    public double position = 0.0;
+    public double targetPosition = 0.0;
     public double velocityRadsPerSec = 0.0;
     public double appliedVolts = 0.0;
     public double supplyCurrentAmps = 0.0;
@@ -19,7 +19,7 @@ public interface ExtenderIO {
   default void updateInputs(ExtenderIOInputs inputs) { }
 
   /** Set the target position. */
-  default void setTargetRads(double targetRads) { }
+  default void setTargetPosition(double position) { }
 
   /** Sets the encoder position to 0 */
   default void resetEncoders() { }

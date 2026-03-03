@@ -6,7 +6,18 @@ public class ExtenderConstants {
 
   // TODO: get motor id
   /** CAN ID of the extender */
-  public static final double kMotorId = 0;
+  public static final int kMotorId = 0;
+
+  /** Idle behaviour when ouput is 0 (Coast or Brake)  */
+  public static final SparkBaseConfig.IdleMode kIdleMode = SparkBaseConfig.IdleMode.kCoast;
+  
+  // TODO: tune
+  /** Smart current limit */
+  public static int kSmartCurrentLimitAmps = 25;
+
+  // TODO: set gear ratio
+  /** Extender radians per motor rotation 1.0 = 1:1 */
+  public static final double kGearRatio = 1.0;
 
   // TODO: tune position
   /** Target position when the extender is in the UP mode */
