@@ -9,17 +9,22 @@
 #   A colour mask is then applied based on HSV values
 #  
 #   makes a grey display-image mask 
-#     uses OpenCV "moments" to determine centre of post horizontally,
-#      cv2.moments(post_mask) computes a set of raw moments: 
-#        m00 — sum of all pixel values (for our binary mask is the total number of pixels in mask)
-#        m10 — sum of all pixel value (1 or 0 for binary mask) multiplied by x coordinate
-#              for binary mask just sum up of all x coordinates add up x*pixel_value 
-#        m01 — this is for the y coordinate, we are not using.
+#     uses OpenCV "contours" to choose most post-like piece of image:
+#         - small contours are ignored as noise (<5 wide or <20 high)
+#         - only contours at least twice as tall as wide are considered
+#         - contours are scored based on area, the largest area is selected
+#         - centre of this contour is considered returned as the x-value in pixels
+#
 #     as camera gets closer to post, precision should increase as edge noise has less weight
 # 
-# Note: this code publishes X and Z coordinates (relative to camera) to NetworkTable 'Post Detection'
-#       x-position: unit is pixels, relative to LHS of image (640x480): 320 is centre
-#       z-position: distacne from camera in metres
+# Results are published to NetworkTable 'Post Detection'
+#       x: unit is pixels, relative to LHS of image (640x480): 320 is centre
+#       depth: distance from camera in metres
+#
+# NOTE: future version of code could convert 'x' in pixels to distance in metres
+#       This is simple to understand (depth of pixel determines x-offset) 
+#       But it needs to compensate image distortion (not as simple!)
+#
 #
 # Java code to retrieve this information: 
 #   NetworkTable table = NetworkTableInstance.getDefault().getTable("Post Detection");
@@ -34,13 +39,9 @@ import numpy as np
 import cv2
 from networktables import NetworkTables
 
-redalliance = True
+Post_detected = False
 
-# Connect to the RoboRIO - NOTE: might need to change server number
-NetworkTables.initialize(server='10.72.87.2')
-
-# Get the NetworkTables table to publish values to
-table = NetworkTables.getTable('Post Detection')
+# Set up RealSense camera before checking for RoboRIO connection
 
 # Initialize and configure the pipeline
 pipeline = rs.pipeline()
@@ -66,6 +67,19 @@ align = rs.align(align_to)
 
 # Create the display window once, outside the loop
 cv2.namedWindow('Post Detection', cv2.WINDOW_NORMAL)
+
+
+# UPDATE NEEDED: loop here to check until RoboRIO is ready
+
+# Connect to the RoboRIO
+
+NetworkTables.initialize(server='10.72.87.2')
+
+# Get the NetworkTables table to publish values to
+table = NetworkTables.getTable('Post Detection')
+
+# UPDATE NEEDE: pull from RoboRIO NetworkTable to determine Alliance colour
+redalliance = True
 
 try:
     while True:
@@ -93,32 +107,18 @@ try:
 
         # clean up the mask
         # get a rectangular structuring element
-#        dkernel = cv2.getStructuringElement(cv2.MORPH_RECT, (7,7))
-#        depth_mask1 = cv2.morphologyEx(depth_mask0, cv2.MORPH_CLOSE, dkernel, iterations=2)
-#        depth_mask2 = cv2.morphologyEx(depth_mask1, cv2.MORPH_OPEN,  dkernel, iterations=2)
+        dkernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 10))
 
         # Apply morphological closing to fill small gaps in the post shape
-        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 10))
-        depth_mask = cv2.morphologyEx(depth_mask0, cv2.MORPH_CLOSE, kernel)
+#        depth_mask = cv2.morphologyEx(depth_mask0, cv2.MORPH_OPEN, dkernel)
+        depth_mask = cv2.morphologyEx(depth_mask0, cv2.MORPH_CLOSE, dkernel)
 
-        cv2.imshow('depth_mask0', depth_mask0)
-        cv2.imshow('depth_mask', depth_mask)
+#        cv2.imshow('depth_mask0', depth_mask0)
+#        cv2.imshow('depth_mask', depth_mask)
 
         depth_masked_image = cv2.bitwise_and(colour_image, colour_image, mask=depth_mask)
 
-
-        # Stack depth into 3 channels to match colour image dimensions
-#        depth_image_3d = np.dstack((depth_image, depth_image, depth_image))
-################
-        # Mask out everything beyond clipping distance (set to black)
- #       depth_masked_image = np.where(
- #           (depth_image_3d > clipping_distance) | (depth_image_3d <= 0),
- #           0,
- #           colour_image
- #       )
         cv2.imshow('depth_masked_image', depth_masked_image)
-
-
 
         # create a colour mask
         # convert to HSV to use HSV values for colour masking
@@ -131,81 +131,108 @@ try:
         # keep red if redalliance
         if redalliance == True:
             # reds wrap around hue: from 170 (past 180 back to 0) around to 10
-            lower_red1 = np.array([0, 120, 70])
+            lower_red1 = np.array([0, 175, 40])
             upper_red1 = np.array([10, 255, 255])
-            lower_red2 = np.array([125, 120, 70])
+            lower_red2 = np.array([130, 97, 42])
             upper_red2 = np.array([180, 255, 255])
 
             rmask1 = cv2.inRange(hsv_image, lower_red1, upper_red1)
             rmask2 = cv2.inRange(hsv_image, lower_red2, upper_red2)
 
             # combine the red masks
-            colour_mask0 = rmask1 + rmask2
+            colour_mask = rmask1 + rmask2
 
         # not red alliance, so keep blue pixels
         else:
-            lower_blue = np.array([90, 150, 22])    # lower bound for blue
-            upper_blue = np.array([126, 255, 255])  # upper bound for blue
-            colour_mask0 = cv2.inRange(hsv_image, lower_blue, upper_blue)
+            lower_blue = np.array([90, 200, 100])    # lower bound for blue
+            upper_blue = np.array([125, 255, 255])  # upper bound for blue
+            colour_mask = cv2.inRange(hsv_image, lower_blue, upper_blue)
 
         # clean up colour mask
-        ckernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5,10))
-        colour_mask1 = cv2.morphologyEx(colour_mask0, cv2.MORPH_CLOSE, ckernel, iterations=2)
-        colour_mask2 = cv2.morphologyEx(colour_mask1, cv2.MORPH_OPEN,  ckernel, iterations=2)
+        ckernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2,5))
+        colour_mask1 = cv2.morphologyEx(colour_mask, cv2.MORPH_CLOSE, ckernel)
+        colour_mask2 = cv2.morphologyEx(colour_mask1, cv2.MORPH_OPEN,  ckernel)
 
-
-        # apply colour mask to already depth-masked image, but these are already combined...?
+        # apply colour mask to depth-masked image 
         post_colour_mask_clean = cv2.bitwise_and(depth_masked_image, depth_masked_image, mask=colour_mask2)
-        post_colour_mask = cv2.bitwise_and(depth_masked_image, depth_masked_image, mask=colour_mask0)
+        post_colour_mask = cv2.bitwise_and(depth_masked_image, depth_masked_image, mask=colour_mask)
 
 #        cv2.imshow('Colour Image', colour_image)
 #        cv2.imshow('Colour Mask0', colour_mask0)
 #        cv2.imshow('Colour Mask1', colour_mask1)
 #        cv2.imshow('Colour Mask2', colour_mask2)
-        cv2.imshow('post_colour_mask_clean', post_colour_mask_clean)
-        cv2.imshow('post_colour_mask', post_colour_mask)
-#        masked_image = cv2.bitwise_and(
-        
-
-#        post_mask = np.where(
-#            (depth_image > 0) & (depth_image < clipping_distance),
-#            255, 0
-#        ).astype(np.uint8)
-
-        # Use moments to find the centroid of the masked region
-        moments = cv2.moments(colour_mask2)
+#        cv2.imshow('post_colour_mask_clean', post_colour_mask_clean)
+#        cv2.imshow('post_colour_mask', post_colour_mask)
 
         # Build the display image from the mask regardless of detection
         display = cv2.cvtColor(colour_mask2, cv2.COLOR_GRAY2BGR)
 
-        if moments["m00"] == 0:
-            print("No post detected within clipping distance (" + str(clipping_distance) + ")")
+        # Find all contours in the mask
+        contours, _ = cv2.findContours(colour_mask2, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-            # Publish a flag to indicate no post is detected
-            table.putBoolean('post_detected', False)
+        best_contour = None
+        best_score = 0
+
+        for contour in contours:
+            x, y, w, h = cv2.boundingRect(contour)
+
+            # Filter out very small detections (noise)
+            if w < 5 or h < 20:
+                continue
+
+            # A post should be significantly taller than it is wide
+            aspect_ratio = h / float(w)
+            if aspect_ratio < 2.0:
+                continue
+
+            # Score contours: prefer taller, narrower shapes with more area
+            area = cv2.contourArea(contour)
+            score = aspect_ratio * area
+
+            if score > best_score:
+                best_score = score
+                best_contour = contour
+
+        if best_contour is None:
+            Post_detected = False
+
         else:
-            # Only need x from the centroid — post is vertical so y is irrelevant
-            centre_x = int(moments["m10"] / moments["m00"])
+            # Get bounding box of the best candidate
+            x, y, w, h = cv2.boundingRect(best_contour)
 
-            # Median depth of all valid close pixels, converted to metres
-            valid_depths = depth_image[(depth_image > 0) & (depth_image < clipping_distance)]
+            # Only need centre x since the post is vertical
+            centre_x = x + w // 2
+
+           # Get median depth of valid pixels within the bounding box, converted to metres
+            depth_roi = depth_image[y:y+h, x:x+w]
+            valid_depths = depth_roi[(depth_roi > 0) & (depth_roi < clipping_distance)]
             depth_in_meters = float(np.median(valid_depths) * depth_scale)
 
-            print(f"Post centre x: {centre_x}  Depth: {depth_in_meters:.3f}m")
+            if len(valid_depths) == 0:
+                Post_detected = False
 
-            # Publish values to NetworkTables
-            table.putBoolean('post_detected', True)
-            table.putNumber('post_x', centre_x)
-            table.putNumber('post_depth', depth_in_meters)
+            else:
+                Post_detected = True
+                print(f"Post centre x: {centre_x}  Depth: {depth_in_meters:.3f}m")
 
-            # Draw a vertical line at the detected x position
-            cv2.line(display, (centre_x, 0), (centre_x, display.shape[0]),
-                     color=(0, 255, 0), thickness=2)
+                # Publish values to NetworkTables
+                table.putBoolean('post_detected', True)
+                table.putNumber('post_x', centre_x)
+                table.putNumber('post_depth', depth_in_meters)
+  
+                # Draw a vertical line at the detected x position
+                cv2.line(display, (centre_x, 0), (centre_x, display.shape[0]),
+                         color=(0, 255, 0), thickness=2)
 
-            # Label at the top of the line
-            cv2.putText(display, f"x={centre_x}  {depth_in_meters:.3f}m",
-                        (centre_x + 10, 30),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+                # Label at the top of the line
+                cv2.putText(display, f"x={centre_x}  {depth_in_meters:.3f}m",
+                            (centre_x + 10, 30),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+
+        if Post_detected == False:
+            print("No post detected within clipping distance (" + str(clipping_distance) + ")")
+            # Publish a flag to indicate no post is detected
+            table.putBoolean('post_detected', False)
 
         cv2.imshow('Post Detection', display)
 
@@ -213,6 +240,14 @@ try:
         if key & 0xFF == ord('q') or key == 27:
             cv2.destroyAllWindows()
             break
+        else:
+            # add ability to switch between red and blue masking by pressing key
+            if key & 0xFF == ord('r'):
+                redalliance = True
+            if key & 0xFF == ord('b'):
+                redalliance = False
+
+# Would be better to add exception and else to cover errors
 
 finally:
     pipeline.stop()
