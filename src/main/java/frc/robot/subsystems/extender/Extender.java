@@ -15,12 +15,10 @@ import static frc.robot.subsystems.extender.ExtenderConstants.kMinRads;
 import static frc.robot.subsystems.extender.ExtenderConstants.kP;
 import static frc.robot.subsystems.extender.ExtenderConstants.kUpExtenderRads;
 
+/** Extender subsystem: one motor with onboard position control. */
 public class Extender extends SubsystemBase {
 
-  /** extender states:
-   * RETRACTED = extender is facing up
-   * EXTENDED = extender is facing forward. If the extender is at the position it will turn off all power and rest on the bumpers
-   */
+  /** Extender state: Retracted (facing up), Extended (facing forward). */
   public enum ExtenderState {
     RETRACTED,
     EXTENDED
@@ -30,8 +28,7 @@ public class Extender extends SubsystemBase {
   private final ExtenderIO.ExtenderIOInputs extenderInputs = new ExtenderIO.ExtenderIOInputs();
   
   private ExtenderState state = ExtenderState.RETRACTED;
-
-  private double targetPosition;
+  private double targetPosition = kDownExtenderRads;
 
   public Extender(ExtenderIO io) {
     extenderIO = io; 
@@ -61,7 +58,7 @@ public class Extender extends SubsystemBase {
       return;
     }
 
-    // Set extender position based on current state
+    // Set Extender position based on current state
     switch (state) {
       case RETRACTED:
       case EXTENDED:
