@@ -546,7 +546,7 @@
             "x": 190.0,
             "y": 380.0,
             "width": 285.0,
-            "height": 380.0,
+            "height": 475.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -612,7 +612,7 @@
             "x": 760.0,
             "y": 380.0,
             "width": 285.0,
-            "height": 380.0,
+            "height": 475.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -678,7 +678,7 @@
             "x": 1045.0,
             "y": 380.0,
             "width": 285.0,
-            "height": 380.0,
+            "height": 475.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -744,7 +744,7 @@
             "x": 1615.0,
             "y": 380.0,
             "width": 285.0,
-            "height": 380.0,
+            "height": 475.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -810,7 +810,7 @@
             "x": 475.0,
             "y": 380.0,
             "width": 285.0,
-            "height": 380.0,
+            "height": 475.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -868,6 +868,23 @@
                   "data_type": "double",
                   "show_submit_button": false
                 }
+              },
+              {
+                "title": "AtTargetPosition",
+                "x": 475.0,
+                "y": 665.0,
+                "width": 190.0,
+                "height": 95.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/Extender/AtTargetPosition",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
               }
             ]
           },
@@ -876,7 +893,7 @@
             "x": 1330.0,
             "y": 380.0,
             "width": 285.0,
-            "height": 380.0,
+            "height": 475.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"

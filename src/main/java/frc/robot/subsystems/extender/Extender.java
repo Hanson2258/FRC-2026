@@ -2,6 +2,7 @@ package frc.robot.subsystems.extender;
 
 import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -9,6 +10,8 @@ import static frc.robot.subsystems.extender.ExtenderConstants.kAtTargetRadsToler
 import static frc.robot.subsystems.extender.ExtenderConstants.kD;
 import static frc.robot.subsystems.extender.ExtenderConstants.kDownExtenderRads;
 import static frc.robot.subsystems.extender.ExtenderConstants.kI;
+import static frc.robot.subsystems.extender.ExtenderConstants.kMaxRads;
+import static frc.robot.subsystems.extender.ExtenderConstants.kMinRads;
 import static frc.robot.subsystems.extender.ExtenderConstants.kP;
 import static frc.robot.subsystems.extender.ExtenderConstants.kUpExtenderRads;
 
@@ -51,6 +54,7 @@ public class Extender extends SubsystemBase {
     Logger.recordOutput("Subsystems/Extender/PositionRads", extenderInputs.positionRads);
     Logger.recordOutput("Subsystems/Extender/VelocityRadsPerSec", extenderInputs.velocityRadsPerSec);
     Logger.recordOutput("Subsystems/Extender/State", state.name());
+    Logger.recordOutput("Subsystems/Extender/AtTargetPosition", atTargetPosition());
 
     if (DriverStation.isDisabled()) {
       extenderIO.stop();
@@ -61,7 +65,7 @@ public class Extender extends SubsystemBase {
     switch (state) {
       case RETRACTED:
       case EXTENDED:
-        extenderIO.setTargetPosition(targetPosition);
+        extenderIO.setTargetPosition(getClampedTargetPos());
         System.out.println("Target POS: " + targetPosition);
         break;
       default:
@@ -114,6 +118,11 @@ public class Extender extends SubsystemBase {
   public void stepPosition(double steps) {
     setTargetPosition(getPosition() + steps);
   } // End stepPosition
+
+  /** Returns the clamped targetPosition to kMinRads and kMaxRads */
+  public double getClampedTargetPos() {
+    return MathUtil.clamp(targetPosition, kMinRads, kMaxRads);
+  } // End getClampedTargetPos
 
   /** Whether the extender is at the target position within tolerance */
   public boolean atTargetPosition() {

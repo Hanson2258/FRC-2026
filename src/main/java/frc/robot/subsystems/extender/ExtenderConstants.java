@@ -34,7 +34,7 @@ public class ExtenderConstants {
 
   // TODO: tune max pos
   /** Max radians for the extender to rotate */
-  public static final double kMaxRads = 0.5;
+  public static final double kMaxRads = Units.degreesToRadians(100);
   
   // TODO: tune min voltage
   /** Min radians for the extender to rotate */
@@ -42,11 +42,11 @@ public class ExtenderConstants {
 
   // TODO: tune PID
   /** PID values for to-position target */
-  public static final double kP = 0;
+  public static final double kP = 0.1;
   public static final double kI = 0;
   public static final double kD = 0;
 
   // TODO: tune
   /** Tolerance for at-target position */
-  public static final double kAtTargetRadsTolerance = 0;
+  public static final double kAtTargetRadsTolerance = 0.2;
 }
