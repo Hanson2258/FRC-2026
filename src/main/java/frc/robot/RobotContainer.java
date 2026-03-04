@@ -278,15 +278,15 @@ public class RobotContainer {
 			// Set up Swerve Calibration Programs
 			DriveCommands.swerveCalibration(autoChooser, drive);
 
-			// Record zeroed Robot components (model_0 turret, model_1 extender) – initial only; updated in updateSimulation()
-			Logger.recordOutput("ComponentPoses/Zeroed", new Pose3d[] {new Pose3d(), new Pose3d()});
+			// Record zeroed Robot components (model_0 turret, model_1 extender, model_2 extending-storage) – initial only; updated in updateSimulation()
+			Logger.recordOutput("ComponentPoses/Zeroed", new Pose3d[] {new Pose3d(), new Pose3d(), new Pose3d()});
 		}
 
 		// Record zeroed Robot components (model_0 turret, model_1 extender) – initial only; updated in updateSimulation()
 		Logger.recordOutput("ComponentPoses/Final",
 				new Pose3d[] {
-					new Pose3d(-0.125, -0.17, 0.27, new Rotation3d(0, 0, Math.toRadians(90))), // model_0 turret
-					new Pose3d(0.17, 0, 0.15, new Rotation3d(0, 0, 0)),  // model_1 intake
+					new Pose3d(-0.125, -0.17, 0.27, new Rotation3d(0, 0, 0)), // model_0 turret
+					new Pose3d(0.28, 0, 0.15, new Rotation3d(0, 0, 0)),  // model_1 extender
 				});
 			
 
@@ -613,14 +613,12 @@ public class RobotContainer {
 		Logger.recordOutput("FieldSimulation/RobotPosition", robotPose);
 
 		// Robot-relative component poses for visualization
-					// 	new Pose3d(-0.125, -0.17, 0.27, new Rotation3d(0, 0, 0)), // model_0 turret
-					// new Pose3d(0.17, 0, 0.15, new Rotation3d(0, 0, 0)),  // model_1 intake
 		Pose3d turretComponentPose = new Pose3d(-0.125, -0.17, 0.27, new Rotation3d(0, 0, turret.getPosition().getRadians() + Math.toRadians(90)));
 		Pose3d extenderComponentPose;
 		if (DriverStation.isTeleopEnabled()) {
-			extenderComponentPose = new Pose3d(0.17, 0, 0.15, new Rotation3d(0, 30,0));
+			extenderComponentPose = new Pose3d(0.28, 0, 0.15, new Rotation3d(0, 90 ,0)); // TODO: Update when Extender is implemented to reflect true angle
 		} else {
-			extenderComponentPose = new Pose3d(0.17, 0, 0.15, new Rotation3d(0, 0, 0));
+			extenderComponentPose = new Pose3d(0.28, 0, 0.15, new Rotation3d(0, 0, 0));
 		}
 		//hopper extender code TBD
 		Logger.recordOutput("ComponentPoses/Final", new Pose3d[] {turretComponentPose, extenderComponentPose});
