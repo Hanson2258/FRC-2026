@@ -21,6 +21,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -129,7 +130,7 @@ public class RobotContainer {
 	private final ShooterSim shooterSim;
 	private final ShooterSimVisualizer shooterSimVisualizer;
 
-
+	private double simExtenderAngle;
 	/** The container for the robot. Contains subsystems, OI devices, and commands. */
 	public RobotContainer() {
     // Initialize Subsystems based on mode (REAL, SIM, or REPLAY)
@@ -170,6 +171,7 @@ public class RobotContainer {
 			case SIM:
         // Configure Simulation timing for accurate physics
         // 5 ticks per 20ms period = 4kHz effective control loop rate
+		simExtenderAngle = 0.0;
         SimulatedArena.overrideSimulationTimings(
             edu.wpi.first.units.Units.Seconds.of(0.02), // 20ms robot period
             5); // 5 Simulation ticks per period
@@ -283,7 +285,7 @@ public class RobotContainer {
 		// Record zeroed Robot components (model_0 turret, model_1 extender) – initial only; updated in updateSimulation()
 		Logger.recordOutput("ComponentPoses/Final",
 				new Pose3d[] {
-					new Pose3d(-0.125, -0.17, 0.27, new Rotation3d(0, 0, 0)), // model_0 turret
+					new Pose3d(-0.125, -0.17, 0.27, new Rotation3d(0, 0, Math.toRadians(90))), // model_0 turret
 					new Pose3d(0.17, 0, 0.15, new Rotation3d(0, 0, 0)),  // model_1 intake
 				});
 			
@@ -614,7 +616,12 @@ public class RobotContainer {
 					// 	new Pose3d(-0.125, -0.17, 0.27, new Rotation3d(0, 0, 0)), // model_0 turret
 					// new Pose3d(0.17, 0, 0.15, new Rotation3d(0, 0, 0)),  // model_1 intake
 		Pose3d turretComponentPose = new Pose3d(-0.125, -0.17, 0.27, new Rotation3d(0, 0, turret.getPosition().getRadians() + Math.toRadians(90)));
-		Pose3d extenderComponentPose = new Pose3d(0.17, 0, 0.15, new Rotation3d(0, 0, 0));
+		Pose3d extenderComponentPose;
+		if (DriverStation.isTeleopEnabled()) {
+			extenderComponentPose = new Pose3d(0.17, 0, 0.15, new Rotation3d(0, 30,0));
+		} else {
+			extenderComponentPose = new Pose3d(0.17, 0, 0.15, new Rotation3d(0, 0, 0));
+		}
 		//hopper extender code TBD
 		Logger.recordOutput("ComponentPoses/Final", new Pose3d[] {turretComponentPose, extenderComponentPose});
 
