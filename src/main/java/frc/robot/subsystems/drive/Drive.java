@@ -111,10 +111,7 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
   private final GyroIO gyroIO;
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
-  private Module frontLeftModule;
-  private Module frontRightModule;
-  private Module backLeftModule;
-  private Module backRightModule;
+  private final Module frontLeftModule, frontRightModule, backLeftModule, backRightModule;
   
   private final SysIdRoutine sysId;
   private final Alert gyroDisconnectedAlert =
@@ -149,11 +146,11 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
     modules[2] = new Module(blModuleIO, 2, TunerConstants.BackLeft);
     modules[3] = new Module(brModuleIO, 3, TunerConstants.BackRight);
 
+    // Cache module references for SmartDashboard widget
     frontLeftModule  = modules[0];
     frontRightModule = modules[1];
     backLeftModule   = modules[2];
     backRightModule  = modules[3];
-
     addSwerveDriveToSmartDashboard();
 
     // Usage reporting for swerve template
@@ -193,7 +190,6 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
                 (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
                 (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
-                
   }
 
   @Override

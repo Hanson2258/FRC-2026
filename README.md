@@ -17,19 +17,18 @@ For setting up the Simulation, please do the following:
 ## Common Errors
 Here are some common errors and how to resolve them.
 
-1. <u>After building, it states it can't find lots of files or methods.</u> See if any of these fix it: <br>
-    - It is likely the Java Server is simply not Cached correctly. In the VSCode Command Palette (the search bar on the top, also accessible by pressing `Ctrl + Shift + P` on Windows/Linux or`*Shift + Command + P` on Mac,) type in `">Java: Clean java Language Server Workspace"`. On the bottom-right of your screen, you will see a pop-up asking **"Are you sure you want to clean the Java language server workspace?"**, select `"Reload and delete"`. VSCode will now reload, and you should be able to build without issues.
+1. <u>After building, it states it can't find lots of files or methods. Please try the below fixes (in order): </u> <br>
+    - It is likely the Java Server is simply not Cached correctly. In the VSCode Command Palette (the search bar on the top, also accessible by pressing `Ctrl + Shift + P` on Windows/Linux or `Shift + Command + P` on Mac,) type in `">Java: Clean java Language Server Workspace"`. On the bottom-right of your screen, you will see a pop-up asking **"Are you sure you want to clean the Java language server workspace?"**, select `"Reload and delete"`. VSCode will now reload, and you should be able to build without issues.
     - Open the Visual Studio Code terminal and type `.\gradlew clean` and then `.\gradlew build`.
     - Delete and re-clone the repository from your files. It is possible that some files corrupted/build errors occured overtime, and re-cloning the repo should help it.
-    - Restart WPIlib.
     - Restart your computer.
-    - If all else fails, you may need to reinstall WPIlib.
-3. <u>The Simulation starts becoming laggy after running for a long time.</u> <br>
+    - If all else fails, you may need to reinstall WPIlib (you may want to delete the repository, and uninstall WPILib, then reinstall WPILib, and then restart your computer before trying again).
+2. <u>The Simulation starts becoming laggy after running for a long time.</u> <br>
     - As the Simulation is running a 2D and 3D physics enginer with lots of Assets, the Simulator is likely going to degrade in performance the longer you run it. To resolve this, go back to VSCode, and in the pop-up bar near the top of the window, click the Green Counter-Clockwise arrow (or `Ctrl + Shift + F5` on Windows/Linux or `Shift + Command + F5` on Mac.) The Simulation will reboot, and will return to its original starting speed. 
     - If the starting speed is slow, you can disable Fuel visualization in AdvantageScope by clicking the "X" icon in the bottom window of AdvantageScope for Fuel, and/or only spawning half the Fuel by changing the **"showHalfFuel"** boolean on line *317* of [FuelSim.java](/src/main/java/frc/robot/simulation/FuelSim.java) to **"false"**. 
      - If the simulation is still laggy, in AdvantageScope you can go to `App -> Show Prefrences -> Discard Live Data -> Change to 1 minute`
      - If these dont help, then unfortunately, the only solution is getting a more powerful computer.
-5. <u>When running the Simulation, the Driver Station can't find a robot to connect to.</u> <br>
+3. <u>When running the Simulation, the Driver Station can't find a robot to connect to.</u> <br>
 Ensure that after you build the Simulation, that the option **"Use Real DriverStation"** is selected.
 
 For any other issues, please don't hesitate to [Contact Us](https://www.esquimaltatomsmashers.ca/contact).
@@ -39,11 +38,9 @@ This project uses Simulator heavily to encourage additional Driver Practice with
 
 The Robot and Field interact using [maple-sim](https://github.com/Shenzhen-Robotics-Alliance/Maple-Sim), a 2D dyn4j Physics engine to simulate 2D forces and collisions, allowing testing realistic driving and interactions.
 
-The Fuel interacts with both using a [custom Simulation](https://github.com/hammerheads5000/FuelSim) (similar to a 3D Physics engine) to simulate forces such as gravity, air-resistance, etc. You can reset the fuel to its original position by clicking the `Reset Fuel` button in the **"Shooting Test"** tab in elastic.
+The Fuel interacts with both using a [custom Simulation](https://github.com/hammerheads5000/FuelSim) (similar to a 3D Physics engine) to simulate forces such as gravity, air-resistance, etc. You can reset the fuel to its original position by clicking the `Reset Fuel` button in the **"Shooting Test"** tab in elastic. Alternatively, it could be better to do the second fix in the **"Common Errors"** section above.
 
 Both were originally derivied from different teams (linked above), and we thank them for their amazing work.
-
-The Shooter subsystem needs different tuning in the SIM and real life. Go to the **"kExitVelocityCompensationMultiplier"** variable in the **"ShooterConstants"** file on line *38* and use `0.95` for SIM and `1.2` for real life. Make sure to be careful when changing this value and ensure that is isn't accidentaly kept at `0.95` for competition.
 
 # Robot Description
 The Robot is a Swerve-base robot with a auto-aiming rotating Turret to allow shooting from most places on the field.

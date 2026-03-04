@@ -43,24 +43,23 @@ public class TurretIOTalonFX implements TurretIO {
     double p = SmartDashboard.getNumber("Turret/kP", kP);
     double i = SmartDashboard.getNumber("Turret/kI", kI);
     double d = SmartDashboard.getNumber("Turret/kD", kD);
+
     if (p != lastP || i != lastI || d != lastD) {
-      
       lastP = p;
       lastI = i;
       lastD = d;
 
       var slot0 = new Slot0Configs().withKP(p).withKI(i).withKD(d);
       tryUntilOk(5, () -> motor.getConfigurator().apply(slot0, 0.25));
-
     }
-    
     
     var signalRefreshStatus =
         BaseStatusSignal.refreshAll(
             motor.getPosition(),
             motor.getVelocity(),
             motor.getMotorVoltage(),
-            motor.getSupplyCurrent());     
+            motor.getSupplyCurrent());
+     
     inputs.motorConnected = signalRefreshStatus.equals(StatusCode.OK);
     double motorShaftRotations = motor.getPosition().getValueAsDouble();
     inputs.positionRads = Units.rotationsToRadians(motorShaftRotations) / kGearRatio;
@@ -88,7 +87,7 @@ public class TurretIOTalonFX implements TurretIO {
             .withPosition(motorTargetRotations)
             .withVelocity(motorVelRotPerSec));
 
-    targetPosition = motorTargetRotations;
+    targetPosition = targetRads;
   } // End setTargetPosition
 
   @Override

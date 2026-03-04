@@ -4,7 +4,6 @@ import static frc.robot.subsystems.shooter.transfer.TransferConstants.*;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
@@ -69,39 +68,6 @@ public class Transfer extends SubsystemBase {
     }
   } // End periodic
   
-  public Command outakeCommand(double stepVoltage) {
-    return runOnce(() -> {outakeLogic(stepVoltage);
-    });
-  }
-  public Command intakeCommand(double stepVoltage) {
-    return runOnce(() -> {intakeLogic(stepVoltage);
-    });
-  }
-
-  private void intakeLogic (double stepVoltage) {
-    double next = Math.min(TransferConstants.kMaxVoltage, getTargetVoltage() + stepVoltage);
-			if (getMode() == Transfer.Mode.IDLE) {
-		    setStagingMode();
-				setTargetVoltage(stepVoltage);
-			} else {
-				setTargetVoltage(next);
-			}
-			if (next == 0) {
-				setIdleMode();
-			}
-  }
-  private void outakeLogic(double stepVoltage) {
-    double next = Math.max(-TransferConstants.kMaxVoltage, getTargetVoltage() - stepVoltage);
-			if (getMode() == Transfer.Mode.IDLE) {
-			setStagingMode();
-			setTargetVoltage(-stepVoltage);
-			} else {
-				setTargetVoltage(next);
-			}
-			if (next == 0) {
-				setIdleMode();
-			}
-  }
   /** Set mode to idle (motor stopped). */
   public void setIdleMode() {
     mode = Mode.IDLE;
