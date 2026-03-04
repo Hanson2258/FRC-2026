@@ -67,7 +67,7 @@ public class TunerConstants {
                   // Swerve azimuth does not require much torque output, so we can set a relatively
                   // low
                 // stator current limit to help avoid brownouts without impacting performance.
-                  .withStatorCurrentLimit(Amps.of(25)) // XXX: Was 20, changebefore comp
+                  .withStatorCurrentLimit(Amps.of(25)) // XXX: Was 20, change before comp
                   .withStatorCurrentLimitEnable(true));
   private static final TalonFXConfiguration steerInitialConfigs =
       new TalonFXConfiguration()
