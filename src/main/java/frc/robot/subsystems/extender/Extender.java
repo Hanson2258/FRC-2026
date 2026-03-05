@@ -111,9 +111,9 @@ public class Extender extends SubsystemBase {
     return extenderInputs.positionRads;
   } // End getPosition
 
-  /** Increases the target rads by "steps" */
+  /** Step the target Rads by the given amount. */
   public void stepPosition(double steps) {
-    setTargetPosition(getPosition() + steps);
+    setTargetPosition(getTargetPosition() + steps);
   } // End stepPosition
 
   /** Returns the clamped targetPosition to kMinRads and kMaxRads */

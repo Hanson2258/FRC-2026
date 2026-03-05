@@ -42,7 +42,12 @@ import frc.robot.simulation.FuelSim;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.vision.*;
 import static frc.robot.subsystems.vision.VisionConstants.*;
+
+import java.util.function.BooleanSupplier;
+
 import frc.robot.subsystems.intake.*;
+import frc.robot.subsystems.extender.*;
+import frc.robot.subsystems.extender.Extender.ExtenderState;
 import frc.robot.subsystems.agitator.*;
 import frc.robot.subsystems.shooter.*;
 import frc.robot.subsystems.shooter.transfer.*;
@@ -218,7 +223,7 @@ public class RobotContainer {
 						drive::getFieldRelativeChassisSpeeds);
 
 				configureFuelSim();
-				configureFuelSimRobot(true, shooterSim::intakeFuel);
+				configureFuelSimRobot(() -> extender.getState() == ExtenderState.EXTENDED, shooterSim::intakeFuel);
 				break;
 
 			// Replayed Robot, disable IO implementations
@@ -373,11 +378,10 @@ public class RobotContainer {
     // Pathfind then follow path to outpost
     driverController.leftStick().whileTrue(DriveCommands.pathfindThenFollowPath(drive, "DriveToOutpost"));
 
-		// TODO: Enable Ladder Pathfinding
-		// driverController.povUp().onTrue(DriveCommands.pathfindThenFollowPath(drive, "InnerLeftLadder"));
-    // driverController.povLeft().onTrue(DriveCommands.pathfindThenFollowPath(drive, "OutLeftLadder"));
-    // driverController.povRight().onTrue(DriveCommands.pathfindThenFollowPath(drive, "OutRightLadder"));
-    // driverController.povDown().onTrue(DriveCommands.pathfindThenFollowPath(drive, "InnerRightLadder"));
+		driverController.povUp().onTrue(DriveCommands.pathfindThenFollowPath(drive, "InnerLeftLadder"));
+    driverController.povLeft().onTrue(DriveCommands.pathfindThenFollowPath(drive, "OuterLeftLadder"));
+    driverController.povRight().onTrue(DriveCommands.pathfindThenFollowPath(drive, "OuterRightLadder"));
+    driverController.povDown().onTrue(DriveCommands.pathfindThenFollowPath(drive, "InnerRightLadder"));
 
 
 		// ------------------------------------------- Driver Manual Override -------------------------------------------
@@ -407,17 +411,6 @@ public class RobotContainer {
 				Commands.runOnce(() -> operatorManualOverride = true),
 				() -> operatorManualOverride));
 
-		// Set Agitator, Transfer, and Flywheel to idle mode when B is pressed
-		operatorController.leftTrigger().onTrue(
-			new ConditionalCommand(
-				Commands.runOnce(() -> {
-					if (agitator != null) agitator.setIdleMode();
-					if (transfer != null) transfer.setIdleMode();
-					if (flywheel != null) flywheel.setState(FlywheelState.IDLE);
-				}, agitator, transfer, flywheel),
-				new InstantCommand(),
-				() -> operatorManualOverride));
-
 		// Intake Manual Voltage Control
 		final double intakeStepVoltage = 0.25;
 		// Raise Intake voltage
@@ -437,24 +430,25 @@ public class RobotContainer {
 			)
 		);
 
-		// Extender manual override position stepping
-		final double extenderStepPosition = 5;
+		// Extender Manul Position Control
+		final double extenderStepPosition = Units.degreesToRadians(5);
+		// Raise Extender Position
 		operatorController.leftTrigger().onTrue(
 			new ConditionalCommand(
 				Commands.runOnce(() -> {
 					extender.stepPosition(extenderStepPosition);
 				}), 
 				new InstantCommand(), 
-				() -> (manualOverride && extender != null))
+				() -> (operatorManualOverride && extender != null))
 		);
-		
+		// Lower Extender Position
 		operatorController.rightTrigger().onTrue(
 			new ConditionalCommand(
 				Commands.runOnce(() -> {
-					extender.stepPosition(extenderStepPosition);
+					extender.stepPosition(-extenderStepPosition);
 				}), 
 				new InstantCommand(), 
-				() -> (manualOverride && extender != null))
+				() -> (operatorManualOverride && extender != null))
 		);
 
 		// Agitator Manual Voltage Control
@@ -516,7 +510,7 @@ public class RobotContainer {
 		// Reset Turret Encoder
 		operatorController.start().onTrue(
 			new ConditionalCommand(
-				Commands.runOnce(() -> turret.resetMotorEncoder(), turret), 
+				Commands.runOnce(() -> turret.resetMotorEncoder(), turret), // TODO: make this also idle subsystems, and reset other subsystems' encoders if needed
 				new InstantCommand(),
 				() -> (operatorManualOverride && turret != null)
 			)
@@ -644,8 +638,8 @@ public class RobotContainer {
 				.ignoringDisable(true));
   } // End configureFuelSim
 	
-	/** Configures the robot for fuel simulation. */ // TODO: change ableToIntake to BooleanSupplier when Extender is implemented
-	private void configureFuelSimRobot(boolean ableToIntake, Runnable intakeCallback) {
+	/** Configures the robot for fuel simulation. */
+	private void configureFuelSimRobot(BooleanSupplier ableToIntake, Runnable intakeCallback) {
 		double robotWidthMeters = Constants.Dimensions.FULL_WIDTH.in(Meters);
 		double robotLengthMeters = Constants.Dimensions.FULL_LENGTH.in(Meters);
 		double bumperHeightMeters = Constants.Dimensions.BUMPER_HEIGHT.in(Meters);
@@ -667,7 +661,7 @@ public class RobotContainer {
 				robotLengthMeters / 2 + intakeExtendMeters,
 				-robotWidthMeters / 2 + intakeInsetMeters,
 				robotWidthMeters / 2 - intakeInsetMeters,
-				// () -> intake.isRightDeployed() && ableToIntake, // TODO: Uncomment and fix when Extender is implemented
+				() -> extender.getState() == ExtenderState.EXTENDED,
 				intakeCallback);
 	} // End configureFuelSimRobot
 
@@ -685,7 +679,7 @@ public class RobotContainer {
 		Pose3d turretComponentPose = new Pose3d(-0.125, -0.17, 0.27, new Rotation3d(0, 0, turret.getPosition().getRadians() + Math.toRadians(90)));
 		Pose3d extenderComponentPose;
 		if (DriverStation.isTeleopEnabled()) {
-			extenderComponentPose = new Pose3d(0.28, 0, 0.15, new Rotation3d(0, 90 ,0)); // TODO: Update when Extender is implemented to reflect true angle
+			extenderComponentPose = new Pose3d(0.28, 0, 0.15, new Rotation3d(0, extender.getPosition() ,0));
 		} else {
 			extenderComponentPose = new Pose3d(0.28, 0, 0.15, new Rotation3d(0, 0, 0));
 		}
