@@ -114,9 +114,9 @@ public class RobotContainer {
 	private boolean isRobotCentric = false;
 
 	// Manual Override
-	@AutoLogOutput(key = "ManualOverride")
+	@AutoLogOutput(key = "ManualOverride/Driver")
 	public static boolean driverManualOverride = false;
-	@AutoLogOutput(key = "ManualOverride")
+	@AutoLogOutput(key = "ManualOverride/Operator")
 	public static boolean operatorManualOverride = false;
 
 	// Dashboard inputs
@@ -132,7 +132,6 @@ public class RobotContainer {
 	private final ShooterSim shooterSim;
 	private final ShooterSimVisualizer shooterSimVisualizer;
 
-	private double simExtenderAngle;
 	/** The container for the robot. Contains subsystems, OI devices, and commands. */
 	public RobotContainer() {
     // Initialize Subsystems based on mode (REAL, SIM, or REPLAY)
@@ -173,7 +172,6 @@ public class RobotContainer {
 			case SIM:
         // Configure Simulation timing for accurate physics
         // 5 ticks per 20ms period = 4kHz effective control loop rate
-		simExtenderAngle = 0.0;
         SimulatedArena.overrideSimulationTimings(
             edu.wpi.first.units.Units.Seconds.of(0.02), // 20ms robot period
             5); // 5 Simulation ticks per period
@@ -252,6 +250,7 @@ public class RobotContainer {
 		faceTargetController.enableContinuousInput(-Math.PI, Math.PI);
 
 		teleopDrive = new TeleopDrive(drive, driverController, () -> isRobotCentric, () -> isFacingHub, faceTargetController);
+		teleopDrive.setManualOverrideSupplier(() -> driverManualOverride);
 
 		/// -------------------------------------------------------------------------------------------
 		/// ------------------------------- Shooter Subsystem Commands --------------------------------
