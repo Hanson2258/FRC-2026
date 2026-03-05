@@ -259,6 +259,7 @@ public class RobotContainer {
 		// Turret aims at predicted target; velocity feedforward for spin compensation. Only active if not in manualOverride
 		turret.setManualOverrideSupplier(() -> operatorManualOverride);
 		turret.setDrive(drive);
+		turret.setAimAtTargetSupplier(() -> shootWhenReadyCommand.isScheduled());
 
 		/// -------------------------------------------------------------------------------------------
 		/// ------------------------------------ Logger Dashboard -------------------------------------
