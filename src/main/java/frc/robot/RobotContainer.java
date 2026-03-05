@@ -336,6 +336,14 @@ public class RobotContainer {
   private void configureDriverBindings() {
     drive.setDefaultCommand(teleopDrive);
 
+		// Toggles the extenders state between extended and retracted 
+		driverController.leftTrigger().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> extender.setRetractedState(), extender), 
+				Commands.runOnce(() -> extender.setExtendedState(), extender), 
+				() -> (extender.getState() == Extender.ExtenderState.EXTENDED)
+			)
+		);
     // Switch to X pattern when X button is pressed
     driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
@@ -377,14 +385,7 @@ public class RobotContainer {
 			}
 		}));
 
-		// Toggles the extenders state between extended and retracted 
-		driverController.b().onTrue(
-			new ConditionalCommand(
-				Commands.runOnce(() -> extender.setRetractedState(), extender), 
-				Commands.runOnce(() -> extender.setExtendedState(), extender), 
-				() -> (extender.getState() == Extender.ExtenderState.EXTENDED)
-			)
-		);
+
 		
 		driverController.back().onTrue(
 			new ConditionalCommand(
@@ -436,11 +437,11 @@ public class RobotContainer {
 		}
 
 		// Enable/ Disable Intake
-		operatorController.leftTrigger().onTrue(Commands.runOnce(() -> intake.setIntakingMode(), intake));
-		operatorController.leftTrigger().onFalse(Commands.runOnce(() -> intake.setIdleMode(), intake));
-
-		operatorController.rightTrigger().onTrue(Commands.runOnce(() -> intake.setReversingMode(), intake));
-		operatorController.rightTrigger().onFalse(Commands.runOnce(() -> intake.setIdleMode(), intake));
+		//operatorController.leftTrigger().onTrue(Commands.runOnce(() -> intake.setIntakingMode(), intake));
+		//operatorController.leftTrigger().onFalse(Commands.runOnce(() -> intake.setIdleMode(), intake));
+//
+		//operatorController.rightTrigger().onTrue(Commands.runOnce(() -> intake.setReversingMode(), intake));
+		//operatorController.rightTrigger().onFalse(Commands.runOnce(() -> intake.setIdleMode(), intake));
 		
 		// --------------------------------------- Manual Override + Encoder Reset --------------------------------------
 		// If Manual Override is false, become true. 
@@ -464,6 +465,27 @@ public class RobotContainer {
 				}, agitator, transfer, flywheel),
 				new InstantCommand(),
 				() -> manualOverride));
+
+		// Extender manual override position stepping
+		final double extenderStepPosition = 5;
+		operatorController.leftTrigger().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> {
+					extender.stepPosition(extenderStepPosition);
+				}), 
+				new InstantCommand(), 
+				() -> (manualOverride && extender != null))
+		);
+		
+		operatorController.rightTrigger().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> {
+					extender.stepPosition(extenderStepPosition);
+				}), 
+				new InstantCommand(), 
+				() -> (manualOverride && extender != null))
+		);
+
 
 		// Intake Manual Voltage Control
 		final double intakeStepVoltage = 0.25;

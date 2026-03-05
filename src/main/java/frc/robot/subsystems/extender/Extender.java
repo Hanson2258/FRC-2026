@@ -28,7 +28,7 @@ public class Extender extends SubsystemBase {
   private final ExtenderIO.ExtenderIOInputs extenderInputs = new ExtenderIO.ExtenderIOInputs();
   
   private ExtenderState state = ExtenderState.RETRACTED;
-  private double targetPosition = kDownExtenderRads;
+  private double targetPosition = kUpExtenderRads;
 
   public Extender(ExtenderIO io) {
     extenderIO = io; 
@@ -62,7 +62,7 @@ public class Extender extends SubsystemBase {
     switch (state) {
       case RETRACTED:
       case EXTENDED:
-        extenderIO.setTargetPosition(getClampedTargetPos());
+        extenderIO.setTargetPosition(clampTargetPosition(targetPosition));
         System.out.println("Target POS: " + targetPosition);
         break;
       default:
@@ -98,7 +98,7 @@ public class Extender extends SubsystemBase {
   /** Set the target rads, used in RETRACTED/EXTENDED state */
   public void setTargetPosition(double rads) {
     System.out.println("Setting target pos to: " + rads);
-    targetPosition = rads;
+    targetPosition = clampTargetPosition(rads);
   } // End setTargetPosition
 
   /** Returns the target rads */
@@ -117,8 +117,8 @@ public class Extender extends SubsystemBase {
   } // End stepPosition
 
   /** Returns the clamped targetPosition to kMinRads and kMaxRads */
-  public double getClampedTargetPos() {
-    return MathUtil.clamp(targetPosition, kMinRads, kMaxRads);
+  public double clampTargetPosition(double pos) {
+    return MathUtil.clamp(pos, kMinRads, kMaxRads);
   } // End getClampedTargetPos
 
   /** Whether the extender is at the target position within tolerance */
