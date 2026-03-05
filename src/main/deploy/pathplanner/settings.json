@@ -3,13 +3,17 @@
   "robotLength": 0.9,
   "holonomicMode": true,
   "pathFolders": [
-    "R-Alliance Sweep",
-    "Left Start",
-    "R-NZ Full Sweep",
-    "R-NZ Half Sweep"
+    "Alliance Sweep",
+    "Hanging",
+    "Fuel Sweeps",
+    "Starting Position - Center",
+    "Starting Position - Left",
+    "Starting Position - Right"
   ],
   "autoFolders": [
-    "Neutral Zone Sweeps"
+    "Starting Position - Right",
+    "Starting Position - Center",
+    "Starting Position - Left"
   ],
   "defaultMaxVel": 1.0,
   "defaultMaxAccel": 1.0,

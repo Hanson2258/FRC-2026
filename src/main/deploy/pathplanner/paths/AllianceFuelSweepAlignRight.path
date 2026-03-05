@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.3866333808844504,
-        "y": 0.6774179743223976
+        "x": 7.75,
+        "y": 1.013007985803016
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.3866333808844504,
-        "y": 0.6774179743223978
+        "x": 7.733904170363797,
+        "y": 1.2946850044365568
       },
       "isLocked": false,
-      "linkedName": "IntakingToHub End"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.5769900142653355,
-        "y": 3.9638373751783167
+        "x": 7.75,
+        "y": 1.2
       },
       "prevControl": {
-        "x": 1.5769900142653355,
-        "y": 3.9638373751783167
+        "x": 7.760051209491239,
+        "y": 0.9502021353418664
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "AllianceFuelSweepAlignRight-E"
     }
   ],
   "rotationTargets": [],
@@ -33,7 +33,7 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 5.0,
+    "maxVelocity": 1.0,
     "maxAcceleration": 1.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 90.0
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Fuel Sweeps",
   "idealStartingState": {
-    "velocity": 1.0,
-    "rotation": -90.0
+    "velocity": 0,
+    "rotation": 90.0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

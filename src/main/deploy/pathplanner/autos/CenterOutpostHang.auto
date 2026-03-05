@@ -7,12 +7,6 @@
         {
           "type": "named",
           "data": {
-            "name": "Intake On"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "Flywheel On"
           }
         },
@@ -25,25 +19,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Left to Center Left"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Center Left to Center Right"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Center Right to Right"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Right to Ladder"
+            "pathName": "DriveToOutpostFromCenter"
           }
         },
         {
@@ -55,13 +31,19 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 7.0
+            "waitTime": 6.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "OutpostToOuterRightLadder"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "Starting Position - Center",
   "choreoAuto": false
 }

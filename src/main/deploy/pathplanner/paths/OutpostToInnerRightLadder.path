@@ -3,29 +3,45 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.9198926654740607,
+        "x": 0.4980322003577814,
         "y": 0.6520035778175304
       },
       "prevControl": null,
       "nextControl": {
-        "x": 0.6698926654740607,
+        "x": 1.4980322003577813,
         "y": 0.6520035778175304
+      },
+      "isLocked": false,
+      "linkedName": "DriveToOutpost-E"
+    },
+    {
+      "anchor": {
+        "x": 1.9684826974267962,
+        "y": 1.9063265306122448
+      },
+      "prevControl": {
+        "x": 2.016664631292087,
+        "y": 1.2317794564981694
+      },
+      "nextControl": {
+        "x": 1.9201952085181895,
+        "y": 2.5823513753327414
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 0.4980322003577814,
-        "y": 0.6520035778175304
+        "x": 1.686805678793256,
+        "y": 3.347
       },
       "prevControl": {
-        "x": 0.7480322003577814,
-        "y": 0.6520035778175304
+        "x": 1.839716060337178,
+        "y": 3.0249866903283045
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "DriveToOutpost-E"
+      "linkedName": "InnerRightLadder-E"
     }
   ],
   "rotationTargets": [],
@@ -33,8 +49,8 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
+    "maxVelocity": 1.5,
+    "maxAcceleration": 1.5,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -42,10 +58,10 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 180.0
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Hanging",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 0.0

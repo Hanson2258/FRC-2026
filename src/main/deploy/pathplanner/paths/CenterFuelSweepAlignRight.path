@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.6,
-        "y": 5.085252883764054
+        "x": 8.2,
+        "y": 1.013007985803016
       },
       "prevControl": null,
       "nextControl": {
-        "x": 0.8333364015541058,
-        "y": 5.174997653582585
+        "x": 8.183904170363796,
+        "y": 1.2946850044365568
       },
       "isLocked": false,
-      "linkedName": "PickupBallsEnd"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.7029015084294583,
-        "y": 4.9403904170363795
+        "x": 8.2,
+        "y": 1.2
       },
       "prevControl": {
-        "x": 1.3568411712511088,
-        "y": 5.1013487133984015
+        "x": 8.210051209491239,
+        "y": 0.9502021353418664
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "CenterFuelSweepAlignRight-E"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -28.720326797869525
+    "rotation": 135.0
   },
   "reversed": false,
-  "folder": "R-Alliance Sweep",
+  "folder": "Fuel Sweeps",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -130.0
+    "rotation": 135.0
   },
   "useDefaultConstraints": true
 }

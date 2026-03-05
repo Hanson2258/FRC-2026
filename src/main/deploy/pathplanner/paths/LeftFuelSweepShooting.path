@@ -3,58 +3,58 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.4895385980479148,
-        "y": 0.517755775577557
+        "x": 6.064871339840284,
+        "y": 7.370860692102928
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.634513845572667,
-        "y": 0.517755775577557
+        "x": 5.742954747116237,
+        "y": 7.370860692102928
       },
       "isLocked": false,
-      "linkedName": "Path1Start"
+      "linkedName": "LeftFuelSweepShooting-S"
     },
     {
       "anchor": {
-        "x": 5.235936113575865,
-        "y": 0.517755775577557
+        "x": 3.3768677905944986,
+        "y": 7.370860692102928
       },
       "prevControl": {
-        "x": 4.694604122605566,
-        "y": 0.5084418804796828
+        "x": 4.141419698314108,
+        "y": 7.370860692102928
       },
       "nextControl": {
-        "x": 5.777268104546164,
-        "y": 0.5270696706754313
+        "x": 3.036468582321582,
+        "y": 7.370860692102928
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.272058562555457,
-        "y": 1.3027329192546575
+        "x": 2.676699201419698,
+        "y": 5.656654835847382
       },
       "prevControl": {
-        "x": 6.250281876333246,
-        "y": 0.9308366194026154
+        "x": 2.8939929015084287,
+        "y": 5.962475598935225
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Path1End"
+      "linkedName": null
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 1.2,
-      "rotationDegrees": 90.0
+      "waypointRelativePos": 1.0000000000000038,
+      "rotationDegrees": 180.0
     }
   ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
+    "maxVelocity": 2.0,
     "maxAcceleration": 2.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
@@ -63,13 +63,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 51.23448009554114
+    "rotation": -52.16354746583237
   },
   "reversed": false,
-  "folder": "R-NZ Full Sweep",
+  "folder": "Fuel Sweeps",
   "idealStartingState": {
-    "velocity": 0,
-    "rotation": 90.0
+    "velocity": 0.0,
+    "rotation": 180.0
   },
   "useDefaultConstraints": false
 }

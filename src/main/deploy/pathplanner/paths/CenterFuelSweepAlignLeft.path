@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.5501931818181816,
-        "y": 7.2610340909090905
+        "x": 8.221712511091393,
+        "y": 7.266237799467612
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.550193181818181,
-        "y": 7.2610340909090905
+        "x": 8.23769474030186,
+        "y": 7.016749185800648
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 3.0959772727272723,
-        "y": 5.1378295454545455
+        "x": 8.221712511091393,
+        "y": 7.0
       },
       "prevControl": {
-        "x": 3.075363636363636,
-        "y": 7.405329545454546
+        "x": 8.213664596273292,
+        "y": 7.266237799467612
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "CenterFuelSweepAlignLeft-E"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -90.0
+    "rotation": -135.0
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Fuel Sweeps",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -135.0
   },
   "useDefaultConstraints": true
 }

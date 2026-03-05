@@ -3,63 +3,56 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.041032028469752,
-        "y": 4.008102016607354
+        "x": 7.714693877551021,
+        "y": 6.879937888198758
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.291032028469752,
-        "y": 4.008102016607354
+        "x": 7.714693877551021,
+        "y": 5.777373558118899
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "AllianceFuelSweepAlignLeft-E"
     },
     {
       "anchor": {
-        "x": 1.351838671412625,
-        "y": 2.02841043890935
+        "x": 7.715,
+        "y": 4.6
       },
       "prevControl": {
-        "x": 0.5233807829191494,
-        "y": 3.1258481613292792
+        "x": 7.714690461046914,
+        "y": 4.849999808371199
       },
       "nextControl": {
-        "x": 2.2643651042398947,
-        "y": 0.8196091902290703
+        "x": 7.71531182864486,
+        "y": 4.348150917090142
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 3.4091137160196445,
-        "y": 1.5851553582301072
+        "x": 6.064871339840284,
+        "y": 7.370860692102928
       },
       "prevControl": {
-        "x": 3.956473939115971,
-        "y": 0.6754580860418454
+        "x": 6.346548358473824,
+        "y": 7.137471162377994
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "LeftFuelSweepShooting-S"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 1.0512991339107276,
-      "rotationDegrees": -153.82528394109642
+      "waypointRelativePos": 0.8963133640552982,
+      "rotationDegrees": -90.0
     }
   ],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [
-    {
-      "name": "",
-      "waypointRelativePos": 1.3022151898733816,
-      "endWaypointRelativePos": null,
-      "command": null
-    }
-  ],
+  "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 1.0,
     "maxAcceleration": 1.0,
@@ -70,13 +63,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 180.0
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Fuel Sweeps",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -90.0
   },
   "useDefaultConstraints": true
 }
