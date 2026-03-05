@@ -36,7 +36,7 @@ public final class HoodConstants { // XXX: Add correct values
   public static final double kEncoderZeroOffsetRad = 0.0;
 
   /** Minimum Hood angle. */
-  public static final double kMinAngleRad = Units.degreesToRadians(40.0);
+  public static final double kMinAngleRad = Units.degreesToRadians(25.0);
 
   /** Maximum Hood angle. */
   public static final double kMaxAngleRad = Units.degreesToRadians(10.0);

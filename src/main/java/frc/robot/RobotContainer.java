@@ -24,6 +24,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import static edu.wpi.first.units.Units.Meters;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -109,8 +110,10 @@ public class RobotContainer {
 	private boolean isRobotCentric = false;
 
 	// Manual Override
-	@AutoLogOutput(key = "ManualOverride")
-	public static boolean manualOverride = false;
+	@AutoLogOutput(key = "ManualOverride/Driver")
+	public static boolean driverManualOverride = false;
+	@AutoLogOutput(key = "ManualOverride/Operator")
+	public static boolean operatorManualOverride = false;
 
 	// Dashboard inputs
 	private final LoggedDashboardChooser<Command> autoChooser;
@@ -124,7 +127,6 @@ public class RobotContainer {
 	// Shooter Simulation and Visualizer (only non-null in SIM)
 	private final ShooterSim shooterSim;
 	private final ShooterSimVisualizer shooterSimVisualizer;
-
 
 	/** The container for the robot. Contains subsystems, OI devices, and commands. */
 	public RobotContainer() {
@@ -154,7 +156,7 @@ public class RobotContainer {
 				// Subsystems
 				intake   = isIntakeEnabled 	 ? new Intake(new IntakeIOSparkMax()) 					 : new Intake(new IntakeIO() {});
 				agitator = isAgitatorEnabled ? new Agitator(new AgitatorIOSparkMax()) 			 : new Agitator(new AgitatorIO() {});
-				transfer = isTransferEnabled ? new Transfer(new TransferIOBrushedSparkMax()) : new Transfer(new TransferIO() {});
+				transfer = isTransferEnabled ? new Transfer(new TransferIOSparkMax()) : new Transfer(new TransferIO() {});
 				turret   = isTurretEnabled 	 ? new Turret(new TurretIOSparkMax()) 					 : new Turret(new TurretIO() {});
 				hood     = isHoodEnabled  	 ? new Hood(new HoodIOSparkMax()) 							 : new Hood(new HoodIO() {});
 				flywheel = isFlywheelEnabled ? new Flywheel(new FlywheelIOTalonFX()) 				 : new Flywheel(new FlywheelIO() {});
@@ -232,7 +234,7 @@ public class RobotContainer {
 		shooter = new Shooter(drive, agitator, transfer, turret, hood, flywheel, isHoodEnabled);
 		shootWhenReadyCommand = new ShootWhenReadyCommand(agitator, transfer, shooter);
 		shooter.setShootCommandScheduledSupplier(shootWhenReadyCommand::isScheduled);
-		shooter.setManualOverrideSupplier(() -> manualOverride);
+		shooter.setManualOverrideSupplier(() -> operatorManualOverride);
 
 		/// -------------------------------------------------------------------------------------------
 		/// ------------------------------------- Drive Commands --------------------------------------		
@@ -244,12 +246,13 @@ public class RobotContainer {
 		faceTargetController.enableContinuousInput(-Math.PI, Math.PI);
 
 		teleopDrive = new TeleopDrive(drive, driverController, () -> isRobotCentric, () -> isFacingHub, faceTargetController);
+		teleopDrive.setManualOverrideSupplier(() -> driverManualOverride);
 
 		/// -------------------------------------------------------------------------------------------
 		/// ------------------------------- Shooter Subsystem Commands --------------------------------
 		/// -------------------------------------------------------------------------------------------
 		// Turret aims at predicted target; velocity feedforward for spin compensation. Only active if not in manualOverride
-		turret.setManualOverrideSupplier(() -> manualOverride);
+		turret.setManualOverrideSupplier(() -> operatorManualOverride);
 		turret.setDrive(drive);
 
 		/// -------------------------------------------------------------------------------------------
@@ -269,15 +272,15 @@ public class RobotContainer {
 			// Set up Swerve Calibration Programs
 			DriveCommands.swerveCalibration(autoChooser, drive);
 
-			// Record zeroed Robot components (model_0 turret, model_1 extender) – initial only; updated in updateSimulation()
-			Logger.recordOutput("ComponentPoses/Zeroed", new Pose3d[] {new Pose3d(), new Pose3d()});
+			// Record zeroed Robot components (model_0 turret, model_1 extender, model_2 extending-storage) – initial only; updated in updateSimulation()
+			Logger.recordOutput("ComponentPoses/Zeroed", new Pose3d[] {new Pose3d(), new Pose3d(), new Pose3d()});
 		}
 
 		// Record zeroed Robot components (model_0 turret, model_1 extender) – initial only; updated in updateSimulation()
 		Logger.recordOutput("ComponentPoses/Final",
 				new Pose3d[] {
-					new Pose3d(-0.17, 0.05, 0.35, new Rotation3d(0, 0, 0)), // model_0 turret
-					new Pose3d(0.5, 0, 0.35, new Rotation3d(0, 0, 0))  // model_1 extender
+					new Pose3d(-0.125, -0.17, 0.27, new Rotation3d(0, 0, 0)), // model_0 turret
+					new Pose3d(0.28, 0, 0.15, new Rotation3d(0, 0, 0)),  // model_1 extender
 				});
 			
 
@@ -354,17 +357,17 @@ public class RobotContainer {
               flywheel));
     }
 
-		// --------------------------------------- Manual Override + Encoder Reset --------------------------------------
+		// ----------------------------------- Driver Manual Override + Encoder Reset -----------------------------------
 		// If Manual Override is false, become true. 
 		// If true, reset encoder positions and then become false.
 		driverController.back().onTrue(
 			new ConditionalCommand(
 				new ParallelCommandGroup(
 					// TODO: Reset encoder positions
-					Commands.runOnce(() -> manualOverride = false)
+					Commands.runOnce(() -> driverManualOverride = false)
 				),
-				Commands.runOnce(() -> manualOverride = true),
-				() -> manualOverride));
+				Commands.runOnce(() -> driverManualOverride = true),
+				() -> driverManualOverride));
   }
 
   /** Configure Operator controls. */
@@ -380,18 +383,18 @@ public class RobotContainer {
 
 		operatorController.rightTrigger().onTrue(Commands.runOnce(() -> intake.setReversingMode(), intake));
 		operatorController.rightTrigger().onFalse(Commands.runOnce(() -> intake.setIdleMode(), intake));
-		
-		// --------------------------------------- Manual Override + Encoder Reset --------------------------------------
+
+		// ---------------------------------- Operator Manual Override + Encoder Reset ----------------------------------
 		// If Manual Override is false, become true. 
 		// If true, reset encoder positions and then become false.
 		operatorController.back().onTrue(
 			new ConditionalCommand(
 				new ParallelCommandGroup(
 					// TODO: Reset encoder positions
-					Commands.runOnce(() -> manualOverride = false)
+					Commands.runOnce(() -> operatorManualOverride = false)
 				),
-				Commands.runOnce(() -> manualOverride = true),
-				() -> manualOverride));
+				Commands.runOnce(() -> operatorManualOverride = true),
+				() -> operatorManualOverride));
 
 		// Set Agitator, Transfer, and Flywheel to idle mode when B is pressed
 		operatorController.b().onTrue(
@@ -402,7 +405,7 @@ public class RobotContainer {
 					if (flywheel != null) flywheel.setState(FlywheelState.IDLE);
 				}, agitator, transfer, flywheel),
 				new InstantCommand(),
-				() -> manualOverride));
+				() -> operatorManualOverride));
 
 		// Intake Manual Voltage Control
 		final double intakeStepVoltage = 0.25;
@@ -411,7 +414,7 @@ public class RobotContainer {
 			new ConditionalCommand(
 				Commands.runOnce(() -> intake.stepVoltage(intakeStepVoltage), intake),
 				new InstantCommand(),
-				() -> (manualOverride && intake != null)
+				() -> (operatorManualOverride && intake != null)
 			)
 		);
 		// Lower Intake voltage
@@ -419,7 +422,7 @@ public class RobotContainer {
 			new ConditionalCommand(
 				Commands.runOnce(() -> intake.stepVoltage(-intakeStepVoltage), intake),
 				new InstantCommand(),
-				() -> (manualOverride && intake != null)
+				() -> (operatorManualOverride && intake != null)
 			)
 		);
 
@@ -430,7 +433,7 @@ public class RobotContainer {
 			new ConditionalCommand(
 				Commands.runOnce(() -> agitator.stepVoltage(agitatorStepVoltage), agitator),
 				new InstantCommand(),
-				() -> (manualOverride && agitator != null)
+				() -> (operatorManualOverride && agitator != null)
 			)
 		);
 		// Lower Agitator voltage
@@ -438,7 +441,7 @@ public class RobotContainer {
 			new ConditionalCommand(
 				Commands.runOnce(() -> agitator.stepVoltage(-agitatorStepVoltage), agitator),
 				new InstantCommand(),
-				() -> (manualOverride && agitator != null)
+				() -> (operatorManualOverride && agitator != null)
 			)
 		);
 
@@ -449,7 +452,7 @@ public class RobotContainer {
 			new ConditionalCommand(
 				Commands.runOnce(() -> transfer.stepVoltage(transferStepVoltage), transfer),
 				new InstantCommand(),
-				() -> (manualOverride && transfer != null)
+				() -> (operatorManualOverride && transfer != null)
 			)
 		);
 		// Lower Transfer voltage
@@ -457,7 +460,7 @@ public class RobotContainer {
 			new ConditionalCommand(
 				Commands.runOnce(() -> transfer.stepVoltage(-transferStepVoltage), transfer),
 				new InstantCommand(),
-				() -> (manualOverride && transfer != null)
+				() -> (operatorManualOverride && transfer != null)
 			)
 		);
 
@@ -466,7 +469,7 @@ public class RobotContainer {
 			new ConditionalCommand(
 				Commands.runOnce(() -> turret.setHubAngleRelativeToRobot(new Rotation2d(0.0)), turret), 
 				new InstantCommand(),
-				() -> (manualOverride && turret != null)
+				() -> (operatorManualOverride && turret != null)
 			)
 		);
 
@@ -475,7 +478,7 @@ public class RobotContainer {
 			new ConditionalCommand(
 				Commands.runOnce(() -> turret.resetMotorEncoder(), turret), 
 				new InstantCommand(),
-				() -> (manualOverride && turret != null)
+				() -> (operatorManualOverride && turret != null)
 			)
 		);
 		
@@ -486,7 +489,7 @@ public class RobotContainer {
 			new ConditionalCommand(
 				Commands.runOnce(() -> turret.stepRads(turretStepPosition), turret), 
 				new InstantCommand(), 
-				() -> (manualOverride && turret != null)
+				() -> (operatorManualOverride && turret != null)
 			)
 		);
 		
@@ -495,7 +498,7 @@ public class RobotContainer {
 			new ConditionalCommand(
 				Commands.runOnce(() -> turret.stepRads(-turretStepPosition), turret), 
 				new InstantCommand(), 
-				() -> (manualOverride && turret != null)
+				() -> (operatorManualOverride && turret != null)
 			)
 		);
 
@@ -507,7 +510,7 @@ public class RobotContainer {
 			new ConditionalCommand(
 				Commands.runOnce(() -> flywheel.stepVelocityRadsPerSec(stepRadsPerSec), flywheel),
 				new InstantCommand(),
-				() -> (manualOverride && flywheel != null)
+				() -> (operatorManualOverride && flywheel != null)
 			)
 		);
 
@@ -516,7 +519,7 @@ public class RobotContainer {
 			new ConditionalCommand(
 				Commands.runOnce(() -> flywheel.stepVelocityRadsPerSec(-stepRadsPerSec), flywheel),
 				new InstantCommand(),
-				() -> (manualOverride && flywheel != null)
+				() -> (operatorManualOverride && flywheel != null)
 			)
 		);
   } // End configureOperatorBindings
@@ -640,8 +643,14 @@ public class RobotContainer {
 		Logger.recordOutput("FieldSimulation/RobotPosition", robotPose);
 
 		// Robot-relative component poses for visualization
-		Pose3d turretComponentPose = new Pose3d(-0.17, 0.05, 0.35, new Rotation3d(0, 0, turret.getPosition().getRadians() - Math.PI / 2.0));
-		Pose3d extenderComponentPose = new Pose3d(0.5, 0, 0.35, new Rotation3d(0, 0, 0));
+		Pose3d turretComponentPose = new Pose3d(-0.125, -0.17, 0.27, new Rotation3d(0, 0, turret.getPosition().getRadians() + Math.toRadians(90)));
+		Pose3d extenderComponentPose;
+		if (DriverStation.isTeleopEnabled()) {
+			extenderComponentPose = new Pose3d(0.28, 0, 0.15, new Rotation3d(0, 90 ,0)); // TODO: Update when Extender is implemented to reflect true angle
+		} else {
+			extenderComponentPose = new Pose3d(0.28, 0, 0.15, new Rotation3d(0, 0, 0));
+		}
+		//hopper extender code TBD
 		Logger.recordOutput("ComponentPoses/Final", new Pose3d[] {turretComponentPose, extenderComponentPose});
 
 		// Update field view

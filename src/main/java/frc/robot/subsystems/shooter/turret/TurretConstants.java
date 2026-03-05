@@ -12,7 +12,7 @@ public final class TurretConstants { // XXX: Add correct values
   private TurretConstants() {}
 
   /** CAN ID of the Turret motor (NEO 550 on SPARK MAX or Kraken on Talon FX). */
-  public static final int kMotorId = 10;
+  public static final int kMotorId = 11;
 
   /** Idle behavior when output is zero (coast or brake). SPARK MAX only. */
   public static final SparkBaseConfig.IdleMode kIdleMode = SparkBaseConfig.IdleMode.kCoast;

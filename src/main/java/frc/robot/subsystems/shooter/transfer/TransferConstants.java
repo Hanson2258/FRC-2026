@@ -14,7 +14,7 @@ public final class TransferConstants { // XXX: Add correct values
   public static final SparkBaseConfig.IdleMode kIdleMode = SparkBaseConfig.IdleMode.kCoast;
 
   /** Set true if positive voltage spins the Transfer the opposite direction. */
-  public static final boolean kMotorInverted = false;
+  public static final boolean kMotorInverted = true;
 
   /** Smart current limit. SPARK MAX only. */
   public static final int kSmartCurrentLimitAmps = 25;

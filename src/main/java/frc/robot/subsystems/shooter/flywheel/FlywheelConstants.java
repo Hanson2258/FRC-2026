@@ -23,7 +23,7 @@ public final class FlywheelConstants { // XXX: Add correct values
   public static final double kStatorCurrentLimitAmps = 40.0;
 
   /** Set true if positive velocity spins the flywheel the opposite direction. */
-  public static final boolean kMotorInverted = false;
+  public static final boolean kMotorInverted = true;
 
   /** Idle target velocity (rad/s). */
   public static final double kIdleVelocityRadsPerSec = 0.0;
