@@ -1,5 +1,7 @@
 package frc.robot.subsystems.shooter.turret;
 
+import java.util.function.BooleanSupplier;
+
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.MathUtil;
@@ -8,7 +10,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.RobotContainer;
 import frc.robot.commands.ShooterCommands;
 import frc.robot.subsystems.drive.Drive;
 import static frc.robot.subsystems.shooter.turret.TurretConstants.kD;
@@ -45,6 +46,11 @@ public class Turret extends SubsystemBase {
     SmartDashboard.putNumber("Turret/kD", kD);
     SmartDashboard.putNumber("Turret/TargetPositionRads", turretInputs.targetPositionRads);
   } // End Turret Constructor
+
+  /** Set by RobotContainer so calculator does not overwrite Turret when operator is in manual override. */
+  public void setManualOverrideSupplier(BooleanSupplier supplier) {
+    manualOverrideSupplier = supplier != null ? supplier : () -> false;
+  } // End setManualOverrideSupplier
 
   /** Set by RobotContainer so Turret can get Robot Pose. */
   public void setDrive(Drive drive) {

@@ -39,30 +39,16 @@ import frc.robot.commands.ShooterCommands;
 import frc.robot.commands.TeleopDrive;
 import frc.robot.generated.TunerConstants;
 import frc.robot.simulation.FuelSim;
-import frc.robot.subsystems.agitator.Agitator;
-import frc.robot.subsystems.agitator.AgitatorIO;
-import frc.robot.subsystems.agitator.AgitatorIOSim;
-import frc.robot.subsystems.agitator.AgitatorIOSparkMax;
-import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.drive.GyroIO;
-import frc.robot.subsystems.drive.GyroIOPigeon2;
-import frc.robot.subsystems.drive.GyroIOSim;
-import frc.robot.subsystems.drive.ModuleIO;
-import frc.robot.subsystems.drive.ModuleIOSim;
-import frc.robot.subsystems.drive.ModuleIOTalonFX;
-import frc.robot.subsystems.extender.Extender;
-import frc.robot.subsystems.extender.ExtenderIO;
-import frc.robot.subsystems.extender.ExtenderIOSim;
-import frc.robot.subsystems.extender.ExtenderIOSparkMax;
-import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.intake.IntakeIO;
-import frc.robot.subsystems.intake.IntakeIOSim;
-import frc.robot.subsystems.intake.IntakeIOSparkMax;
-import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.subsystems.shooter.ShooterConstants;
-import frc.robot.subsystems.shooter.ShooterSim;
-import frc.robot.subsystems.shooter.ShooterSimVisualizer;
-import frc.robot.subsystems.shooter.flywheel.Flywheel;
+import frc.robot.subsystems.drive.*;
+import frc.robot.subsystems.vision.*;
+import static frc.robot.subsystems.vision.VisionConstants.*;
+import frc.robot.subsystems.intake.*;
+import frc.robot.subsystems.agitator.*;
+import frc.robot.subsystems.shooter.*;
+import frc.robot.subsystems.shooter.transfer.*;
+import frc.robot.subsystems.shooter.turret.*;
+import frc.robot.subsystems.shooter.hood.*;
+import frc.robot.subsystems.shooter.flywheel.*;
 import frc.robot.subsystems.shooter.flywheel.Flywheel.FlywheelState;
 import frc.robot.subsystems.hang.*;
 
@@ -87,11 +73,11 @@ public class RobotContainer {
 	private boolean isDriveEnabled = true;
 	private boolean isVisionEnabled = true;
 	private boolean isIntakeEnabled = true;
+	private boolean isExtenderEnabled = true;
 	private boolean isAgitatorEnabled = true;
 	private boolean isTransferEnabled = true;
 	private boolean isTurretEnabled = true;
 	private boolean isHoodEnabled = false;
-	private boolean isExtenderEnabled = true;
 	private boolean isFlywheelEnabled = true;
 	private boolean isHangEnabled = false;
 
@@ -100,11 +86,11 @@ public class RobotContainer {
 	@SuppressWarnings("unused")
 	private final Vision vision;
 	private final Intake intake;
+	private final Extender extender;
 	private final Agitator agitator;
 	private final Transfer transfer;
 	private final Turret turret;
 	private final Hood hood;
-	private final Extender extender;
 	private final Flywheel flywheel;
 	private final Hang hang;
 
@@ -173,11 +159,11 @@ public class RobotContainer {
 
 				// Subsystems
 				intake   = isIntakeEnabled 	 ? new Intake(new IntakeIOSparkMax()) 					 : new Intake(new IntakeIO() {});
+				extender = isExtenderEnabled ? new Extender(new ExtenderIOSparkMax())			   : new Extender(new ExtenderIO() {});
 				agitator = isAgitatorEnabled ? new Agitator(new AgitatorIOSparkMax()) 			 : new Agitator(new AgitatorIO() {});
 				transfer = isTransferEnabled ? new Transfer(new TransferIOSparkMax()) : new Transfer(new TransferIO() {});
 				turret   = isTurretEnabled 	 ? new Turret(new TurretIOSparkMax()) 					 : new Turret(new TurretIO() {});
 				hood     = isHoodEnabled  	 ? new Hood(new HoodIOSparkMax()) 							 : new Hood(new HoodIO() {});
-				extender = isExtenderEnabled ? new Extender(new ExtenderIOSparkMax())			   : new Extender(new ExtenderIO() {});
 				flywheel = isFlywheelEnabled ? new Flywheel(new FlywheelIOTalonFX()) 				 : new Flywheel(new FlywheelIO() {});
 				hang 		 = isHangEnabled	   ? new Hang(new HangIOSparkMax()) 							 : new Hang(new HangIO() {});
 				shooterSim = null;
@@ -212,11 +198,11 @@ public class RobotContainer {
 
 				// Subsystems
 				intake = new Intake(new IntakeIOSim());
+				extender = new Extender(new ExtenderIOSim());
 				agitator = new Agitator(new AgitatorIOSim());
 				transfer = new Transfer(new TransferIOSim());
 				turret = new Turret(new TurretIOSim());
 				hood = new Hood(new HoodIOSim());
-				extender = new Extender(new ExtenderIOSim());
 				flywheel = new Flywheel(new FlywheelIOSim());
 				hang = new Hang(new HangIOSim());
 
@@ -242,11 +228,11 @@ public class RobotContainer {
 
 				// Subsystems
 				intake = new Intake(new IntakeIO() {});
+				extender = new Extender(new ExtenderIO() {});
 				agitator = new Agitator(new AgitatorIO() {});
 				transfer = new Transfer(new TransferIO() {});
 				turret = new Turret(new TurretIO() {});
 				hood = new Hood(new HoodIO() {});
-				extender = new Extender(new ExtenderIO() {});
 				flywheel = new Flywheel(new FlywheelIO() {});
 				hang = new Hang(new HangIO() {});
 				shooterSim = null;
@@ -329,8 +315,6 @@ public class RobotContainer {
 				() -> (extender.getState() == Extender.ExtenderState.EXTENDED)
 			)
 		);
-    // Switch to X pattern when X button is pressed
-    driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
 		// Intake toggle: right bumper = intaking ↔ idle, left bumper = reversing ↔ idle
 		driverController.leftBumper().onTrue(
@@ -434,6 +418,25 @@ public class RobotContainer {
 				new InstantCommand(),
 				() -> operatorManualOverride));
 
+		// Intake Manual Voltage Control
+		final double intakeStepVoltage = 0.25;
+		// Raise Intake voltage
+		operatorController.povLeft().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> intake.stepVoltage(intakeStepVoltage), intake),
+				new InstantCommand(),
+				() -> (operatorManualOverride && intake != null)
+			)
+		);
+		// Lower Intake voltage
+		operatorController.povRight().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> intake.stepVoltage(-intakeStepVoltage), intake),
+				new InstantCommand(),
+				() -> (operatorManualOverride && intake != null)
+			)
+		);
+
 		// Extender manual override position stepping
 		final double extenderStepPosition = 5;
 		operatorController.leftTrigger().onTrue(
@@ -452,26 +455,6 @@ public class RobotContainer {
 				}), 
 				new InstantCommand(), 
 				() -> (manualOverride && extender != null))
-		);
-
-
-		// Intake Manual Voltage Control
-		final double intakeStepVoltage = 0.25;
-		// Raise Intake voltage
-		operatorController.povLeft().onTrue(
-			new ConditionalCommand(
-				Commands.runOnce(() -> intake.stepVoltage(intakeStepVoltage), intake),
-				new InstantCommand(),
-				() -> (operatorManualOverride && intake != null)
-			)
-		);
-		// Lower Intake voltage
-		operatorController.povRight().onTrue(
-			new ConditionalCommand(
-				Commands.runOnce(() -> intake.stepVoltage(-intakeStepVoltage), intake),
-				new InstantCommand(),
-				() -> (operatorManualOverride && intake != null)
-			)
 		);
 
 		// Agitator Manual Voltage Control
