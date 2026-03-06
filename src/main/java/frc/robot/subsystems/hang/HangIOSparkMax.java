@@ -30,9 +30,9 @@ public class HangIOSparkMax implements HangIO {
     sparkMaxConfig.openLoopRampRate(kOpenLoopRampRateSec);
     sparkMaxConfig.voltageCompensation(Constants.kNominalVoltage);
     sparkMaxConfig.signals
-        .appliedOutputPeriodMs(40)
-        .busVoltagePeriodMs(40)
-        .outputCurrentPeriodMs(40)
+        .appliedOutputPeriodMs(37)
+        .busVoltagePeriodMs(37)
+        .outputCurrentPeriodMs(37)
         .primaryEncoderPositionPeriodMs(32719)
         .primaryEncoderVelocityPeriodMs(32719);
     motor.configure(sparkMaxConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);

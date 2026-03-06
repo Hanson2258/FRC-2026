@@ -45,9 +45,9 @@ public class ExtenderIOSparkMax implements ExtenderIO {
       .velocityConversionFactor(1.0 / kGearRatio);
     sparkMaxConfig.closedLoop.p(kP).i(kI).d(kD);
     sparkMaxConfig.signals
-        .appliedOutputPeriodMs(40)
-        .busVoltagePeriodMs(40)
-        .outputCurrentPeriodMs(40)
+        .appliedOutputPeriodMs(31)
+        .busVoltagePeriodMs(31)
+        .outputCurrentPeriodMs(31)
         .primaryEncoderPositionPeriodMs(499)
         .primaryEncoderVelocityPeriodMs(499);
 
@@ -68,9 +68,9 @@ public class ExtenderIOSparkMax implements ExtenderIO {
       SparkMaxConfig sparkMaxConfig = new SparkMaxConfig();
       sparkMaxConfig.closedLoop.p(kP).i(kI).d(kD);
       sparkMaxConfig.signals
-          .appliedOutputPeriodMs(40)
-          .busVoltagePeriodMs(40)
-          .outputCurrentPeriodMs(40)
+          .appliedOutputPeriodMs(31)
+          .busVoltagePeriodMs(31)
+          .outputCurrentPeriodMs(31)
           .primaryEncoderPositionPeriodMs(499)
           .primaryEncoderVelocityPeriodMs(499);
       motor.configure(sparkMaxConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
