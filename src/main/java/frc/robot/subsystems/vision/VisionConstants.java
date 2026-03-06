@@ -21,7 +21,7 @@ public class VisionConstants {
   public static String camera0Name = "Arducam_OV9281";
   public static String camera1Name = "webcam_0";
 
-  // Robot to camera transforms (index by camera index; add more entries when adding cameras)
+  // Robot to camera transforms (index by camera index; add more entries when adding cameras) // FIXME: Switch for Alpha/Beta
   // // For Alpha
   // public static Transform3d robotToCamera0 =
   //     new Transform3d(-0.33, 0.19, 0.435, new Rotation3d(Math.toRadians(0.98), Math.toRadians(-21.21), Math.toRadians(-178.34)));

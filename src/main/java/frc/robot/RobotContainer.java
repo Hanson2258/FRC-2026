@@ -84,7 +84,7 @@ public class RobotContainer {
 	private boolean isTurretEnabled = true;
 	private boolean isHoodEnabled = false;
 	private boolean isFlywheelEnabled = true;
-	private boolean isHangEnabled = true;
+	private boolean isHangEnabled = false; // FIXME: Alpha does not have Hang, must be disabled for Alpha
 
 	// Subsystems
 	private final Drive drive;

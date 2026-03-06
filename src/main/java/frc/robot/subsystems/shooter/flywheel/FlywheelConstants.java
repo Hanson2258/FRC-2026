@@ -26,7 +26,7 @@ public final class FlywheelConstants { // XXX: Add correct values
   public static final double kVelocityRampRateRpmPerSec = 1000.0;
 
   /** Set true if positive velocity spins the flywheel the opposite direction. */
-  public static final boolean kMotorInverted = true;
+  public static final boolean kMotorInverted = false; // FIXME: Switch for Alpha/Beta - Alpha is False, Beta is True
 
   /** Idle target velocity (rad/s). */
   public static final double kIdleVelocityRadsPerSec = 0.0;
