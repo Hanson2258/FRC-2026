@@ -35,7 +35,7 @@ public final class ShooterConstants {
    * is undershooting, decrease if overshooting.
    * 0.95x for simulator
    */
-  public static final double kExitVelocityCompensationMultiplier = 1.2;
+  public static final double kExitVelocityCompensationMultiplier = 1.22;
 
   /**
    * Single flywheel at bottom: flywheel surface speed = exit velocity / this divider (e.g. 0.5
