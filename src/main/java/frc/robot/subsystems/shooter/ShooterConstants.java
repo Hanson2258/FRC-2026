@@ -7,9 +7,12 @@
 
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.Seconds;
+
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Time;
 import frc.robot.subsystems.shooter.hood.HoodConstants;
 
 /** Constants for the shooter assembly (turret position on robot, camera on turret, etc.). */
@@ -29,6 +32,9 @@ public final class ShooterConstants {
 
   /** Phase delay (s) to predict pose forward so shot is for when ball leaves. */
   public static final double kPhaseDelaySec = 0.03;
+
+  /** Time before the hub is active that we treat the hub as active for the preshoot */
+  public static final Time kActivePreshootTime = Seconds.of(2.0);
 
   /**
    * Multiplier on calculator exit velocity (e.g. for air resistance). 1.0 = no change; increase if it
