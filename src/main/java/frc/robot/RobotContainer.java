@@ -76,15 +76,15 @@ public class RobotContainer {
 
 	// Subsystems Toggle
 	private boolean isDriveEnabled = true;
-	private boolean isVisionEnabled = true;
+	private boolean isVisionEnabled = false;
 	private boolean isIntakeEnabled = true;
-	private boolean isExtenderEnabled = true;
+	private boolean isExtenderEnabled = false;
 	private boolean isAgitatorEnabled = true;
 	private boolean isTransferEnabled = true;
 	private boolean isTurretEnabled = true;
 	private boolean isHoodEnabled = false;
 	private boolean isFlywheelEnabled = true;
-	private boolean isHangEnabled = false; // FIXME: Alpha does not have Hang, must be disabled for Alpha
+	private boolean isHangEnabled = true; // FIXME: Alpha does not have Hang, must be disabled for Alpha
 
 	// Subsystems
 	private final Drive drive;
