@@ -4,15 +4,15 @@
   "holonomicMode": true,
   "pathFolders": [
     "Alliance Sweep",
-    "Hanging",
     "Fuel Sweeps",
-    "Starting Position - Center",
-    "Starting Position - Left",
-    "Starting Position - Right"
+    "Hanging",
+    "Starting Positions",
+    "Outpost"
   ],
   "autoFolders": [
-    "Outpost Shooting",
     "Left Fuel Sweeps",
+    "Depot Sweeps",
+    "Outpost Shooting",
     "Right Fuel Sweeps"
   ],
   "defaultMaxVel": 1.0,

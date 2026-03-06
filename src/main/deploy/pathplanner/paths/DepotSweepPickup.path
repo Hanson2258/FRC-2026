@@ -4,28 +4,28 @@
     {
       "anchor": {
         "x": 0.6,
-        "y": 5.085252883764054
+        "y": 7.000656610472129
       },
       "prevControl": null,
       "nextControl": {
-        "x": 0.8333364015541058,
-        "y": 5.174997653582585
+        "x": 0.6,
+        "y": 6.380967169478339
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "DepotSweepPickup-S"
     },
     {
       "anchor": {
-        "x": 1.7029015084294583,
-        "y": 4.9403904170363795
+        "x": 0.6,
+        "y": 5.085252883764054
       },
       "prevControl": {
-        "x": 1.3568411712511088,
-        "y": 5.1013487133984015
+        "x": 0.5919520851818987,
+        "y": 5.83370896184746
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "DepotSweepShoot-S"
     }
   ],
   "rotationTargets": [],
@@ -42,12 +42,12 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -28.720326797869525
+    "rotation": -130.0
   },
   "reversed": false,
   "folder": "Alliance Sweep",
   "idealStartingState": {
-    "velocity": 0,
+    "velocity": 0.0,
     "rotation": -130.0
   },
   "useDefaultConstraints": true

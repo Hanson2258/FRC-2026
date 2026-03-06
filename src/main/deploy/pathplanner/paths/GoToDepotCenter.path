@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.6,
-        "y": 7.000656610472129
+        "x": 3.449299023957409,
+        "y": 4.022928127772848
       },
       "prevControl": null,
       "nextControl": {
-        "x": 0.6,
-        "y": 6.380967169478339
+        "x": 3.240053238686779,
+        "y": 4.17583850931677
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "StartingPosition - Center"
     },
     {
       "anchor": {
         "x": 0.6,
-        "y": 5.085252883764054
+        "y": 7.000656610472129
       },
       "prevControl": {
-        "x": 0.5919520851818987,
-        "y": 5.83370896184746
+        "x": 0.7934871339840279,
+        "y": 6.839698314108253
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "DepotSweepPickup-S"
     }
   ],
   "rotationTargets": [],
@@ -47,8 +47,8 @@
   "reversed": false,
   "folder": "Alliance Sweep",
   "idealStartingState": {
-    "velocity": 0.0,
-    "rotation": -130.0
+    "velocity": 0,
+    "rotation": 0.0
   },
   "useDefaultConstraints": true
 }

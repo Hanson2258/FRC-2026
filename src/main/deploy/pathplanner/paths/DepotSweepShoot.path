@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.3688198757763974,
-        "y": 2.4133451641526165
+        "x": 0.6,
+        "y": 5.085252883764054
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.5234827958086004,
-        "y": 2.0713234340549
+        "x": 0.8333364015541058,
+        "y": 5.174997653582585
       },
       "isLocked": false,
-      "linkedName": "StartingPosition - CenterRight"
+      "linkedName": "DepotSweepShoot-S"
     },
     {
       "anchor": {
-        "x": 0.4980322003577814,
-        "y": 0.6520035778175304
+        "x": 1.904099378881987,
+        "y": 4.924294587400177
       },
       "prevControl": {
-        "x": 0.15319278025539274,
-        "y": 0.4105414608160579
+        "x": 1.5580390417036376,
+        "y": 5.085252883762199
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "DriveToOutpost-E"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 90.0
+    "rotation": 151.28
   },
   "reversed": false,
-  "folder": "Outpost",
+  "folder": "Alliance Sweep",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -130.0
   },
   "useDefaultConstraints": true
 }

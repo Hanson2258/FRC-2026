@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.3688198757763974,
-        "y": 2.4133451641526165
+        "x": 3.4251552795031053,
+        "y": 5.624463176574977
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.5234827958086004,
-        "y": 2.0713234340549
+        "x": 3.1837513398729382,
+        "y": 5.689456544936946
       },
       "isLocked": false,
-      "linkedName": "StartingPosition - CenterRight"
+      "linkedName": "StartingPosition - CenterLeft"
     },
     {
       "anchor": {
-        "x": 0.4980322003577814,
-        "y": 0.6520035778175304
+        "x": 0.37499556344276785,
+        "y": 7.636441881100266
       },
       "prevControl": {
-        "x": 0.15319278025539274,
-        "y": 0.4105414608160579
+        "x": -0.6250044365572321,
+        "y": 7.636441881100266
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "DriveToOutpost-E"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -42,10 +42,10 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 90.0
+    "rotation": 0.0
   },
   "reversed": false,
-  "folder": "Outpost",
+  "folder": "Starting Positions",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 0.0
