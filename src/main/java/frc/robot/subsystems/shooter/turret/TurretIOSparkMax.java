@@ -44,6 +44,12 @@ public class TurretIOSparkMax implements TurretIO {
         .positionConversionFactor(1.0 / kGearRatio)
         .velocityConversionFactor(1.0 / kGearRatio);
     sparkMaxConfig.closedLoop.p(kP).i(kI).d(kD);
+    sparkMaxConfig.signals
+        .appliedOutputPeriodMs(40)
+        .busVoltagePeriodMs(40)
+        .outputCurrentPeriodMs(40)
+        .primaryEncoderPositionPeriodMs(40)
+        .primaryEncoderVelocityPeriodMs(547);
     motor.configure(sparkMaxConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
   } // End TurretIOSparkMax Constructor
 
@@ -60,6 +66,12 @@ public class TurretIOSparkMax implements TurretIO {
 
       var sparkMaxConfig = new SparkMaxConfig();
       sparkMaxConfig.closedLoop.p(p).i(i).d(d);
+      sparkMaxConfig.signals
+          .appliedOutputPeriodMs(40)
+          .busVoltagePeriodMs(40)
+          .outputCurrentPeriodMs(40)
+          .primaryEncoderPositionPeriodMs(40)
+          .primaryEncoderVelocityPeriodMs(547);
       motor.configure(sparkMaxConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
     }
     

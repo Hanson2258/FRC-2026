@@ -33,6 +33,12 @@ public class HoodIOSparkMax implements HoodIO {
         .positionConversionFactor(1.0 / kGearRatio)
         .velocityConversionFactor(1.0 / kGearRatio);
     sparkMaxConfig.closedLoop.p(kP).i(kI).d(kD);
+    sparkMaxConfig.signals
+        .appliedOutputPeriodMs(40)
+        .busVoltagePeriodMs(40)
+        .outputCurrentPeriodMs(40)
+        .primaryEncoderPositionPeriodMs(563)
+        .primaryEncoderVelocityPeriodMs(563);
     motor.configure(sparkMaxConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
   } // End HoodIOSparkMax Constructor
 

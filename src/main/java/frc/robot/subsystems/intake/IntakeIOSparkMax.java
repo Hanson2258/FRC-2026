@@ -25,6 +25,12 @@ public class IntakeIOSparkMax implements IntakeIO {
     sparkMaxConfig.smartCurrentLimit(kSmartCurrentLimitAmps);
     sparkMaxConfig.openLoopRampRate(kOpenLoopRampRateSec);
     sparkMaxConfig.voltageCompensation(Constants.kNominalVoltage);
+    sparkMaxConfig.signals
+        .appliedOutputPeriodMs(40)
+        .busVoltagePeriodMs(40)
+        .outputCurrentPeriodMs(40)
+        .primaryEncoderPositionPeriodMs(32749)
+        .primaryEncoderVelocityPeriodMs(32749);
     motor.configure(sparkMaxConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
   } // End IntakeIOSparkMax Constructor
 

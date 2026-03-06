@@ -29,6 +29,12 @@ public class TransferIOBrushedSparkMax implements TransferIO {
     sparkMaxConfig.smartCurrentLimit(kSmartCurrentLimitAmps);
     sparkMaxConfig.openLoopRampRate(kOpenLoopRampRateSec);
     sparkMaxConfig.voltageCompensation(Constants.kNominalVoltage);
+    sparkMaxConfig.signals
+        .appliedOutputPeriodMs(40)
+        .busVoltagePeriodMs(40)
+        .outputCurrentPeriodMs(40)
+        .primaryEncoderPositionPeriodMs(523)
+        .primaryEncoderVelocityPeriodMs(523);
     motor.configure(sparkMaxConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
   } // End TransferIOBrushedSparkMax Constructor
 
