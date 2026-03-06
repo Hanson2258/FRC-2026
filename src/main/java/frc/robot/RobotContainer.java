@@ -680,7 +680,7 @@ public class RobotContainer {
 		Logger.recordOutput("FieldSimulation/RobotPosition", robotPose);
 
 		// Robot-relative component poses for visualization
-		Pose3d turretComponentPose = new Pose3d(-0.125, -0.17, 0.27, new Rotation3d(0, 0, turret.getPosition().getRadians() + Math.toRadians(90)));
+		Pose3d turretComponentPose = new Pose3d(-0.125, -0.17, 0.27, new Rotation3d(0, 0, turret.getRobotFramePosition().getRadians() + Math.toRadians(90)));
 		Pose3d extenderComponentPose;
 		if (DriverStation.isTeleopEnabled()) {
 			extenderComponentPose = new Pose3d(0.28, 0, 0.15, new Rotation3d(0, extender.getPosition() ,0));
@@ -704,9 +704,9 @@ public class RobotContainer {
 			shooterSimVisualizer.updateFuel(
 					edu.wpi.first.units.Units.MetersPerSecond.of(ballExitVelMps),
 					edu.wpi.first.units.Units.Radians.of(hoodAngleRad),
-					edu.wpi.first.units.Units.Radians.of(turret.getPosition().getRadians()));
+					edu.wpi.first.units.Units.Radians.of(turret.getRobotFramePosition().getRadians()));
 			shooterSimVisualizer.update3dPose(
-					edu.wpi.first.units.Units.Radians.of(turret.getPosition().getRadians()),
+					edu.wpi.first.units.Units.Radians.of(turret.getRobotFramePosition().getRadians()),
 					edu.wpi.first.units.Units.Radians.of(hoodAngleRad));
 		}
 
