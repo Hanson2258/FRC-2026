@@ -185,11 +185,11 @@ public final class ShooterCommands {
       flywheel.setTargetVelocityRadsPerSec(flywheelRadsPerSec);
     }
 
-    // Turret aims at predicted target so ball + robot velocity hits hub
+    // Turret aims in robot frame here; Turret converts that to its internal 0 = back frame.
     lastTurretAngleFromShot =
         Rotation2d.fromRadians(
             ShooterCalculator.calculateAzimuthAngle(
-                    estimatedPose, shot.getTarget(), turret.getPosition().getRadians())
+                    estimatedPose, shot.getTarget(), turret.getRobotFramePosition().getRadians())
                 .in(Radians));
   } // End setShooterTarget
 }

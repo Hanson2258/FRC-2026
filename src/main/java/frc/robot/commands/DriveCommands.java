@@ -106,7 +106,8 @@ public class DriveCommands {
    * @return Angular velocity in rad/s (positive = CCW)
    */
   public static double computeOmegaToFaceHub(Drive drive, ProfiledPIDController faceTargetController) {
-    Rotation2d targetAngle = ShooterCommands.getFieldAngleToHubFromPivot(drive);
+    Rotation2d angleFromPivotToHub = ShooterCommands.getFieldAngleToHubFromPivot(drive);
+    Rotation2d targetAngle = angleFromPivotToHub.plus(Rotation2d.kPi);
     return faceTargetController.calculate(drive.getRotation().getRadians(), targetAngle.getRadians());
   } // End computeOmegaToFaceHub
 

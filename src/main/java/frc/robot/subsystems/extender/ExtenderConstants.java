@@ -25,6 +25,9 @@ public class ExtenderConstants { // XXX: Add correct values
   /** Target position when the extender is in the UP mode */
   public static final double kUpExtenderRads = Units.degreesToRadians(0);
 
+  /** Target position when the extender is in the PARTIAL mode */
+  public static final double kPartialExtenderRads = Units.degreesToRadians(60);
+
   /** Target position when the extender is in the DOWN mode */
   public static final double kDownExtenderRads = Units.degreesToRadians(90);
 
@@ -35,7 +38,7 @@ public class ExtenderConstants { // XXX: Add correct values
   public static final double kMaxRads = Units.degreesToRadians(115);
 
   /** Tolerance for at-target position */
-  public static final double kAtTargetRadsTolerance = 2.0;
+  public static final double kAtTargetRadsTolerance = Units.degreesToRadians(2.0);
   
   /** PID values for to-position target */
   public static final double kP = 0.1;

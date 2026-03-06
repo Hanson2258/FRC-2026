@@ -76,7 +76,7 @@ public class RobotContainer {
 
 	// Subsystems Toggle
 	private boolean isDriveEnabled = true;
-	private boolean isVisionEnabled = true;
+	private boolean isVisionEnabled = false;
 	private boolean isIntakeEnabled = true;
 	private boolean isExtenderEnabled = true;
 	private boolean isAgitatorEnabled = true;
@@ -84,7 +84,7 @@ public class RobotContainer {
 	private boolean isTurretEnabled = true;
 	private boolean isHoodEnabled = false;
 	private boolean isFlywheelEnabled = true;
-	private boolean isHangEnabled = false;
+	private boolean isHangEnabled = true;
 
 	// Subsystems
 	private final Drive drive;
@@ -312,14 +312,14 @@ public class RobotContainer {
   private void configureDriverBindings() {
     drive.setDefaultCommand(teleopDrive);
 
-		// Toggles the Extender state between Extended and Retracted 
-		driverController.leftTrigger().onTrue(
-			new ConditionalCommand(
-				Commands.runOnce(() -> extender.setRetractedState(), extender), 
-				Commands.runOnce(() -> extender.setExtendedState(), extender), 
-				() -> (extender.getState() == Extender.ExtenderState.EXTENDED)
-			)
-		);
+		// Cycle extender: Extended → Partial → Retracted → Extended
+		driverController.leftTrigger().onTrue(Commands.runOnce(() -> {
+			switch (extender.getState()) {
+				case EXTENDED -> extender.setPartialState();
+				case PARTIAL -> extender.setRetractedState();
+				case RETRACTED -> extender.setExtendedState();
+			}
+		}, extender));
 
 		// Intake toggle: right bumper = intaking ↔ idle, left bumper = reversing ↔ idle
 		driverController.leftBumper().onTrue(
@@ -680,7 +680,7 @@ public class RobotContainer {
 		Logger.recordOutput("FieldSimulation/RobotPosition", robotPose);
 
 		// Robot-relative component poses for visualization
-		Pose3d turretComponentPose = new Pose3d(-0.125, -0.17, 0.27, new Rotation3d(0, 0, turret.getPosition().getRadians() + Math.toRadians(90)));
+		Pose3d turretComponentPose = new Pose3d(-0.125, -0.17, 0.27, new Rotation3d(0, 0, turret.getRobotFramePosition().getRadians() + Math.toRadians(90)));
 		Pose3d extenderComponentPose;
 		if (DriverStation.isTeleopEnabled()) {
 			extenderComponentPose = new Pose3d(0.28, 0, 0.15, new Rotation3d(0, extender.getPosition() ,0));
@@ -704,9 +704,9 @@ public class RobotContainer {
 			shooterSimVisualizer.updateFuel(
 					edu.wpi.first.units.Units.MetersPerSecond.of(ballExitVelMps),
 					edu.wpi.first.units.Units.Radians.of(hoodAngleRad),
-					edu.wpi.first.units.Units.Radians.of(turret.getPosition().getRadians()));
+					edu.wpi.first.units.Units.Radians.of(turret.getRobotFramePosition().getRadians()));
 			shooterSimVisualizer.update3dPose(
-					edu.wpi.first.units.Units.Radians.of(turret.getPosition().getRadians()),
+					edu.wpi.first.units.Units.Radians.of(turret.getRobotFramePosition().getRadians()),
 					edu.wpi.first.units.Units.Radians.of(hoodAngleRad));
 		}
 

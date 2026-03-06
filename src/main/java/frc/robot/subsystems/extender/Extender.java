@@ -14,6 +14,7 @@ import static frc.robot.subsystems.extender.ExtenderConstants.kMaxRads;
 import static frc.robot.subsystems.extender.ExtenderConstants.kMinRads;
 import static frc.robot.subsystems.extender.ExtenderConstants.kP;
 import static frc.robot.subsystems.extender.ExtenderConstants.kUpExtenderRads;
+import static frc.robot.subsystems.extender.ExtenderConstants.kPartialExtenderRads;
 
 /** Extender subsystem: one motor with onboard position control. */
 public class Extender extends SubsystemBase {
@@ -21,6 +22,7 @@ public class Extender extends SubsystemBase {
   /** Extender state: Retracted (facing up), Extended (facing forward). */
   public enum ExtenderState {
     RETRACTED,
+    PARTIAL,
     EXTENDED
   }
 
@@ -61,9 +63,15 @@ public class Extender extends SubsystemBase {
     // Set Extender position based on current state
     switch (state) {
       case RETRACTED:
-      case EXTENDED:
+      case PARTIAL:
         extenderIO.setTargetPosition(clampTargetPosition(targetPosition));
-        System.out.println("Target POS: " + targetPosition);
+        break;
+      case EXTENDED:
+        if (atTargetPosition()) {
+          extenderIO.stop();
+        } else {
+          extenderIO.setTargetPosition(clampTargetPosition(targetPosition));
+        }
         break;
       default:
         extenderIO.stop();
@@ -76,6 +84,12 @@ public class Extender extends SubsystemBase {
     state = ExtenderState.RETRACTED;
     setTargetPosition(kUpExtenderRads);
   } // End setIdleState
+
+  /** Set state to partial state (Go to middle position) */
+  public void setPartialState() {
+    state = ExtenderState.PARTIAL;
+    setTargetPosition(kPartialExtenderRads);
+  } // End setPartialState
 
   /** Set state to extended state (Go to down position and rest on bumpers) */
   public void setExtendedState() {
@@ -103,7 +117,7 @@ public class Extender extends SubsystemBase {
 
   /** Returns the target rads */
   public double getTargetPosition() {
-    return extenderInputs.targetPositionRads;
+    return targetPosition;
   } // End getTargetPosition
 
   /** Get the motors current rads */
@@ -123,6 +137,6 @@ public class Extender extends SubsystemBase {
 
   /** Whether the extender is at the target position within tolerance */
   public boolean atTargetPosition() {
-    return Math.abs(getPosition() - getTargetPosition()) <= kAtTargetRadsTolerance;
+    return Math.abs(getPosition() - targetPosition) <= kAtTargetRadsTolerance;
   } // End atTargetPosition
 }

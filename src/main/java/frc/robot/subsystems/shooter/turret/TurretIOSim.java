@@ -28,6 +28,9 @@ public class TurretIOSim implements TurretIO {
       inputs.velocityRadsPerSec = 0.0;
     }
 
+    currentPositionRad =
+        MathUtil.clamp(currentPositionRad, TurretConstants.kMinAngleRad, TurretConstants.kMaxAngleRad);
+
     inputs.motorConnected = true;
     inputs.positionRads = currentPositionRad;
     inputs.targetPositionRads = targetPositionRad;
@@ -37,14 +40,14 @@ public class TurretIOSim implements TurretIO {
 
   @Override
   public void setTargetPosition(double targetRads) {
-    targetPositionRad = targetRads;
+    targetPositionRad = MathUtil.clamp(targetRads, TurretConstants.kMinAngleRad, TurretConstants.kMaxAngleRad);
     velocityFeedforwardRadPerSec = 0.0;
     isStopped = false;
   } // End setTargetPosition
 
   @Override
   public void setTargetPosition(double targetRads, double velocityFeedforwardRadPerSec) {
-    targetPositionRad = targetRads;
+    targetPositionRad = MathUtil.clamp(targetRads, TurretConstants.kMinAngleRad, TurretConstants.kMaxAngleRad);
     this.velocityFeedforwardRadPerSec = velocityFeedforwardRadPerSec;
     isStopped = false;
   } // End setTargetPosition
