@@ -8,7 +8,7 @@ public final class IntakeConstants { // XXX: Add correct values
   private IntakeConstants() {}
 
   /** CAN ID of the Intake motor (NEO 550 on SPARK MAX). */
-  public static final int kMotorId = 1;
+  public static final int kMotorId = 5;
 
   /** Idle behavior when output is zero (coast or brake). */
   public static final SparkBaseConfig.IdleMode kIdleMode = SparkBaseConfig.IdleMode.kCoast;

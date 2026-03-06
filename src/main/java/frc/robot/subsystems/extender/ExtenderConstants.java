@@ -8,7 +8,7 @@ import edu.wpi.first.math.util.Units;
 public class ExtenderConstants { // XXX: Add correct values
 
   /** CAN ID of the Extender motor (NEO 550 on SPARK MAX). */
-  public static final int kMotorId = 2;
+  public static final int kMotorId = 6;
 
   /** Idle behaviour when ouput is 0 (Coast or Brake)  */
   public static final SparkBaseConfig.IdleMode kIdleMode = SparkBaseConfig.IdleMode.kCoast;
