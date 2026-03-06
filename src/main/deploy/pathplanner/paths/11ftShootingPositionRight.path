@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.4980322003577814,
-        "y": 0.6520035778175304
+        "x": 1.7350931677018626,
+        "y": 2.2362910381543917
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.3130262217569735,
-        "y": 1.0156139473712629
+        "x": 0.930301685891747,
+        "y": 1.6970807453416143
       },
       "isLocked": false,
-      "linkedName": "DriveToOutpost-E"
+      "linkedName": "ShootingPosition - 11ft Right"
     },
     {
       "anchor": {
-        "x": 2.0167701863354033,
-        "y": 1.9224223602484458
+        "x": 0.0,
+        "y": 0.0
       },
       "prevControl": {
-        "x": 1.7887357758244349,
-        "y": 1.712829210143539
+        "x": -1.0,
+        "y": 0.0
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "OutpostShooting-E"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -146.04094018032373
+    "rotation": 0.0
   },
   "reversed": false,
-  "folder": "Outpost",
+  "folder": "Shooting Positions",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 90.0
+    "rotation": -152.5255683737228
   },
   "useDefaultConstraints": true
 }

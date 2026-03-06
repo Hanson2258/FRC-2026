@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.462379907774679,
-        "y": 0.6272843768898013
+        "x": 5.306567355927283,
+        "y": 0.6396782589661612
       },
       "isLocked": false,
       "linkedName": "RightFuelSweepShooting-S"
@@ -20,28 +20,28 @@
         "y": 0.5864685004436547
       },
       "prevControl": {
-        "x": 3.8217695409258217,
-        "y": 0.5748341317436584
+        "x": 3.8107271062464787,
+        "y": 0.5707661294177498
       },
       "nextControl": {
-        "x": 2.7031255261490115,
-        "y": 0.5975209612732899
+        "x": 2.8048478331700433,
+        "y": 0.5988392914824365
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.636459627329192,
-        "y": 2.2523868677905945
+        "x": 1.7350931677018626,
+        "y": 2.2362910381543917
       },
       "prevControl": {
-        "x": 2.6934472698083725,
-        "y": 1.638914095777058
+        "x": 2.2181398116935456,
+        "y": 1.742094199289836
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "ShootingPosition - 11ft Right"
     }
   ],
   "rotationTargets": [
@@ -63,7 +63,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -135.0
+    "rotation": -152.5255683737228
   },
   "reversed": false,
   "folder": "Fuel Sweeps",

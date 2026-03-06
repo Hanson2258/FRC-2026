@@ -16,16 +16,16 @@
     },
     {
       "anchor": {
-        "x": 2.0167701863354033,
-        "y": 1.9224223602484458
+        "x": 1.7350931677018626,
+        "y": 2.2362910381543917
       },
       "prevControl": {
-        "x": 0.8225538745077166,
-        "y": 1.0500369168619428
+        "x": 0.5408768558741759,
+        "y": 1.3639055947678886
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "OutpostShooting-E"
+      "linkedName": "ShootingPosition - 11ft Right"
     }
   ],
   "rotationTargets": [],
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -146.04094018032373
+    "rotation": -152.5255683737228
   },
   "reversed": false,
   "folder": "Outpost",

@@ -16,16 +16,16 @@
     },
     {
       "anchor": {
-        "x": 1.904099378881987,
-        "y": 4.924294587400177
+        "x": 1.372937000887311,
+        "y": 5.069157054125998
       },
       "prevControl": {
-        "x": 1.5580390417036376,
-        "y": 5.085252883762199
+        "x": 1.0268766637089615,
+        "y": 5.23011535048802
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "ShootingPosition - 11ft Left"
     }
   ],
   "rotationTargets": [],
@@ -42,10 +42,10 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 151.28
+    "rotation": 158.201
   },
   "reversed": false,
-  "folder": "Alliance Sweep",
+  "folder": "Depot Sweep",
   "idealStartingState": {
     "velocity": 0,
     "rotation": -130.0
