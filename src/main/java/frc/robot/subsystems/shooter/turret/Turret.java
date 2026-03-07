@@ -93,7 +93,7 @@ public class Turret extends SubsystemBase {
     turretIO.updateInputs(turretInputs);
     Logger.recordOutput("Subsystems/Shooter/Turret/Inputs/MotorConnected", turretInputs.motorConnected);
     Logger.recordOutput("Subsystems/Shooter/Turret/Inputs/TargetPositionRads", Units.radiansToDegrees(targetPositionRad));
-    Logger.recordOutput("Subsystems/Shooter/Turret/Inputs/PositionRads", turretInputs.positionRads);
+    Logger.recordOutput("Subsystems/Shooter/Turret/Inputs/PositionRads", Units.radiansToDegrees(turretInputs.positionRads));
     
     Logger.recordOutput("Subsystems/Shooter/Turret/PositionDegrees", getPosition().getDegrees());
     Logger.recordOutput("Subsystems/Shooter/Turret/RobotFrameDegrees", getRobotFramePosition().getDegrees());

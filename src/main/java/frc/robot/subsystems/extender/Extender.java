@@ -51,8 +51,8 @@ public class Extender extends SubsystemBase {
     Logger.recordOutput("Subsystems/Extender/Inputs/MotorConnected", extenderInputs.motorConnected);
     Logger.recordOutput("Subsystems/Extender/Inputs/AppliedVolts", extenderInputs.appliedVolts);
     Logger.recordOutput("Subsystems/Extender/Inputs/SupplyCurrentAmps", extenderInputs.supplyCurrentAmps);
-    Logger.recordOutput("Subsystems/Extender/Inputs/TargetPositionRads", Units.radiansToDegrees( extenderInputs.targetPositionRads));
-    Logger.recordOutput("Subsystems/Extender/PositionRads", Units.radiansToDegrees( extenderInputs.positionRads));
+    Logger.recordOutput("Subsystems/Extender/Inputs/TargetPositionRads", Units.radiansToDegrees(extenderInputs.targetPositionRads));
+    Logger.recordOutput("Subsystems/Extender/PositionRads", Units.radiansToDegrees(extenderInputs.positionRads));
     Logger.recordOutput("Subsystems/Extender/VelocityRadsPerSec", extenderInputs.velocityRadsPerSec);
     Logger.recordOutput("Subsystems/Extender/State", state.name());
     Logger.recordOutput("Subsystems/Extender/AtTargetPosition", atTargetPosition());
