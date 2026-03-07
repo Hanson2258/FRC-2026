@@ -38,7 +38,7 @@ public class ExtenderIOSparkMax implements ExtenderIO {
       .encoder
       .positionConversionFactor(1.0 / kGearRatio)
       .velocityConversionFactor(1.0 / kGearRatio);
-    sparkMaxConfig.closedLoop.p(kP).i(kI).d(kD).maxOutput(0.3).minOutput(-0.3);
+    sparkMaxConfig.closedLoop.p(kP).i(kI).d(kD).maxOutput(0.3).minOutput(-0.3); // TODO: Test Tomorrow - Ensure this is enough to lift.
     sparkMaxConfig.signals
         .appliedOutputPeriodMs(31)
         .busVoltagePeriodMs(31)

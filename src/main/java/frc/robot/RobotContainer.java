@@ -316,7 +316,7 @@ public class RobotContainer {
 		driverController.leftTrigger().onTrue(Commands.runOnce(() -> {
 			switch (extender.getState()) {
 				case EXTENDED -> extender.setPartialState();
-				case PARTIAL -> extender.setRetractedState();
+				case PARTIAL -> extender.setExtendedState();
 				case RETRACTED -> extender.setExtendedState();
 			}
 		}, extender));

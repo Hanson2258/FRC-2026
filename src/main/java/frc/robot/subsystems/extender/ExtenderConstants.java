@@ -29,7 +29,7 @@ public class ExtenderConstants { // XXX: Add correct values
   public static final double kPartialExtenderRads = Units.degreesToRadians(60);
 
   /** Target position when the extender is in the DOWN mode */
-  public static final double kDownExtenderRads = Units.degreesToRadians(130);
+  public static final double kDownExtenderRads = Units.degreesToRadians(100);
 
   /** Min radians for the extender to rotate */
   public static final double kMinRads = 0;
