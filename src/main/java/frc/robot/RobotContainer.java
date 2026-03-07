@@ -35,6 +35,7 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.ShooterTargetCommand;
 import frc.robot.commands.ShootWhenReadyCommand;
 import frc.robot.commands.ShooterCommands;
 import frc.robot.commands.TeleopDrive;
@@ -111,6 +112,7 @@ public class RobotContainer {
 	// Shooter Manager
 	private final Shooter shooter;
 	private final ShootWhenReadyCommand shootWhenReadyCommand;
+	private final ShooterTargetCommand passBallsCommand;
 
 	// Field view (robot pose)
 	private final Field2d field = new Field2d();
@@ -249,6 +251,8 @@ public class RobotContainer {
 		// Shooter coordinator and shoot-when-ready command
 		shooter = new Shooter(drive, agitator, transfer, turret, hood, flywheel, isHoodEnabled);
 		shootWhenReadyCommand = new ShootWhenReadyCommand(agitator, transfer, shooter);
+		passBallsCommand = new ShooterTargetCommand(() -> drive.getPose());
+
 		shooter.setShootCommandScheduledSupplier(shootWhenReadyCommand::isScheduled);
 		shooter.setManualOverrideSupplier(() -> operatorManualOverride);
 
@@ -342,9 +346,17 @@ public class RobotContainer {
         faceTargetController.reset(drive.getRotation().getRadians());
       }
     }, drive));
-
-		//driverController.x().whileTrue(new SetShootingTargetCommand(drive));
-		//driverController.b().onTrue(Commands.runOnce(() -> ShooterCommands.setPassingSpotCenter(), drive));
+		
+		driverController.b().onTrue(Commands.runOnce(() -> {
+			if (passBallsCommand.isScheduled()) {
+				CommandScheduler.getInstance().cancel(passBallsCommand);
+			} else {
+				CommandScheduler.getInstance().schedule(passBallsCommand);
+			}
+		}));
+		//driverController.y().onTrue(Commands.runOnce(() -> ShooterCommands.clearShooterTargetOverride(), drive));
+		//driverController.x().onTrue(Commands.runOnce(() -> ShooterCommands.setPassingSpotLeft(), drive));
+		//driverController.b().onTrue(Commands.runOnce(() -> ShooterCommands.setPassingSpotRight(), drive));
 
 
 		// Enable Hang/ Retract mode, stop when released
@@ -408,7 +420,6 @@ public class RobotContainer {
 			return;
 		}
 
-		
 		// ------------------------------------------ Operator Manual Override ------------------------------------------
 		// If Manual Override is false, become true. 
 		// If true, reset encoder positions and then become false.

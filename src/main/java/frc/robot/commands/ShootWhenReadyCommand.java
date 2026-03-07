@@ -51,22 +51,6 @@ public class ShootWhenReadyCommand extends Command {
     if (timerSec >= kAgitatorDelaySec) {
       agitator.setShootingMode();
     }
-
-    // if (autoSetShootingTarget) {
-    //   // Aim at hub if in alliance zone, otherwise depending on the side of the field pass balls back into the alliance zone
-    //   if (drive.getPose().getX() < FieldConstants.ALLIANCE_ZONE_M) {
-    //     ShooterCommands.clearShooterTargetOverride();
-    //   }
-    //   else  {
-    //     if (drive.getPose().getY() > FieldConstants.FIELD_CENTER_Y_M) {
-		//   	  ShooterCommands.setPassingSpotLeft();
-    //     } else {
-		//   	  ShooterCommands.setPassingSpotRight();
-    //     }
-    //   }
-    // } else {
-    //   ShooterCommands.clearShooterTargetOverride();
-    // }
   } // End execute
 
   @Override

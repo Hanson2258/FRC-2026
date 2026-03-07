@@ -250,8 +250,6 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
 
     // Update gyro alert
     gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
-
-    System.out.println("Position X:" + getPose().getX() + "  Alliance zone line: " + FieldConstants.ALLIANCE_ZONE_M);
   }
 
   /**
