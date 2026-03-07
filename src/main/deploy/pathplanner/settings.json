@@ -3,19 +3,21 @@
   "robotLength": 0.8001,
   "holonomicMode": true,
   "pathFolders": [
-    "Depot Sweep",
+    "Depot",
     "Fuel Sweeps",
     "Hanging",
+    "Simple Shooting",
     "Outpost",
     "Shooting Positions",
     "Starting Positions"
   ],
   "autoFolders": [
     "Depot",
+    "Hanging",
     "Left Fuel Sweeps",
+    "Simple Shooting",
     "Outpost",
-    "Right Fuel Sweeps",
-    "Starting Position Shooting"
+    "Right Fuel Sweeps"
   ],
   "defaultMaxVel": 1.0,
   "defaultMaxAccel": 1.0,
@@ -46,6 +48,6 @@
     "{\"name\":\"Circle\",\"type\":\"circle\",\"data\":{\"center\":{\"x\":-0.2,\"y\":-0.25},\"radius\":0.1,\"strokeWidth\":0.1,\"filled\":true}}",
     "{\"name\":\"Circle\",\"type\":\"circle\",\"data\":{\"center\":{\"x\":-0.1,\"y\":0.1},\"radius\":0.2,\"strokeWidth\":0.02,\"filled\":false}}",
     "{\"name\":\"Line\",\"type\":\"line\",\"data\":{\"start\":{\"x\":-0.35,\"y\":0.0},\"end\":{\"x\":-0.45,\"y\":0.0},\"strokeWidth\":0.02}}",
-    "{\"name\":\"Line\",\"type\":\"line\",\"data\":{\"start\":{\"x\":-0.2,\"y\":-0.25},\"end\":{\"x\":-3.3528,\"y\":-0.25},\"strokeWidth\":0.02}}"
+    "{\"name\":\"Line\",\"type\":\"line\",\"data\":{\"start\":{\"x\":-0.2,\"y\":-0.25},\"end\":{\"x\":-0.2,\"y\":-0.25},\"strokeWidth\":0.02}}"
   ]
 }

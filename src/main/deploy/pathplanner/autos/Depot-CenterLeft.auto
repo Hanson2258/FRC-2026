@@ -7,12 +7,6 @@
         {
           "type": "named",
           "data": {
-            "name": "Extender Down"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "Intake On"
           }
         },
@@ -23,27 +17,39 @@
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "GoToAllianceSweepRight"
-          }
-        },
-        {
           "type": "named",
           "data": {
             "name": "Flywheel On"
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "FullAllianceFuelSweepRightToLeft"
+            "name": "Extender Down"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "LeftFuelSweepShooting"
+            "pathName": "GoToDepotCenterLeft"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DepotSweepPickup"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Extender Partial"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DepotSweepShoot"
           }
         },
         {
@@ -55,13 +61,13 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 6.0
+            "waitTime": 7.0
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "Right Fuel Sweeps",
+  "folder": "Depot",
   "choreoAuto": false
 }

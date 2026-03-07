@@ -8,7 +8,7 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.1714991036957558,
+        "x": 1.171499103695756,
         "y": 5.099180683847105
       },
       "isLocked": false,
@@ -45,7 +45,7 @@
     "rotation": 158.201
   },
   "reversed": false,
-  "folder": "Depot Sweep",
+  "folder": "Depot",
   "idealStartingState": {
     "velocity": 0,
     "rotation": -90.0

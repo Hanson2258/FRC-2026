@@ -37,13 +37,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "HalfAllianceFuelSweepLeftToRight"
+            "pathName": "FullAllianceFuelSweepLeftToRight"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Extender Partial"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "LeftFuelSweepShooting"
+            "pathName": "RightFuelSweepShooting"
           }
         },
         {

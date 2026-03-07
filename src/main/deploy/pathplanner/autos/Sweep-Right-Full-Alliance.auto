@@ -7,13 +7,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Intake On"
+            "name": "Extender Down"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Extender Down"
+            "name": "Intake On"
           }
         },
         {
@@ -25,7 +25,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "GoToCenterSweepRight"
+            "pathName": "GoToAllianceSweepRight"
           }
         },
         {
@@ -37,13 +37,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "HalfCenterFuelSweepRightToLeft"
+            "pathName": "FullAllianceFuelSweepRightToLeft"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Extender Partial"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "RightFuelSweepShooting"
+            "pathName": "LeftFuelSweepShooting"
           }
         },
         {

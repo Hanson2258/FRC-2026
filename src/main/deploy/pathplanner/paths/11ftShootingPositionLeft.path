@@ -11,7 +11,7 @@
         "x": 1.24344373739895,
         "y": 4.855307820526403
       },
-      "isLocked": false,
+      "isLocked": true,
       "linkedName": "ShootingPosition - 11ft Left"
     },
     {
@@ -24,7 +24,7 @@
         "y": 5.309465438529119
       },
       "nextControl": null,
-      "isLocked": false,
+      "isLocked": true,
       "linkedName": "ShootingPosition - 11ft Left"
     }
   ],

@@ -25,7 +25,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "GoToAllianceSweepLeft"
+            "pathName": "GoToAllianceSweepRight"
           }
         },
         {
@@ -37,7 +37,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "FullAllianceFuelSweepLeftToRight"
+            "pathName": "HalfAllianceFuelSweepRightToLeft"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Extender Partial"
           }
         },
         {
@@ -62,6 +68,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "Left Fuel Sweeps",
+  "folder": "Right Fuel Sweeps",
   "choreoAuto": false
 }

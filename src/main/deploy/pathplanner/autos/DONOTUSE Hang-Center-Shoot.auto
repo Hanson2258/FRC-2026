@@ -7,7 +7,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Intake On"
+            "name": "Flywheel On"
           }
         },
         {
@@ -17,33 +17,9 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "Flywheel On"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Extender Down"
-          }
-        },
-        {
           "type": "path",
           "data": {
-            "pathName": "GoToDepotCenterLeft"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "DepotSweepPickup"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "DepotSweepShoot"
+            "pathName": "Shooting - Center"
           }
         },
         {
@@ -55,13 +31,19 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 7.0
+            "waitTime": 6.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "ShootingCenterToOuterLeftLadder"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "Depot",
+  "folder": "Hanging",
   "choreoAuto": false
 }

@@ -11,7 +11,7 @@
         "x": 3.249015481483443,
         "y": 0.5983943553922303
       },
-      "isLocked": false,
+      "isLocked": true,
       "linkedName": "StartingPosition - Right"
     },
     {
@@ -24,7 +24,7 @@
         "y": 0.70045946080679
       },
       "nextControl": null,
-      "isLocked": false,
+      "isLocked": true,
       "linkedName": "StartingPosition - Right"
     }
   ],

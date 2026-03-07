@@ -1,0 +1,37 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "Set Shooter Target Hub"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Flywheel On"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Shooting - Center"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot When Ready"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "Simple Shooting",
+  "choreoAuto": false
+}

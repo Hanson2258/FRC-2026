@@ -17,27 +17,39 @@
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "GoToCenterSweepLeft"
-          }
-        },
-        {
           "type": "named",
           "data": {
             "name": "Flywheel On"
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "HalfCenterFuelSweepLeftToRight"
+            "name": "Extender Down"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "LeftFuelSweepShooting"
+            "pathName": "GoToDepotCenter"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DepotSweepPickup"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Extender Partial"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DepotSweepShoot"
           }
         },
         {
@@ -49,13 +61,13 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 6.0
+            "waitTime": 7.0
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "Left Fuel Sweeps",
+  "folder": "Depot",
   "choreoAuto": false
 }
