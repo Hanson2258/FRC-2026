@@ -11,10 +11,11 @@
     "Starting Positions"
   ],
   "autoFolders": [
+    "Depot",
     "Left Fuel Sweeps",
-    "Depot Sweeps",
-    "Outpost Shooting",
-    "Right Fuel Sweeps"
+    "Outpost",
+    "Right Fuel Sweeps",
+    "Starting Position Shooting"
   ],
   "defaultMaxVel": 1.0,
   "defaultMaxAccel": 1.0,

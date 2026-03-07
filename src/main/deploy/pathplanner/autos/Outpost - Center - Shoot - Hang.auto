@@ -7,7 +7,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Intake On"
+            "name": "Flywheel On"
           }
         },
         {
@@ -19,31 +19,25 @@
         {
           "type": "named",
           "data": {
-            "name": "Flywheel On"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Extender Down"
+            "name": "Extender Partial"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "GoToDepotCenterLeft"
+            "pathName": "DriveToOutpostFromCenter"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 3.0
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "DepotSweepPickup"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "DepotSweepShoot"
+            "pathName": "OutpostShooting11ft"
           }
         },
         {
@@ -55,13 +49,19 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 7.0
+            "waitTime": 6.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "OutpostToOuterRightLadder"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "Depot Sweeps",
+  "folder": "Outpost",
   "choreoAuto": false
 }

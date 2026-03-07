@@ -31,19 +31,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "GoToDepotLeft"
+            "pathName": "DriveToOutpostFromRight"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 3.0
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "DepotSweepPickup"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "DepotSweepShoot"
+            "pathName": "OutpostShooting11ft"
           }
         },
         {
@@ -62,6 +62,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "Depot Sweeps",
+  "folder": "Outpost",
   "choreoAuto": false
 }

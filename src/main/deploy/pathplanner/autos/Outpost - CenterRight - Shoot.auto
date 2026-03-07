@@ -7,13 +7,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Extender Down"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Flywheel On"
+            "name": "Intake On"
           }
         },
         {
@@ -25,13 +19,19 @@
         {
           "type": "named",
           "data": {
+            "name": "Flywheel On"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "Extender Partial"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "DriveToOutpostFromCenter"
+            "pathName": "DriveToOutpostFromCenterRight"
           }
         },
         {
@@ -62,6 +62,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "Outpost Shooting",
+  "folder": "Outpost",
   "choreoAuto": false
 }

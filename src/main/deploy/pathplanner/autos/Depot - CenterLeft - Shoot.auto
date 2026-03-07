@@ -25,25 +25,25 @@
         {
           "type": "named",
           "data": {
-            "name": "Extender Partial"
+            "name": "Extender Down"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "DriveToOutpostFromCenterRight"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 3.0
+            "pathName": "GoToDepotCenterLeft"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "OutpostShooting11ft"
+            "pathName": "DepotSweepPickup"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DepotSweepShoot"
           }
         },
         {
@@ -62,6 +62,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "Outpost Shooting",
+  "folder": "Depot",
   "choreoAuto": false
 }

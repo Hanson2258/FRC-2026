@@ -7,13 +7,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Intake On"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Set Shooter Target Hub"
+            "name": "Extender Down"
           }
         },
         {
@@ -25,13 +19,19 @@
         {
           "type": "named",
           "data": {
-            "name": "Extender Down"
+            "name": "Set Shooter Target Hub"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Extender Partial"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "DriveToOutpostFromRight"
+            "pathName": "DriveToOutpostFromCenter"
           }
         },
         {
@@ -62,6 +62,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "Outpost Shooting",
+  "folder": "Outpost",
   "choreoAuto": false
 }
