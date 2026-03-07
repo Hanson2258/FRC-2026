@@ -17,27 +17,9 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "Extender Down"
-          }
-        },
-        {
           "type": "path",
           "data": {
-            "pathName": "DriveToOutpostFromRight"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 3.0
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "OutpostShooting11ft"
+            "pathName": "Shooting - CenterRight"
           }
         },
         {
@@ -56,6 +38,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "Outpost",
+  "folder": "Simple Shooting",
   "choreoAuto": false
 }

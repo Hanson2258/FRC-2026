@@ -170,6 +170,8 @@ public class TeleopDrive extends Command {
     }
 
     switch (currentDriveMode) {
+      case TRENCH_LOCK:
+      case BUMP_LOCK:
       case MANUAL_OVERRIDE:
       case NORMAL:
         double vx = linearVelocity.getX();
@@ -190,33 +192,33 @@ public class TeleopDrive extends Command {
           drive.driveFieldCentric(vx, vy, rot);
         }
         break;
-      case TRENCH_LOCK:
-        trenchYController.setSetpoint(getTrenchYMeters());
-        double yVel = trenchYController.calculate(drive.getPose().getY());
-        if (trenchYController.atSetpoint()) {
-          yVel = 0;
-        }
-        rotationController.setSetpoint(getTrenchLockAngle().getRadians());
-        double rotSpeedToStraight = rotationController.calculate(drive.getRotation().getRadians());
-        if (rotationController.atSetpoint()) {
-          rotSpeedToStraight = 0;
-        }
-        drive.driveFieldCentric(
-            linearVelocity.getX(),
-            yVel,
-            rotSpeedToStraight);
-        break;
-      case BUMP_LOCK:
-        rotationController.setSetpoint(getBumpLockAngle().getRadians());
-        double rotSpeedToDiagonal = rotationController.calculate(drive.getRotation().getRadians());
-        if (rotationController.atSetpoint()) {
-          rotSpeedToDiagonal = 0;
-        }
-        drive.driveFieldCentric(
-            linearVelocity.getX(),
-            linearVelocity.getY(),
-            rotSpeedToDiagonal);
-        break;
+      // case TRENCH_LOCK:
+        // trenchYController.setSetpoint(getTrenchYMeters());
+        // double yVel = trenchYController.calculate(drive.getPose().getY());
+        // if (trenchYController.atSetpoint()) {
+        //   yVel = 0;
+        // }
+        // rotationController.setSetpoint(getTrenchLockAngle().getRadians());
+        // double rotSpeedToStraight = rotationController.calculate(drive.getRotation().getRadians());
+        // if (rotationController.atSetpoint()) {
+        //   rotSpeedToStraight = 0;
+        // }
+        // drive.driveFieldCentric(
+        //     linearVelocity.getX(),
+        //     yVel,
+        //     rotSpeedToStraight);
+        // break;
+      // case BUMP_LOCK:
+        // rotationController.setSetpoint(getBumpLockAngle().getRadians());
+        // double rotSpeedToDiagonal = rotationController.calculate(drive.getRotation().getRadians());
+        // if (rotationController.atSetpoint()) {
+        //   rotSpeedToDiagonal = 0;
+        // }
+        // drive.driveFieldCentric(
+        //     linearVelocity.getX(),
+        //     linearVelocity.getY(),
+        //     rotSpeedToDiagonal);
+        // break;
     }
   } // End execute
 

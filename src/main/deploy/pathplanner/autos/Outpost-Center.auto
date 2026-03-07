@@ -7,12 +7,6 @@
         {
           "type": "named",
           "data": {
-            "name": "Extender Down"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "Flywheel On"
           }
         },

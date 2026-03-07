@@ -2,7 +2,9 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.FieldConstants;
 import frc.robot.subsystems.agitator.Agitator;
+import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.shooter.transfer.Transfer;
 
 /**
@@ -49,6 +51,22 @@ public class ShootWhenReadyCommand extends Command {
     if (timerSec >= kAgitatorDelaySec) {
       agitator.setShootingMode();
     }
+
+    // if (autoSetShootingTarget) {
+    //   // Aim at hub if in alliance zone, otherwise depending on the side of the field pass balls back into the alliance zone
+    //   if (drive.getPose().getX() < FieldConstants.ALLIANCE_ZONE_M) {
+    //     ShooterCommands.clearShooterTargetOverride();
+    //   }
+    //   else  {
+    //     if (drive.getPose().getY() > FieldConstants.FIELD_CENTER_Y_M) {
+		//   	  ShooterCommands.setPassingSpotLeft();
+    //     } else {
+		//   	  ShooterCommands.setPassingSpotRight();
+    //     }
+    //   }
+    // } else {
+    //   ShooterCommands.clearShooterTargetOverride();
+    // }
   } // End execute
 
   @Override

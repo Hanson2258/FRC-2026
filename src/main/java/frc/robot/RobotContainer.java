@@ -13,6 +13,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
+import com.ctre.phoenix6.swerve.SwerveModuleConstants.DriveMotorArrangement;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
@@ -342,6 +343,10 @@ public class RobotContainer {
       }
     }, drive));
 
+		//driverController.x().whileTrue(new SetShootingTargetCommand(drive));
+		//driverController.b().onTrue(Commands.runOnce(() -> ShooterCommands.setPassingSpotCenter(), drive));
+
+
 		// Enable Hang/ Retract mode, stop when released
 		if (hang != null) {
 			driverController.b().onTrue(Commands.runOnce(() -> hang.goToLevel1(), hang));
@@ -392,6 +397,8 @@ public class RobotContainer {
 				Commands.runOnce(() -> driverManualOverride = false),
 				Commands.runOnce(() -> driverManualOverride = true),
 				() -> driverManualOverride));
+		
+
   } // End configureDriverBindings
 
   /** Configure Operator controls. */

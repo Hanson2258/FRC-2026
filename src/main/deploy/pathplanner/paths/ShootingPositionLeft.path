@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.2,
-        "y": 1.013007985803016
+        "x": 2.5748837209302327,
+        "y": 6.7
       },
       "prevControl": null,
       "nextControl": {
-        "x": 8.1788265387709,
-        "y": 1.2621097411954256
+        "x": 2.8127365825179083,
+        "y": 6.776980622461461
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "ShootingPosition - Left"
     },
     {
       "anchor": {
-        "x": 8.2,
-        "y": 1.2
+        "x": 2.5748837209302327,
+        "y": 6.7
       },
       "prevControl": {
-        "x": 8.224463712719126,
-        "y": 0.9374438644309162
+        "x": 2.3071770195315358,
+        "y": 6.613015705378802
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "CenterFuelSweepAlignRight-E"
+      "linkedName": "ShootingPosition - Left"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 45.0
+    "rotation": 123.8233510847144
   },
   "reversed": false,
-  "folder": "Fuel Sweeps",
+  "folder": "Shooting Positions",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 135.0
+    "rotation": 123.8233510847144
   },
   "useDefaultConstraints": true
 }

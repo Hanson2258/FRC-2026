@@ -27,6 +27,12 @@
           "data": {
             "name": "Shoot When Ready"
           }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 7.0
+          }
         }
       ]
     }
