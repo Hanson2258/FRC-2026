@@ -1,0 +1,54 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.580486111111111,
+        "y": 4.022819444444444
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 3.321407623887743,
+        "y": 4.102277629883173
+      },
+      "isLocked": false,
+      "linkedName": "StartingPosition - Center"
+    },
+    {
+      "anchor": {
+        "x": 1.687,
+        "y": 4.6
+      },
+      "prevControl": {
+        "x": 1.9260890115243945,
+        "y": 4.526949027602036
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "OuterLeftLadder-E"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 1.0,
+    "maxAcceleration": 1.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "reversed": false,
+  "folder": "Hanging",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "useDefaultConstraints": true
+}
