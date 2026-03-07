@@ -3,6 +3,8 @@ package frc.robot.subsystems.extender;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.Unit;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -49,8 +51,8 @@ public class Extender extends SubsystemBase {
     Logger.recordOutput("Subsystems/Extender/Inputs/MotorConnected", extenderInputs.motorConnected);
     Logger.recordOutput("Subsystems/Extender/Inputs/AppliedVolts", extenderInputs.appliedVolts);
     Logger.recordOutput("Subsystems/Extender/Inputs/SupplyCurrentAmps", extenderInputs.supplyCurrentAmps);
-    Logger.recordOutput("Subsystems/Extender/Inputs/TargetPositionRads", extenderInputs.targetPositionRads);
-    Logger.recordOutput("Subsystems/Extender/PositionRads", extenderInputs.positionRads);
+    Logger.recordOutput("Subsystems/Extender/Inputs/TargetPositionRads", Units.radiansToDegrees(extenderInputs.targetPositionRads));
+    Logger.recordOutput("Subsystems/Extender/PositionRads", Units.radiansToDegrees(extenderInputs.positionRads));
     Logger.recordOutput("Subsystems/Extender/VelocityRadsPerSec", extenderInputs.velocityRadsPerSec);
     Logger.recordOutput("Subsystems/Extender/State", state.name());
     Logger.recordOutput("Subsystems/Extender/AtTargetPosition", atTargetPosition());
@@ -67,7 +69,7 @@ public class Extender extends SubsystemBase {
         extenderIO.setTargetPosition(clampTargetPosition(targetPosition));
         break;
       case EXTENDED:
-        if (atTargetPosition()) {
+        if (Units.radiansToDegrees(getPosition()) < targetPosition) {
           extenderIO.stop();
         } else {
           extenderIO.setTargetPosition(clampTargetPosition(targetPosition));
@@ -106,7 +108,7 @@ public class Extender extends SubsystemBase {
   public void resetEncoders() {
     extenderIO.stop();
     extenderIO.resetEncoders();
-    setTargetPosition(0);
+    setTargetPosition(kMaxRads);
   } // End resetEncoders
 
   /** Set the target rads, used in RETRACTED/EXTENDED state */

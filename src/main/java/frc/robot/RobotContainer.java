@@ -76,9 +76,9 @@ public class RobotContainer {
 
 	// Subsystems Toggle
 	private boolean isDriveEnabled = true;
-	private boolean isVisionEnabled = false;
+	private boolean isVisionEnabled = true;
 	private boolean isIntakeEnabled = true;
-	private boolean isExtenderEnabled = false;
+	private boolean isExtenderEnabled = true;
 	private boolean isAgitatorEnabled = true;
 	private boolean isTransferEnabled = true;
 	private boolean isTurretEnabled = true;
@@ -316,7 +316,7 @@ public class RobotContainer {
 		driverController.leftTrigger().onTrue(Commands.runOnce(() -> {
 			switch (extender.getState()) {
 				case EXTENDED -> extender.setPartialState();
-				case PARTIAL -> extender.setRetractedState();
+				case PARTIAL -> extender.setExtendedState();
 				case RETRACTED -> extender.setExtendedState();
 			}
 		}, extender));

@@ -12,13 +12,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import static frc.robot.subsystems.extender.ExtenderConstants.kD;
-import static frc.robot.subsystems.extender.ExtenderConstants.kGearRatio;
-import static frc.robot.subsystems.extender.ExtenderConstants.kI;
-import static frc.robot.subsystems.extender.ExtenderConstants.kIdleMode;
-import static frc.robot.subsystems.extender.ExtenderConstants.kMotorId;
-import static frc.robot.subsystems.extender.ExtenderConstants.kP;
-import static frc.robot.subsystems.extender.ExtenderConstants.kSmartCurrentLimitAmps;
+import static frc.robot.subsystems.extender.ExtenderConstants.*;
 
 public class ExtenderIOSparkMax implements ExtenderIO {
 
@@ -66,7 +60,7 @@ public class ExtenderIOSparkMax implements ExtenderIO {
       lastD = d;
 
       SparkMaxConfig sparkMaxConfig = new SparkMaxConfig();
-      sparkMaxConfig.closedLoop.p(kP).i(kI).d(kD);
+      sparkMaxConfig.closedLoop.p(kP).i(kI).d(kD).maxOutput(0.3).minOutput(-0.3);
       sparkMaxConfig.signals
           .appliedOutputPeriodMs(31)
           .busVoltagePeriodMs(31)
@@ -93,7 +87,7 @@ public class ExtenderIOSparkMax implements ExtenderIO {
 
   @Override
   public void resetEncoders() {
-    encoder.setPosition(0.0);
+    encoder.setPosition(kMaxRads);
   } // End resetEncoders
 
   @Override
