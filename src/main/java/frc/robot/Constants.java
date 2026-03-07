@@ -45,7 +45,7 @@ public final class Constants {
     public static final double FAST_DRIVE_SPEED_MPS = 4.58;
     /** From Drive.getMaxAngularSpeedRadPerSec(): max linear / drive base radius. Radius = hypot(9.75, 10.75) in → 0.36866 m. */
     public static final double FAST_ROT_SPEED_RAD_PER_S = 4.58 / 0.36866;
-    public static final double MAX_TELEOP_ACCEL_MPS2 = 4.0;
+    public static final double MAX_TELEOP_ACCEL_MPS2 = 40.0; // TODO: Change back to 4 if needed
     public static final double TRENCH_ALIGN_TIME_S = 0.5;
     public static final double BUMP_ALIGN_TIME_S = 0.3;
 

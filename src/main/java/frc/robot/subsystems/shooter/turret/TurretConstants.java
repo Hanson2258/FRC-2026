@@ -27,7 +27,7 @@ public final class TurretConstants { // XXX: Add correct values
   public static final double kStatorCurrentLimitAmps = 30.0;
 
   /** Turret radians per motor rotation (output / input). 1.0 = 1:1. */
-  public static final double kGearRatio = 42.0;
+  public static final double kGearRatio = 27.81;
 
 
   /** Encoder zero offset. Added to raw encoder so that 0 = Turret pointing robot-backward. */
