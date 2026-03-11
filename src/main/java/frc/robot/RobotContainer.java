@@ -344,10 +344,16 @@ public class RobotContainer {
 
 		// Enable Hang/ Retract mode, stop when released
 		if (hang != null) {
-			driverController.b().onTrue(Commands.runOnce(() -> hang.goToLevel1(), hang));
-			driverController.b().onFalse(Commands.runOnce(() -> hang.setIdle(), hang));
-			driverController.x().onTrue(Commands.runOnce(() -> hang.goToStored(), hang));
-			driverController.x().onFalse(Commands.runOnce(() -> hang.setIdle(), hang));
+			driverController.b().onTrue(
+				new ConditionalCommand(
+					Commands.runOnce(() -> hang.goToLevel1(), hang), 
+					Commands.runOnce(() -> hang.setIdle(), hang), 
+					() -> hang.getState() == Hang.HangState.LEVEL_1));
+			driverController.x().onTrue(
+				new ConditionalCommand(
+					Commands.runOnce(() -> hang.goToStored(), hang), 
+					Commands.runOnce(() -> hang.setIdle(), hang), 
+					() -> hang.getState() == Hang.HangState.STORED));
 		}
 
     // Shoot toggle: on = schedule ShootWhenReadyCommand, set Flywheel to Charging if IDLE; off = cancel (command end() idles Transfer and Agitator)
@@ -604,6 +610,7 @@ public class RobotContainer {
 	public void idleAllSubsystems() {
 		CommandScheduler.getInstance().cancel(shootWhenReadyCommand);
 		intake.setIdleMode();
+		// extender.setIdleState();
 		agitator.setIdleMode();
 		transfer.setIdleMode();
 		flywheel.setState(FlywheelState.IDLE);

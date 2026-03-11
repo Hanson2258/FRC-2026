@@ -19,7 +19,7 @@ public class VisionConstants {
 
   // Camera names, must match names configured on coprocessor
   public static String camera0Name = "Arducam_OV9281";
-  public static String camera1Name = "webcam_0";
+  public static String camera1Name = "Arducam_OV9281_Front";
 
   // Robot to camera transforms (index by camera index; add more entries when adding cameras) // FIXME: Switch for Alpha/Beta
   // // For Alpha

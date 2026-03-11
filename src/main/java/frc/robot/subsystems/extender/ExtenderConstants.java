@@ -31,17 +31,19 @@ public class ExtenderConstants { // XXX: Add correct values
   /** Target position when the extender is in the DOWN mode */
   public static final double kDownExtenderRads = Units.degreesToRadians(100);
 
+  public static final double kEncoderResetRads = Units.degreesToRadians(130);
+
   /** Min radians for the extender to rotate */
   public static final double kMinRads = 0;
 
   /** Max radians for the extender to rotate */
-  public static final double kMaxRads = Units.degreesToRadians(130);
+  public static final double kMaxRads = Units.degreesToRadians(150);
 
   /** Tolerance for at-target position */
   public static final double kAtTargetRadsTolerance = Units.degreesToRadians(2.0);
   
   /** PID values for to-position target */
-  public static final double kP = 3.0;
+  public static final double kP = 2.0;
   public static final double kI = 0;
   public static final double kD = 0;
 }

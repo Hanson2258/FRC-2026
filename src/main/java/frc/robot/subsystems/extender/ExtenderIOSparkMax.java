@@ -1,5 +1,6 @@
 package frc.robot.subsystems.extender;
 
+import com.ctre.phoenix6.Utils;
 import com.revrobotics.PersistMode;
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
@@ -88,7 +89,7 @@ public class ExtenderIOSparkMax implements ExtenderIO {
 
   @Override
   public void resetEncoders() {
-    encoder.setPosition(0.0);
+    encoder.setPosition(Units.degreesToRadians(kEncoderResetRads));
   } // End resetEncoders
 
   @Override

@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import static frc.robot.subsystems.extender.ExtenderConstants.kAtTargetRadsTolerance;
 import static frc.robot.subsystems.extender.ExtenderConstants.kD;
 import static frc.robot.subsystems.extender.ExtenderConstants.kDownExtenderRads;
+import static frc.robot.subsystems.extender.ExtenderConstants.kEncoderResetRads;
 import static frc.robot.subsystems.extender.ExtenderConstants.kI;
 import static frc.robot.subsystems.extender.ExtenderConstants.kMaxRads;
 import static frc.robot.subsystems.extender.ExtenderConstants.kMinRads;
@@ -22,6 +23,7 @@ public class Extender extends SubsystemBase {
 
   /** Extender state: Retracted (facing up), Extended (facing forward). */
   public enum ExtenderState {
+    IDLE,
     RETRACTED,
     PARTIAL,
     EXTENDED
@@ -74,17 +76,25 @@ public class Extender extends SubsystemBase {
           extenderIO.setTargetPosition(clampTargetPosition(targetPosition));
         }
         break;
+      case IDLE:
       default:
         extenderIO.stop();
         break;
     }
   } // End periodic
 
+  /** Set state to idle state (stop extender) */
+  public void setIdleState() {
+    state = ExtenderState.IDLE;
+    setTargetPosition(getPosition());
+    extenderIO.stop();
+  } // End setIdleState
+
   /** Set state to retracted state (Go to up position) */
   public void setRetractedState() {
     state = ExtenderState.RETRACTED;
     setTargetPosition(kUpExtenderRads);
-  } // End setIdleState
+  } // End setRetractedState
 
   /** Set state to partial state (Go to middle position) */
   public void setPartialState() {
@@ -107,7 +117,7 @@ public class Extender extends SubsystemBase {
   public void resetEncoders() {
     extenderIO.stop();
     extenderIO.resetEncoders();
-    setTargetPosition(kMaxRads);
+    setTargetPosition(kEncoderResetRads);
   } // End resetEncoders
 
   /** Set the target rads, used in RETRACTED/EXTENDED state */
