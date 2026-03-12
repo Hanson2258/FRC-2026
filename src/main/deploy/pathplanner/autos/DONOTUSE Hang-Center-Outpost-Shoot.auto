@@ -25,7 +25,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "DriveToOutpostFromCenter"
+            "pathName": null
           }
         },
         {
@@ -37,7 +37,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "OutpostShooting11ft"
+            "pathName": null
           }
         },
         {
@@ -55,7 +55,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "OutpostToOuterRightLadder"
+            "pathName": null
           }
         }
       ]

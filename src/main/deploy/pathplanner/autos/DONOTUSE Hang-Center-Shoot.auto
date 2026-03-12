@@ -19,7 +19,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Shooting - Center"
+            "pathName": null
           }
         },
         {
@@ -37,7 +37,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "ShootingCenterToOuterLeftLadder"
+            "pathName": null
           }
         }
       ]
