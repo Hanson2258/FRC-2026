@@ -3,13 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.2,
-        "y": 1.013007985803016
+        "x": 3.4412511091393077,
+        "y": 0.6186601597160597
       },
       "prevControl": null,
       "nextControl": {
-        "x": 8.1788265387709,
-        "y": 1.2621097411954256
+        "x": 3.7058442990004985,
+        "y": 0.6622706243474825
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 5.992440106477374,
+        "y": 0.6186601597160597
+      },
+      "prevControl": {
+        "x": 4.957106898318277,
+        "y": 0.5622802339248226
+      },
+      "nextControl": {
+        "x": 6.313368752122093,
+        "y": 0.6361365944359543
       },
       "isLocked": false,
       "linkedName": null
@@ -20,15 +36,20 @@
         "y": 1.2
       },
       "prevControl": {
-        "x": 8.224463712719126,
-        "y": 0.9374438644309162
+        "x": 7.933056518510378,
+        "y": 0.864395008947829
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "CenterFuelSweepAlignRight-E"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1.03225806451613,
+      "rotationDegrees": 0.0
+    }
+  ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
@@ -42,13 +63,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 45.0
+    "rotation": 135.0
   },
   "reversed": false,
   "folder": "Fuel Sweeps",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 135.0
+    "rotation": 0.0
   },
   "useDefaultConstraints": true
 }
