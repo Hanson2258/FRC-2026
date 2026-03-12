@@ -39,7 +39,13 @@ public class ShootWhenReadyCommand extends Command {
 
   @Override
   public void execute() {
-    if (!shooter.isReadyToShoot()) return;
+    if (!shooter.isReadyToShoot()) {
+      // Reset the modes of the agitator and transfer if we become "unready" to shoot after the command has started
+      agitator.setIdleMode();
+      transfer.setIdleMode();
+      transferOn = false;
+      return;
+    }
 
     if (!transferOn) {
       transfer.setShootingMode();
