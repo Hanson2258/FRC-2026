@@ -12,7 +12,7 @@
         "y": 4.056753944825184
       },
       "isLocked": false,
-      "linkedName": "StartingPosition - Center"
+      "linkedName": "StartingPosition-Center"
     },
     {
       "anchor": {
@@ -25,7 +25,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "ShootingPosition - Center"
+      "linkedName": "ShootingPosition-Center"
     }
   ],
   "rotationTargets": [],

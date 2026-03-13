@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.222,
+        "x": 8.221712511091393,
         "y": 7.0
       },
       "prevControl": null,
       "nextControl": {
-        "x": 8.183240522863986,
+        "x": 8.18295303395538,
         "y": 5.449903531516049
       },
       "isLocked": false,
-      "linkedName": "CenterFuelSweepAlignLeft-E"
+      "linkedName": "SweepPosition-Left-Center"
     },
     {
       "anchor": {
@@ -41,7 +41,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "RightFuelSweepShooting-S"
+      "linkedName": "Sweep-Shooting-Right-S"
     }
   ],
   "rotationTargets": [

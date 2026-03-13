@@ -12,7 +12,7 @@
         "y": 1.583385024758292
       },
       "isLocked": false,
-      "linkedName": "AllianceFuelSweepAlignRight-E"
+      "linkedName": "SweepPosition-Right-Alliance"
     },
     {
       "anchor": {
@@ -41,7 +41,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "LeftFuelSweepShooting-S"
+      "linkedName": "Sweep-Shooting-Left-S"
     }
   ],
   "rotationTargets": [

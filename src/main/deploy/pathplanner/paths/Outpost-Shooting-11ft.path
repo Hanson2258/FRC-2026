@@ -12,7 +12,7 @@
         "y": 1.3268461526967563
       },
       "isLocked": false,
-      "linkedName": "DriveToOutpost-E"
+      "linkedName": "Outpost"
     },
     {
       "anchor": {
@@ -25,7 +25,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "ShootingPosition - 11ft Right"
+      "linkedName": "ShootingPosition-Right-11ft"
     }
   ],
   "rotationTargets": [],

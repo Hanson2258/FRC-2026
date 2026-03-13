@@ -12,7 +12,7 @@
         "y": 2.461101167047406
       },
       "isLocked": false,
-      "linkedName": "StartingPosition - CenterRight"
+      "linkedName": "StartingPosition-CenterRight"
     },
     {
       "anchor": {
@@ -25,7 +25,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "ShootingPosition - 11ft Right"
+      "linkedName": "ShootingPosition-Right-11ft"
     }
   ],
   "rotationTargets": [],

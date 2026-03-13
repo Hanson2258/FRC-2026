@@ -12,7 +12,7 @@
         "y": 6.432998116093292
       },
       "isLocked": false,
-      "linkedName": "DepotSweepPickup-S"
+      "linkedName": "Depot-PickupFuel-S"
     },
     {
       "anchor": {
@@ -25,7 +25,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "DepotSweepShoot-S"
+      "linkedName": "Depot-PickupFuel-E"
     }
   ],
   "rotationTargets": [],

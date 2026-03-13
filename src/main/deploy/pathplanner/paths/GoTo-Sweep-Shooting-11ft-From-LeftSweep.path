@@ -12,7 +12,7 @@
         "y": 7.253368045983473
       },
       "isLocked": false,
-      "linkedName": "LeftFuelSweepShooting-S"
+      "linkedName": "Sweep-Shooting-Left-S"
     },
     {
       "anchor": {
@@ -41,7 +41,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "ShootingPosition - 11ft Left"
+      "linkedName": "ShootingPosition-Left-11ft"
     }
   ],
   "rotationTargets": [

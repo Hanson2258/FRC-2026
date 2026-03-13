@@ -12,7 +12,7 @@
         "y": 1.5470726522426088
       },
       "isLocked": false,
-      "linkedName": "CenterFuelSweepAlignRight-E"
+      "linkedName": "SweepPosition-Right-Center"
     },
     {
       "anchor": {
@@ -41,7 +41,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "LeftFuelSweepShooting-S"
+      "linkedName": "Sweep-Shooting-Left-S"
     }
   ],
   "rotationTargets": [

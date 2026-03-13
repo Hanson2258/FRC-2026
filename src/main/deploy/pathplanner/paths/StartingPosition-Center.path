@@ -12,7 +12,7 @@
         "y": 4.086006076701149
       },
       "isLocked": true,
-      "linkedName": "StartingPosition - Center"
+      "linkedName": "StartingPosition-Center"
     },
     {
       "anchor": {
@@ -20,12 +20,12 @@
         "y": 4.022819444444444
       },
       "prevControl": {
-        "x": 3.851637892741071,
-        "y": 3.951914932340302
+        "x": 3.8513775982736806,
+        "y": 3.9519829977319536
       },
       "nextControl": null,
       "isLocked": true,
-      "linkedName": "StartingPosition - Center"
+      "linkedName": "StartingPosition-Center"
     }
   ],
   "rotationTargets": [],

@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.4412511091393077,
-        "y": 0.6186601597160597
+        "x": 3.5217302573203195,
+        "y": 0.642803904170363
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.7058442990004985,
-        "y": 0.6622706243474825
+        "x": 3.7863234471815104,
+        "y": 0.6864143688017859
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "StartingPosition-Right"
     },
     {
       "anchor": {
@@ -41,7 +41,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "CenterFuelSweepAlignRight-E"
+      "linkedName": "SweepPosition-Right-Center"
     }
   ],
   "rotationTargets": [

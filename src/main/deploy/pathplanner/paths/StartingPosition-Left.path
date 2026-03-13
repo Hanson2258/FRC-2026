@@ -12,7 +12,7 @@
         "y": 7.38537391982915
       },
       "isLocked": true,
-      "linkedName": "StartingPosition - Left"
+      "linkedName": "StartingPosition-Left"
     },
     {
       "anchor": {
@@ -25,7 +25,7 @@
       },
       "nextControl": null,
       "isLocked": true,
-      "linkedName": "StartingPosition - Left"
+      "linkedName": "StartingPosition-Left"
     }
   ],
   "rotationTargets": [],

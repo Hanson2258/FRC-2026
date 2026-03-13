@@ -12,7 +12,7 @@
         "y": 7.318382757242725
       },
       "isLocked": false,
-      "linkedName": "StartingPosition - Left"
+      "linkedName": "StartingPosition-Left"
     },
     {
       "anchor": {
@@ -41,7 +41,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "AllianceFuelSweepAlignLeft-E"
+      "linkedName": "SweepPosition-Left-Alliance"
     }
   ],
   "rotationTargets": [

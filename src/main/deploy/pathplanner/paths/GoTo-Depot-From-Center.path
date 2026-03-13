@@ -12,20 +12,20 @@
         "y": 4.650391906966857
       },
       "isLocked": false,
-      "linkedName": "StartingPosition - Center"
+      "linkedName": "StartingPosition-Center"
     },
     {
       "anchor": {
-        "x": 0.44399305555555557,
+        "x": 0.444,
         "y": 6.9948749999999995
       },
       "prevControl": {
-        "x": 0.9327450758977247,
+        "x": 0.9327520203421691,
         "y": 6.519950493970035
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "DepotSweepPickup-S"
+      "linkedName": "Depot-PickupFuel-S"
     }
   ],
   "rotationTargets": [],
