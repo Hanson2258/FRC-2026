@@ -15,12 +15,6 @@
           "data": {
             "name": "Set Shooter Target Hub"
           }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "GoToOuterLeftLadderFromCenter"
-          }
         }
       ]
     }

@@ -19,7 +19,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Shooting - Center"
+            "pathName": "Shooting-Center"
           }
         },
         {
@@ -32,12 +32,6 @@
           "type": "wait",
           "data": {
             "waitTime": 6.0
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "ShootingCenterToOuterLeftLadder"
           }
         }
       ]

@@ -7,31 +7,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Intake On"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "Set Shooter Target Hub"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "GoTo-Sweep-Center-From-Left"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "Flywheel On"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Sweep-Half-Center-LeftToRight"
           }
         },
         {
@@ -43,7 +25,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "GoTo-Sweep-Shooting-11ft-From-LeftSweep"
+            "pathName": "GoTo-Outpost-From-CenterRight"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 3.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Outpost-Shooting-11ft"
           }
         },
         {
@@ -55,13 +49,13 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 6.0
+            "waitTime": 7.0
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "Left Fuel Sweeps",
+  "folder": "Outpost",
   "choreoAuto": false
 }
