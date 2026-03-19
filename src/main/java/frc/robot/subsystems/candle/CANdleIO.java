@@ -30,14 +30,14 @@ public interface CANdleIO {
     public enum AnimationType {
         None,
         ColorFlow,
-        Fire,
-        Larson,
         Rainbow,
-        RgbFade,
-        SingleFade,
         Strobe,
+        SingleFade,
+        RgbFade,
         Twinkle,
         TwinkleOff,
+        Larson,
+        Fire,
     }
 
     /**
