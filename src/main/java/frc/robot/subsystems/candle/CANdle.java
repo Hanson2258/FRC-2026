@@ -1,15 +1,8 @@
 package frc.robot.subsystems.candle;
 
-import org.littletonrobotics.junction.Logger;
-
-import com.ctre.phoenix6.controls.RainbowAnimation;
-import com.ctre.phoenix6.controls.StrobeAnimation;
 import com.ctre.phoenix6.signals.RGBWColor;
 
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 /** CANdle subsystem: controls the robots LED lights

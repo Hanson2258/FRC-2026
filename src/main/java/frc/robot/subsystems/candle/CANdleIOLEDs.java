@@ -12,13 +12,11 @@ import com.ctre.phoenix6.controls.StrobeAnimation;
 import com.ctre.phoenix6.controls.TwinkleAnimation;
 import com.ctre.phoenix6.controls.TwinkleOffAnimation;
 import com.ctre.phoenix6.hardware.CANdle;
-import com.ctre.phoenix6.signals.AnimationDirectionValue;
 import com.ctre.phoenix6.signals.RGBWColor;
 import com.ctre.phoenix6.signals.StatusLedWhenActiveValue;
 import com.ctre.phoenix6.signals.StripTypeValue;
 
 import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 
 import static frc.robot.subsystems.candle.CANdleConstants.*;
 
@@ -43,7 +41,6 @@ public class CANdleIOLEDs implements CANdleIO {
     config.LED.BrightnessScalar = kDefaultBrightness;
     config.CANdleFeatures.StatusLedWhenActive = StatusLedWhenActiveValue.Disabled;
 
-    setColor(new RGBWColor(Color.kWhite));
     candle.getConfigurator().apply(config);
   } // End ExtenderIOSParkMax
 

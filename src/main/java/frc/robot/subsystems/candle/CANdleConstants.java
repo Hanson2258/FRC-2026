@@ -1,8 +1,5 @@
 package frc.robot.subsystems.candle;
 
-import com.ctre.phoenix6.signals.RGBWColor;
-
-
 /** Constants for the CANdle subsystem */
 public class CANdleConstants {
   /** The device id of the CANdle for controlling the LEDs */
