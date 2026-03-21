@@ -1,7 +1,7 @@
 # This will connect with the Roborio and publish a table 'Post Detection' that includes:
 #     if a post is detected (boolean) 
-#     the horizontal position (lateral) in metres
-#     the depth (distance from camera) in metres
+#     the horizontal left/right (lateral) position in metres
+#     the depth (horizontal distance normal front of camera front) in metres
 #
 # Connects with RealSense camera and:
 #   sets clipping distance (ignores everything from 3D camera > clipping distance)
@@ -37,8 +37,7 @@ import requests
 
 ##########
 # set a variable to turn off all displays if we're in actual match
-BenchTesting = True
-
+BenchTesting = False
 
 ###########
 # Set up RealSense camera before checking for RoboRIO connection
@@ -46,7 +45,7 @@ BenchTesting = True
 # Initialize and configure the pipeline
 pipeline = rs.pipeline()
 config = rs.config()
-
+                                        
 # get the depth & colour stream
 config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
 config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
@@ -71,23 +70,17 @@ align = rs.align(align_to)
 color_stream = profile.get_stream(rs.stream.color)
 intrinsics = color_stream.as_video_stream_profile().get_intrinsics()
 
-
 # If testing, create the display window once, outside the loop
 if BenchTesting == True:
     cv2.namedWindow('Post Detection', cv2.WINDOW_NORMAL)
 
-
 ##################################################
 # wait for RoboRio to boot and respond on network
-
 RoboReady = False
-############# REMOVE THE NEXT LINE
-#RoboReady = True
 
 while RoboReady == False:
     try:
-        # NOTE: if using this code on Atom Smasher bot, change to 10.72.87.2
-        response = requests.get(f"http://10.73.34.2/nisysapi/server", timeout=5)
+        response = requests.get(f"http://10.72.87.2/nisysapi/server", timeout=5)
         print("Status_code", response.status_code)
         if response.status_code == 404:
             RoboReady = True
@@ -98,8 +91,7 @@ while RoboReady == False:
         print("Error connecting to RoboRIO:", e)
 
 # Connect to the RoboRIO
-# NOTE: if using this code on Atom Smasher bot, change to 10.72.87.2
-NetworkTables.initialize(server='10.73.34.2')
+NetworkTables.initialize(server='10.72.87.2')
 
 ''' not sure if this is needed:
 # Connection listener: to wait until Networktables server responds
@@ -122,38 +114,24 @@ with cond:
         cond.wait()
 '''
 
-# Get the NetworkTables table to publish depth and x-position
+# set up variables and NetworkTables outside the loop
+
+# Get the NetworkTables table to publish depth and lateral position
 table = NetworkTables.getTable('Post Detection')
 
-# Get the table to pull the alliance colour from
-#dashboardTable = NetworkTables.getTable('AdvantageKit')
-dashboardTable = NetworkTables.getTable('SmartDashboard')
-
-##########################
 # set redalliance True or False 
-redalliance = True
+redalliance = False
 
 # Uncomment this section if there is time to test
 # if this is not a test, but actually in a match
 if BenchTesting == False:
-    # loop until robot is enabled to pull the alliance colour
-    is_enabled = False
-    while is_enabled == False:
-        print("Robot Enabled Status:", is_enabled)
-        # Default to False if not found
-        is_enabled = dashboardTable.getBoolean('RobotEnabled', False)
-        time.sleep(1)
+    fmsTable = NetworkTables.getTable('FMSInfo')
+    time.sleep(1)
+    redalliance = fmsTable.getBoolean('IsRedAlliance', None)
 
-    # enable-check = dashboardTable.getstring('DriverStation/Enabled', 'Unknown')
+print(redalliance)
 
-    allianceColour = dashboardTable.getstring('AllianceColor', 'Unknown')
-    print(f'Alliance Colour: {allianceColour}')
-
-    if "RED" in upper(allianceColour):
-        redalliance = True
-
-
-# set up all variables outside the loop
+# default to no post detection
 Post_detected = False
 
 try:
@@ -175,17 +153,18 @@ try:
         depth_image = np.asanyarray(aligned_depth_frame.get_data())
         colour_image = np.asanyarray(colour_frame.get_data())
 
+        # mask out all pixels further than the clipping distance
         depth_mask0 = np.where(
             (depth_image > 0) & (depth_image < clipping_distance),
             255, 0
             ).astype(np.uint8)
 
-        # clean up the mask
+        # clean up depth mask
         # get a rectangular structuring element
         dkernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 10))
-
         # Apply morphological closing to fill small gaps in the post shape
         depth_mask = cv2.morphologyEx(depth_mask0, cv2.MORPH_CLOSE, dkernel)
+        # apply depth mask (cleaned) to colour image
         depth_masked_image = cv2.bitwise_and(colour_image, colour_image, mask=depth_mask)
 
         if BenchTesting == True:
@@ -194,7 +173,7 @@ try:
             cv2.imshow('depth_masked_image', depth_masked_image)
 
         # create a colour mask
-        # convert to HSV to use HSV values for colour masking
+        # convert to use HSV values for colour masking
         hsv_image = cv2.cvtColor(depth_masked_image, cv2.COLOR_BGR2HSV)
 
         ##################################################
@@ -202,7 +181,7 @@ try:
         #       using ColRngCheck.py                     #
         ##################################################
         
-        # keep red if redalliance
+        # red alliance so keep red pixels
         if redalliance == True:
             # reds wrap around hue: from 170 (past 180 back to 0) around to 10
             lower_red1 = np.array([0, 175, 40])
@@ -218,11 +197,11 @@ try:
 
         # not red alliance, so keep blue pixels
         else:
-            lower_blue = np.array([90, 200, 100])    # lower bound for blue
+            lower_blue = np.array([90, 200, 100])   # lower bound for blue
             upper_blue = np.array([125, 255, 255])  # upper bound for blue
             colour_depth_mask0 = cv2.inRange(hsv_image, lower_blue, upper_blue)
 
-        # clean up colour mask
+        # clean up colour mask using same method as depth, but smaller rectangular element
         ckernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2,5))
         colour_depth_mask = cv2.morphologyEx(colour_depth_mask0, cv2.MORPH_CLOSE, ckernel)
 
@@ -277,14 +256,14 @@ try:
             # Get position in metres in 3D, using the intrinsics 
             point_3d = rs.rs2_deproject_pixel_to_point(intrinsics, [centre_x, y], depth_in_meters)
             centre_x_m = point_3d[0]
-            # print(f"3d x {point_3d[0]}  3d y {point_3d[1]}    3d z {point_3d[2]}")
+            if BenchTesting == True:
+                print(f"3d x {point_3d[0]}  3d y {point_3d[1]}    3d z {point_3d[2]}")
 
             if len(valid_depths) == 0:
                 Post_detected = False
 
             else:
                 Post_detected = True
-                print(f"Post centre x: {centre_x}  Depth: {depth_in_meters:.3f}m")
 
                 # Publish values to NetworkTables
                 table.putBoolean('post_detected', True)
@@ -292,6 +271,7 @@ try:
                 table.putNumber('post_depth', depth_in_meters)
   
                 if BenchTesting == True:
+                    print(f"Post centre x: {centre_x}  Depth: {depth_in_meters:.3f}m")
                     # Draw a vertical line at the detected x position
                     cv2.line(display, (centre_x, 0), (centre_x, display.shape[0]),
                              color=(0, 255, 0), thickness=2)
@@ -310,20 +290,18 @@ try:
 
         if BenchTesting == True:
             cv2.imshow('Post Detection', display)
-
-        key = cv2.waitKey(1)
-        if key & 0xFF == ord('q') or key == 27:
-            cv2.destroyAllWindows()
-            break
-        else:
-            # add ability to switch between red and blue masking by pressing key
-            if key & 0xFF == ord('r'):
-                redalliance = True
-            if key & 0xFF == ord('b'):
-                redalliance = False
+            key = cv2.waitKey(1)
+            if key & 0xFF == ord('q') or key == 27:
+                cv2.destroyAllWindows()
+                break
+            else:
+                # add ability to switch between red and blue masking by pressing key
+                if key & 0xFF == ord('r'):
+                    redalliance = True
+                if key & 0xFF == ord('b'):
+                    redalliance = False
 
 # Would be better to add exception and else to cover errors
 
 finally:
     pipeline.stop()
-
