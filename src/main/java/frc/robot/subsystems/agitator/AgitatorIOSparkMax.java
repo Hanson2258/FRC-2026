@@ -14,6 +14,9 @@ import edu.wpi.first.math.MathUtil;
 /** Agitator IO using a single SPARK MAX (NEO 550) with voltage control. */
 public class AgitatorIOSparkMax implements AgitatorIO {
 
+  private static final int kSignalsPeriodMs = 107;
+  private static final int kEncoderVelocitySignalPeriodMs = 251;
+
   private final SparkMax motor;
 
   public AgitatorIOSparkMax() {
@@ -26,12 +29,13 @@ public class AgitatorIOSparkMax implements AgitatorIO {
     sparkMaxConfig.openLoopRampRate(kOpenLoopRampRateSec);
     sparkMaxConfig.voltageCompensation(Constants.kNominalVoltage);
     sparkMaxConfig.signals
-        .appliedOutputPeriodMs(37)
-        .busVoltagePeriodMs(37)
-        .outputCurrentPeriodMs(37)
-        .primaryEncoderPositionPeriodMs(509)
-        .primaryEncoderVelocityPeriodMs(509);
+        .appliedOutputPeriodMs(kSignalsPeriodMs)
+        .busVoltagePeriodMs(kSignalsPeriodMs)
+        .outputCurrentPeriodMs(kSignalsPeriodMs)
+        .primaryEncoderPositionPeriodMs(kEncoderVelocitySignalPeriodMs)
+        .primaryEncoderVelocityPeriodMs(kEncoderVelocitySignalPeriodMs);
     motor.configure(sparkMaxConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+    motor.setPeriodicFrameTimeout(0);
   } // End AgitatorIOSparkMax Constructor
 
   @Override

@@ -16,6 +16,9 @@ import edu.wpi.first.math.MathUtil;
 /** Transfer IO using a single SPARK MAX (NEO 550) with voltage control and optional colour sensor. */
 public class TransferIOSparkMax implements TransferIO {
 
+  private static final int kSignalsPeriodMs = 107;
+  private static final int kEncoderVelocitySignalPeriodMs = 251;
+
   private final SparkMax motor;
   // private final ColorSensorV3 colorSensor;
 
@@ -30,12 +33,13 @@ public class TransferIOSparkMax implements TransferIO {
     sparkMaxConfig.openLoopRampRate(kOpenLoopRampRateSec);
     sparkMaxConfig.voltageCompensation(Constants.kNominalVoltage);
     sparkMaxConfig.signals
-        .appliedOutputPeriodMs(31)
-        .busVoltagePeriodMs(31)
-        .outputCurrentPeriodMs(31)
-        .primaryEncoderPositionPeriodMs(523)
-        .primaryEncoderVelocityPeriodMs(523);
+        .appliedOutputPeriodMs(kSignalsPeriodMs)
+        .busVoltagePeriodMs(kSignalsPeriodMs)
+        .outputCurrentPeriodMs(kSignalsPeriodMs)
+        .primaryEncoderPositionPeriodMs(kEncoderVelocitySignalPeriodMs)
+        .primaryEncoderVelocityPeriodMs(kEncoderVelocitySignalPeriodMs);
     motor.configure(sparkMaxConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+    motor.setPeriodicFrameTimeout(0);
   } // End TransferIOSparkMax Constructor
 
   @Override

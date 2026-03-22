@@ -16,6 +16,9 @@ import edu.wpi.first.math.util.Units;
 /** Hood IO using a single SPARK MAX (NEO 550) with onboard position control. */
 public class HoodIOSparkMax implements HoodIO {
 
+  private static final int kSignalsPeriodMs = 19;
+  private static final int kEncoderVelocitySignalPeriodMs = 19;
+
   private final SparkMax motor;
   private final SparkClosedLoopController closedLoopController;
   private final RelativeEncoder encoder;
@@ -34,12 +37,13 @@ public class HoodIOSparkMax implements HoodIO {
         .velocityConversionFactor(1.0 / kGearRatio);
     sparkMaxConfig.closedLoop.p(kP).i(kI).d(kD);
     sparkMaxConfig.signals
-        .appliedOutputPeriodMs(40)
-        .busVoltagePeriodMs(40)
-        .outputCurrentPeriodMs(40)
-        .primaryEncoderPositionPeriodMs(563)
-        .primaryEncoderVelocityPeriodMs(563);
+        .appliedOutputPeriodMs(kSignalsPeriodMs)
+        .busVoltagePeriodMs(kSignalsPeriodMs)
+        .outputCurrentPeriodMs(kSignalsPeriodMs)
+        .primaryEncoderPositionPeriodMs(kSignalsPeriodMs)
+        .primaryEncoderVelocityPeriodMs(kEncoderVelocitySignalPeriodMs);
     motor.configure(sparkMaxConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+    motor.setPeriodicFrameTimeout(0);
   } // End HoodIOSparkMax Constructor
 
   @Override

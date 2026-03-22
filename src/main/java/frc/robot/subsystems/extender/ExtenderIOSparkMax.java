@@ -16,6 +16,9 @@ import static frc.robot.subsystems.extender.ExtenderConstants.*;
 
 public class ExtenderIOSparkMax implements ExtenderIO {
 
+  private static final int kSignalsPeriodMs = 31;
+  private static final int kEncoderVelocitySignalPeriodMs = 31;
+
   private final SparkMax motor;
   private final SparkClosedLoopController closedLoopController;
   private final RelativeEncoder encoder;
@@ -40,14 +43,15 @@ public class ExtenderIOSparkMax implements ExtenderIO {
       .velocityConversionFactor(1.0 / kGearRatio);
     sparkMaxConfig.closedLoop.p(kP).i(kI).d(kD).maxOutput(0.3).minOutput(-0.3); // XXX: Tune to ensure enough power
     sparkMaxConfig.signals
-        .appliedOutputPeriodMs(31)
-        .busVoltagePeriodMs(31)
-        .outputCurrentPeriodMs(31)
-        .primaryEncoderPositionPeriodMs(499)
-        .primaryEncoderVelocityPeriodMs(499);
+        .appliedOutputPeriodMs(kSignalsPeriodMs)
+        .busVoltagePeriodMs(kSignalsPeriodMs)
+        .outputCurrentPeriodMs(kSignalsPeriodMs)
+        .primaryEncoderPositionPeriodMs(kSignalsPeriodMs)
+        .primaryEncoderVelocityPeriodMs(kEncoderVelocitySignalPeriodMs);
 
     motor.configure(sparkMaxConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
-  } // End ExtenderIOSParkMax
+    motor.setPeriodicFrameTimeout(0);
+  } // End ExtenderIOSparkMax Constructor
 
   @Override
   public void updateInputs(ExtenderIOInputs inputs) {
@@ -63,12 +67,13 @@ public class ExtenderIOSparkMax implements ExtenderIO {
       SparkMaxConfig sparkMaxConfig = new SparkMaxConfig();
       sparkMaxConfig.closedLoop.p(kP).i(kI).d(kD);
       sparkMaxConfig.signals
-          .appliedOutputPeriodMs(31)
-          .busVoltagePeriodMs(31)
-          .outputCurrentPeriodMs(31)
-          .primaryEncoderPositionPeriodMs(499)
-          .primaryEncoderVelocityPeriodMs(499);
+          .appliedOutputPeriodMs(kSignalsPeriodMs)
+          .busVoltagePeriodMs(kSignalsPeriodMs)
+          .outputCurrentPeriodMs(kSignalsPeriodMs)
+          .primaryEncoderPositionPeriodMs(kSignalsPeriodMs)
+          .primaryEncoderVelocityPeriodMs(kEncoderVelocitySignalPeriodMs);
       motor.configure(sparkMaxConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+      motor.setPeriodicFrameTimeout(0);
     }
 
     inputs.motorConnected = motor.getLastError() == REVLibError.kOk;

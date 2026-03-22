@@ -14,6 +14,9 @@ import edu.wpi.first.math.MathUtil;
 /** Intake IO using a single SPARK MAX (NEO 550) with voltage control. */
 public class IntakeIOSparkMax implements IntakeIO {
 
+  private static final int kSignalsPeriodMs = 127;
+  private static final int kEncoderVelocitySignalPeriodMs = 271;
+
   private final SparkMax motor;
 
   public IntakeIOSparkMax() {
@@ -26,12 +29,13 @@ public class IntakeIOSparkMax implements IntakeIO {
     sparkMaxConfig.openLoopRampRate(kOpenLoopRampRateSec);
     sparkMaxConfig.voltageCompensation(Constants.kNominalVoltage);
     sparkMaxConfig.signals
-        .appliedOutputPeriodMs(37)
-        .busVoltagePeriodMs(37)
-        .outputCurrentPeriodMs(37)
-        .primaryEncoderPositionPeriodMs(32749)
-        .primaryEncoderVelocityPeriodMs(32749);
+        .appliedOutputPeriodMs(kSignalsPeriodMs)
+        .busVoltagePeriodMs(kSignalsPeriodMs)
+        .outputCurrentPeriodMs(kSignalsPeriodMs)
+        .primaryEncoderPositionPeriodMs(kEncoderVelocitySignalPeriodMs)
+        .primaryEncoderVelocityPeriodMs(kEncoderVelocitySignalPeriodMs);
     motor.configure(sparkMaxConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+    motor.setPeriodicFrameTimeout(0);
   } // End IntakeIOSparkMax Constructor
 
   @Override

@@ -14,6 +14,9 @@ import frc.robot.Constants;
 /** Hang IO using a single SPARK MAX with an external analog potentiometer. */
 public class HangIOSparkMax implements HangIO {
 
+  private static final int kSignalsPeriodMs = 31;
+  private static final int kEncoderVelocitySignalPeriodMs = 31;
+
   private final SparkMax motor;
   private final AnalogInput potentiometer;
 
@@ -30,12 +33,13 @@ public class HangIOSparkMax implements HangIO {
     sparkMaxConfig.openLoopRampRate(kOpenLoopRampRateSec);
     sparkMaxConfig.voltageCompensation(Constants.kNominalVoltage);
     sparkMaxConfig.signals
-        .appliedOutputPeriodMs(37)
-        .busVoltagePeriodMs(37)
-        .outputCurrentPeriodMs(37)
-        .primaryEncoderPositionPeriodMs(32719)
-        .primaryEncoderVelocityPeriodMs(32719);
+        .appliedOutputPeriodMs(kSignalsPeriodMs)
+        .busVoltagePeriodMs(kSignalsPeriodMs)
+        .outputCurrentPeriodMs(kSignalsPeriodMs)
+        .primaryEncoderPositionPeriodMs(kSignalsPeriodMs)
+        .primaryEncoderVelocityPeriodMs(kEncoderVelocitySignalPeriodMs);
     motor.configure(sparkMaxConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+    motor.setPeriodicFrameTimeout(0);
   } // End HangIOSparkMax Constructor
 
   @Override

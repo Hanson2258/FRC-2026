@@ -22,6 +22,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 /** Turret IO using a single SPARK MAX (NEO 550) with onboard position control. */
 public class TurretIOSparkMax implements TurretIO {
 
+  private static final int kSignalsPeriodMs = 19;
+  private static final int kEncoderVelocitySignalPeriodMs = 19;
+
   private final SparkMax motor;
   private final SparkClosedLoopController closedLoopController;
   private final RelativeEncoder encoder;
@@ -45,12 +48,13 @@ public class TurretIOSparkMax implements TurretIO {
         .velocityConversionFactor(1.0 / kGearRatio);
     sparkMaxConfig.closedLoop.p(kP).i(kI).d(kD);
     sparkMaxConfig.signals
-        .appliedOutputPeriodMs(31)
-        .busVoltagePeriodMs(31)
-        .outputCurrentPeriodMs(31)
-        .primaryEncoderPositionPeriodMs(31)
-        .primaryEncoderVelocityPeriodMs(547);
+        .appliedOutputPeriodMs(kSignalsPeriodMs)
+        .busVoltagePeriodMs(kSignalsPeriodMs)
+        .outputCurrentPeriodMs(kSignalsPeriodMs)
+        .primaryEncoderPositionPeriodMs(kSignalsPeriodMs)
+        .primaryEncoderVelocityPeriodMs(kEncoderVelocitySignalPeriodMs);
     motor.configure(sparkMaxConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+    motor.setPeriodicFrameTimeout(0);
   } // End TurretIOSparkMax Constructor
 
   @Override
@@ -67,12 +71,13 @@ public class TurretIOSparkMax implements TurretIO {
       var sparkMaxConfig = new SparkMaxConfig();
       sparkMaxConfig.closedLoop.p(p).i(i).d(d);
       sparkMaxConfig.signals
-          .appliedOutputPeriodMs(40)
-          .busVoltagePeriodMs(40)
-          .outputCurrentPeriodMs(40)
-          .primaryEncoderPositionPeriodMs(40)
-          .primaryEncoderVelocityPeriodMs(547);
+          .appliedOutputPeriodMs(kSignalsPeriodMs)
+          .busVoltagePeriodMs(kSignalsPeriodMs)
+          .outputCurrentPeriodMs(kSignalsPeriodMs)
+          .primaryEncoderPositionPeriodMs(kSignalsPeriodMs)
+          .primaryEncoderVelocityPeriodMs(kEncoderVelocitySignalPeriodMs);
       motor.configure(sparkMaxConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+      motor.setPeriodicFrameTimeout(0);
     }
     
     inputs.motorConnected = motor.getLastError() == REVLibError.kOk;
