@@ -7,10 +7,10 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
-/** Transfer subsystem: staging (low voltage, stop when sensor tripped (optional)) or shooting (high voltage). */
+/** Transfer subsystem: Staging (low voltage, stop when sensor tripped (optional)) or Shooting (high voltage). */
 public class Transfer extends SubsystemBase {
 
-  /** Transfer state: idle, staging (slow pre-load), or shooting. */
+  /** Transfer state: Idle, Staging (slow pre-load), or Shooting. */
   public enum State {
     IDLE,
     STAGING,
@@ -68,19 +68,19 @@ public class Transfer extends SubsystemBase {
     }
   } // End periodic
   
-  /** Set state to idle (motor stopped). */
+  /** Set state to Idle (motor stopped). */
   public void setIdleState() {
     state = State.IDLE;
     targetVoltage = kIdleVoltage;
   } // End setIdleState
 
-  /** Set state to staging (slow pre-load; stop when colour sensor tripped (optional)). */
+  /** Set state to Staging (slow pre-load; stop when colour sensor tripped (optional)). */
   public void setStagingState() {
     state = State.STAGING;
     targetVoltage = kStagingVoltage;
   } // End setStagingState
 
-  /** Set state to shooting (fast load); clears ballStaged. */
+  /** Set state to Shooting (fast load); clears ballStaged. */
   public void setShootingState() {
     state = State.SHOOTING;
     ballStaged = false;
@@ -114,7 +114,7 @@ public class Transfer extends SubsystemBase {
     return state;
   } // End getState
 
-  /** True when staging and colour sensor was tripped (ball at transfer). */
+  /** True when in Staging and colour sensor was tripped (ball at transfer). */
   public boolean isBallStaged() {
     return ballStaged;
   } // End isBallStaged

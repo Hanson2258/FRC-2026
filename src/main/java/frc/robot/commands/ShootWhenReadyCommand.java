@@ -12,7 +12,7 @@ import frc.robot.subsystems.shooter.transfer.Transfer;
 
 /**
  * While scheduled: when Shooter is ready (Turret aimed, Flywheel at speed, (Optional) Hood at target),
- * runs Transfer then 0.25 s later Agitator (shooting mode). Idles both on end/cancel.
+ * runs Transfer then 0.25 s later Agitator (Shooting). Sets both to Idle on end/cancel.
  */
 public class ShootWhenReadyCommand extends Command {
 

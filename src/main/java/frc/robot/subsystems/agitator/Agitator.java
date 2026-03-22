@@ -10,7 +10,7 @@ import org.littletonrobotics.junction.Logger;
 /** Agitator subsystem: storage-to-shooter transfer */
 public class Agitator extends SubsystemBase {
 
-  /** Agitator state: idle, staging (slow pre-load), or shooting. */
+  /** Agitator state: Idle, Staging (slow pre-load), or Shooting. */
   public enum State {
     IDLE,
     STAGING,
@@ -56,19 +56,19 @@ public class Agitator extends SubsystemBase {
     }
   } // End periodic
 
-  /** Set state to idle (motor stopped). */
+  /** Set state to Idle (motor stopped). */
   public void setIdleState() {
     state = State.IDLE;
     targetVoltage = kIdleVoltage;
   } // End setIdleState
 
-  /** Set state to staging (slow pre-load). */
+  /** Set state to Staging (slow pre-load). */
   public void setStagingState() {
     state = State.STAGING;
     targetVoltage = kStagingVoltage;
   } // End setStagingState
 
-  /** Set state to shooting (fast loading). */
+  /** Set state to Shooting (fast loading). */
   public void setShootingState() {
     state = State.SHOOTING;
     targetVoltage = kShootingVoltage;

@@ -12,7 +12,7 @@ import org.littletonrobotics.junction.Logger;
 /** Hang subsystem: extend/retract controlled to potentiometer voltage setpoints (SPARK MAX + analog pot). */
 public class Hang extends SubsystemBase {
 
-  /** High-level state for the hang mechanism. */
+  /** Hang state: Idle, Stored, Level 1, Manual. */
   public enum State {
     IDLE,
     STORED,
@@ -99,7 +99,7 @@ public class Hang extends SubsystemBase {
     return targetVoltage;
   } // End getTargetVoltage
 
-  /** Get the current Hang state. */
+  /** Current state. */
   public State getState() {
     return state;
   } // End getState
@@ -110,37 +110,37 @@ public class Hang extends SubsystemBase {
     return Math.abs(getPotVoltage() - clampedTarget) <= kAtTargetToleranceVolts;
   } // End atTarget
 
-  /** Command the hang to the STORED (retracted) preset voltage. */
-  public void goToStored() {
+  /** Set state to Stored (retracted preset voltage). */
+  public void setStoredState() {
     state = State.STORED;
     targetVoltage = SmartDashboard.getNumber("Hang/StoredVoltage", kStoredVoltage);
     voltageController.reset();
-  } // End goToStored
+  } // End setStoredState
 
-  /** Command the hang to the LEVEL_1 (extended) preset voltage. */
-  public void goToLevel1() {
+  /** Set state to Level 1 (extended preset voltage). */
+  public void setLevel1State() {
     state = State.LEVEL_1;
     targetVoltage = SmartDashboard.getNumber("Hang/Level1Voltage", kLevel1Voltage);
     voltageController.reset();
-  } // End goToLevel1
+  } // End setLevel1State
 
-  /** Command a manual target potentiometer voltage (V). */
+  /** Set state to Manual with the given target potentiometer voltage (V). */
   public void setManualTargetVoltage(double voltageV) {
     state = State.MANUAL;
     targetVoltage = voltageV;
     voltageController.reset();
   } // End setManualTargetVoltage
 
-  /** Step the target voltage by the given amount (V). */
+  /** Step the target voltage by the given amount (V); sets state to Manual. */
   public void stepVolts(double stepVolts) {
     state = State.MANUAL;
     targetVoltage = MathUtil.clamp(getTargetVoltage() + stepVolts, kPotExtendedVoltage, kPotRetractedVoltage);
     voltageController.reset();
   } // End stepVolts
 
-  /** Set the hang mechanism to idle (no PID output, motor stopped). */
-  public void setIdle() {
+  /** Set state to Idle (no PID output, motor stopped). */
+  public void setIdleState() {
     state = State.IDLE;
-  } // End setIdle
+  } // End setIdleState
 }
 

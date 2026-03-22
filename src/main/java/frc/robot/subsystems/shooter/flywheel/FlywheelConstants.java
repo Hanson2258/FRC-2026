@@ -28,13 +28,13 @@ public final class FlywheelConstants { // XXX: Add correct values
   /** Set true if positive velocity spins the Flywheel the opposite direction. */
   public static final boolean kMotorInverted = true;
 
-  /** Idle target velocity. */
+  /** Target velocity in Idle state. */
   public static final double kIdleVelocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(0.0);
 
   /** Target velocity for shooting. */
   public static final double kDefaultTargetVelocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(3200.0);
 
-  /** Tolerance for at-target velocity (Charging → AtSpeed). */
+  /** Tolerance for at-target velocity (Charging → At_Speed). */
   public static final double kAtTargetVelocityToleranceRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(50.0);
 
   /** Delta Rad per step. */

@@ -28,13 +28,13 @@ public final class TransferConstants { // XXX: Add correct values
   /** Stator current limit. Talon FX only. */
   public static final double kStatorCurrentLimitAmps = 30.0;
 
-  /** Voltage when idle. */
+  /** Voltage in Idle state. */
   public static final double kIdleVoltage = 0.0;
 
-  /** Voltage when staging (slow pre-load). */
+  /** Voltage in Staging state (slow pre-load). */
   public static final double kStagingVoltage = 2.0;
 
-  /** Voltage when shooting. */
+  /** Voltage in Shooting state. */
   public static final double kShootingVoltage = 6.0;
 
   /** Proximity at or above this value = ball present (REV Color Sensor V3: 0–2047). */

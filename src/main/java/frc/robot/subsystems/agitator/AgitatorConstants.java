@@ -25,13 +25,13 @@ public final class AgitatorConstants { // XXX: Add correct values
   /** Max voltage magnitude applied to the motor. */
   public static final double kMaxVoltage = 8.0;
 
-  /** Voltage when idle. */
+  /** Voltage in Idle state. */
   public static final double kIdleVoltage = 0.0;
 
-  /** Voltage when staging (slow pre-load). */
+  /** Voltage in Staging state (slow pre-load). */
   public static final double kStagingVoltage = 2.0;
 
-  /** Voltage when shooting (fast loading). */
+  /** Voltage in Shooting state (fast loading). */
   public static final double kShootingVoltage = 6.0;
 
   /** Delta volts per step. */

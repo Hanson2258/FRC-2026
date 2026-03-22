@@ -12,7 +12,7 @@ import static frc.robot.subsystems.extender.ExtenderConstants.*;
 /** Extender subsystem: one motor with onboard position control. */
 public class Extender extends SubsystemBase {
 
-  /** Extender state: Retracted (facing up), Extended (facing forward). */
+  /** Extender state: Idle, Retracted (facing up), Partial, Extended (facing forward). */
   public enum State {
     IDLE,
     RETRACTED,
@@ -74,14 +74,14 @@ public class Extender extends SubsystemBase {
     }
   } // End periodic
 
-  /** Set state to idle state (stop Extender) */
+  /** Set state to Idle (stop Extender). */
   public void setIdleState() {
     state = State.IDLE;
     setTargetPositionRad(getPositionRad());
     extenderIO.stop();
   } // End setIdleState
 
-  /** Set state to retracted state (Go to up position) */
+  /** Set state to Retracted (go to up position). */
   public void setRetractedState() {
     state = State.RETRACTED;
     setTargetPositionRad(kUpExtenderRad);
@@ -93,7 +93,7 @@ public class Extender extends SubsystemBase {
     setTargetPositionRad(kPartialExtenderRad);
   } // End setPartialState
 
-  /** Set state to extended state (Go to down position and rest on bumpers) */
+  /** Set state to Extended (go to down position and rest on bumpers). */
   public void setExtendedState() {
     state = State.EXTENDED;
     setTargetPositionRad(kExtendedExtenderRad);
@@ -111,7 +111,7 @@ public class Extender extends SubsystemBase {
     setTargetPositionRad(kMaxRad);
   } // End resetEncoders
 
-  /** Set the target position in radians; used in RETRACTED/EXTENDED state. */
+  /** Set the target position in radians; used in Retracted, Partial, and Extended states. */
   public void setTargetPositionRad(double positionRad) {
     targetPositionRad = clampTargetPosition(positionRad);
   } // End setTargetPositionRad

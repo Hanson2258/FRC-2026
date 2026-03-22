@@ -10,7 +10,7 @@ import org.littletonrobotics.junction.Logger;
 /** Intake subsystem: one motor, voltage controlled (run or coast). */
 public class Intake extends SubsystemBase {
 
-  /** Intake state: idle, intaking (pull in), or reversing (spit out). */
+  /** Intake state: Idle, Intaking (pull in), or Reversing (spit out). */
   public enum State {
     IDLE,
     INTAKING,
@@ -56,19 +56,19 @@ public class Intake extends SubsystemBase {
     }
   } // End periodic
 
-  /** Set state to idle (motor stopped). */
+  /** Set state to Idle (motor stopped). */
   public void setIdleState() {
     state = State.IDLE;
     targetVoltage = kIdleVoltage;
   } // End setIdleState
 
-  /** Set state to intaking (pull in at intaking voltage). */
+  /** Set state to Intaking (pull in at intaking voltage). */
   public void setIntakingState() {
     state = State.INTAKING;
     targetVoltage = kIntakingVoltage;
   } // End setIntakingState
 
-  /** Set state to reversing (spit out at reversing voltage). */
+  /** Set state to Reversing (spit out at reversing voltage). */
   public void setReversingState() {
     state = State.REVERSING;
     targetVoltage = kReversingVoltage;

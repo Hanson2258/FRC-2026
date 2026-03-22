@@ -89,7 +89,7 @@ public class Shooter extends SubsystemBase {
     ShooterCommands.setShooterTarget(drive, turret, hood, flywheel, hoodEnabled, !manualOverrideSupplier.getAsBoolean());
   } // End periodic
 
-  /** Turret aimed at hub (hub in range and at target), Flywheel not idle and at speed; (Optional) Hood at target. When target is hub, robot must be in alliance zone. */
+  /** Turret aimed at hub (hub in range and at target), Flywheel not Idle and at target speed; (Optional) Hood at target. When target is hub, robot must be in alliance zone. */
   public boolean isReadyToShoot() {
     if (ShooterCommands.isShooterTargetHub() && !AllianceUtil.isInAllianceZone(drive.getPose().getX())) {
       return false;

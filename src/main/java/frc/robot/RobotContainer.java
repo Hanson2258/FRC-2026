@@ -319,7 +319,7 @@ public class RobotContainer {
 			}
 		}, extender));
 
-		// Intake toggle: right bumper = intaking ↔ idle, left bumper = reversing ↔ idle
+		// Intake toggle: right bumper = Intaking ↔ Idle, left bumper = Reversing ↔ Idle
 		driverController.leftBumper().onTrue(
 			new ConditionalCommand(
 				Commands.runOnce(() -> intake.setIdleState(), intake),
@@ -353,17 +353,17 @@ public class RobotContainer {
 		if (hang != null) {
 			driverController.b().onTrue(
 				new ConditionalCommand(
-					Commands.runOnce(() -> hang.goToLevel1(), hang), 
-					Commands.runOnce(() -> hang.setIdle(), hang), 
+					Commands.runOnce(() -> hang.setLevel1State(), hang), 
+					Commands.runOnce(() -> hang.setIdleState(), hang), 
 					() -> hang.getState() == Hang.State.LEVEL_1));
 			driverController.x().onTrue(
 				new ConditionalCommand(
-					Commands.runOnce(() -> hang.goToStored(), hang), 
-					Commands.runOnce(() -> hang.setIdle(), hang), 
+					Commands.runOnce(() -> hang.setStoredState(), hang), 
+					Commands.runOnce(() -> hang.setIdleState(), hang), 
 					() -> hang.getState() == Hang.State.STORED));
 		}
 
-    // Shoot toggle: on = schedule ShootWhenReadyCommand, set Flywheel to Charging if IDLE; off = cancel (command end() idles Transfer and Agitator)
+    // Shoot toggle: on = schedule ShootWhenReadyCommand, set Flywheel to Charging if Idle; off = cancel (command end() sets Transfer and Agitator to Idle)
 		driverController.a().onTrue(Commands.runOnce(() -> {
 			if (shootWhenReadyCommand.isScheduled()) {
 				CommandScheduler.getInstance().cancel(shootWhenReadyCommand);
@@ -611,7 +611,7 @@ public class RobotContainer {
 		agitator.setIdleState();
 		transfer.setIdleState();
 		flywheel.setState(Flywheel.State.IDLE);
-		if (hang != null) hang.setIdle();
+		if (hang != null) hang.setIdleState();
 	} // End idleBallHandling
 
   /**

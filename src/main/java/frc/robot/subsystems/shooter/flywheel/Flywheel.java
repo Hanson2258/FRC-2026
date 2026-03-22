@@ -8,10 +8,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import static frc.robot.subsystems.shooter.flywheel.FlywheelConstants.*;
 
-/** Flywheel subsystem: one motor with onboard velocity control; state machine Idle / Charging / AtSpeed. */
+/** Flywheel subsystem: one motor with onboard velocity control; state machine Idle / Charging / At Speed. */
 public class Flywheel extends SubsystemBase {
 
-  /** Flywheel state: Idle (low velocity), Charging (ramping to target), AtSpeed (ready to shoot). */
+  /** Flywheel state: Idle (low velocity), Charging (ramping to target), At_Speed (ready to shoot). */
   public enum State {
     IDLE,
     CHARGING,
@@ -60,12 +60,12 @@ public class Flywheel extends SubsystemBase {
     Logger.recordOutput("Subsystems/Shooter/Flywheel/TargetVelocityRpm", getTargetVelocityRpm());
     Logger.recordOutput("Subsystems/Shooter/Flywheel/State", state.name());
 
-    // Auto-transition Charging → AtSpeed when at target velocity
+    // Auto-transition Charging → At_Speed when at target velocity
     if (state == State.CHARGING && atTargetVelocity()) {
       state = State.AT_SPEED;
     }
 
-    // If in AtSpeed but velocity fell below/outside tolerance, go back to Charging to re-ramp
+    // If in At_Speed but velocity fell below/outside tolerance, go back to Charging to re-ramp
     if (state == State.AT_SPEED && !atTargetVelocity()) {
       state = State.CHARGING;
     }
@@ -85,7 +85,7 @@ public class Flywheel extends SubsystemBase {
     state = newState;
   } // End setState
 
-  /** Set the target velocity used when state is Charging or AtSpeed. */
+  /** Set the target velocity used when state is Charging or At_Speed. */
   public void setTargetVelocityRadPerSec(double targetVelocityRadPerSec) {
     this.targetVelocityRadPerSec = targetVelocityRadPerSec;
     SmartDashboard.putNumber("Flywheel/TargetVelocityRpm", Units.radiansPerSecondToRotationsPerMinute(targetVelocityRadPerSec));
@@ -117,7 +117,7 @@ public class Flywheel extends SubsystemBase {
     return Units.radiansPerSecondToRotationsPerMinute(flywheelInputs.velocityRadsPerSec);
   } // End getVelocityRpm
 
-  /** Step the target velocity by the given amount. */
+  /** Step the target velocity by the given amount; sets state to Charging. */
   public void stepVelocityRadPerSec(double stepVelocityRadPerSec) {
     setState(State.CHARGING);
     setTargetVelocityRadPerSec(getTargetVelocityRadPerSec() + stepVelocityRadPerSec);

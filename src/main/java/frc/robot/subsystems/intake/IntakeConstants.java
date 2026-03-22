@@ -28,13 +28,13 @@ public final class IntakeConstants { // XXX: Add correct values
   /** Min voltage (negative = reverse). */
   public static final double kMinVoltage = -kMaxVoltage;
 
-  /** Voltage when idle. */
+  /** Voltage in Idle state. */
   public static final double kIdleVoltage = 0.0;
 
-  /** Voltage when intaking (positive = pull in). */
+  /** Voltage in Intaking state (positive = pull in). */
   public static final double kIntakingVoltage = 5.0;
 
-  /** Voltage magnitude when reversing (negative = spit out). */
+  /** Voltage magnitude in Reversing state (negative = spit out). */
   public static final double kReversingVoltage = -2.0;
 
   /** Delta volts per step. */
