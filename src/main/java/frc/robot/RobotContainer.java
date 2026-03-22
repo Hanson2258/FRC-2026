@@ -45,14 +45,12 @@ import frc.robot.subsystems.vision.*;
 import static frc.robot.subsystems.vision.VisionConstants.*;
 import frc.robot.subsystems.intake.*;
 import frc.robot.subsystems.extender.*;
-import frc.robot.subsystems.extender.Extender.ExtenderState;
 import frc.robot.subsystems.agitator.*;
 import frc.robot.subsystems.shooter.*;
 import frc.robot.subsystems.shooter.transfer.*;
 import frc.robot.subsystems.shooter.turret.*;
 import frc.robot.subsystems.shooter.hood.*;
 import frc.robot.subsystems.shooter.flywheel.*;
-import frc.robot.subsystems.shooter.flywheel.Flywheel.FlywheelState;
 import frc.robot.subsystems.hang.*;
 
 
@@ -221,7 +219,7 @@ public class RobotContainer {
 						drive::getFieldRelativeChassisSpeeds);
 
 				configureFuelSim();
-				configureFuelSimRobot(() -> extender.getState() == ExtenderState.EXTENDED, shooterSim::intakeFuel);
+				configureFuelSimRobot(() -> extender.getState() == Extender.State.EXTENDED, shooterSim::intakeFuel);
 				break;
 
 			// Replayed Robot, disable IO implementations
@@ -324,14 +322,14 @@ public class RobotContainer {
 		// Intake toggle: right bumper = intaking ↔ idle, left bumper = reversing ↔ idle
 		driverController.leftBumper().onTrue(
 			new ConditionalCommand(
-				Commands.runOnce(() -> intake.setIdleMode(), intake),
-				Commands.runOnce(() -> intake.setReversingMode(), intake),
-				() -> intake.getMode() == Intake.Mode.REVERSING));
+				Commands.runOnce(() -> intake.setIdleState(), intake),
+				Commands.runOnce(() -> intake.setReversingState(), intake),
+				() -> intake.getState() == Intake.State.REVERSING));
 		driverController.rightBumper().onTrue(
 			new ConditionalCommand(
-				Commands.runOnce(() -> intake.setIdleMode(), intake),
-				Commands.runOnce(() -> intake.setIntakingMode(), intake),
-				() -> intake.getMode() == Intake.Mode.INTAKING));
+				Commands.runOnce(() -> intake.setIdleState(), intake),
+				Commands.runOnce(() -> intake.setIntakingState(), intake),
+				() -> intake.getState() == Intake.State.INTAKING));
 
     // Toggle face-target mode when Y button is pressed
     driverController.y().onTrue(Commands.runOnce(() -> {
@@ -357,22 +355,22 @@ public class RobotContainer {
 				new ConditionalCommand(
 					Commands.runOnce(() -> hang.goToLevel1(), hang), 
 					Commands.runOnce(() -> hang.setIdle(), hang), 
-					() -> hang.getState() == Hang.HangState.LEVEL_1));
+					() -> hang.getState() == Hang.State.LEVEL_1));
 			driverController.x().onTrue(
 				new ConditionalCommand(
 					Commands.runOnce(() -> hang.goToStored(), hang), 
 					Commands.runOnce(() -> hang.setIdle(), hang), 
-					() -> hang.getState() == Hang.HangState.STORED));
+					() -> hang.getState() == Hang.State.STORED));
 		}
 
     // Shoot toggle: on = schedule ShootWhenReadyCommand, set Flywheel to Charging if IDLE; off = cancel (command end() idles Transfer and Agitator)
 		driverController.a().onTrue(Commands.runOnce(() -> {
 			if (shootWhenReadyCommand.isScheduled()) {
 				CommandScheduler.getInstance().cancel(shootWhenReadyCommand);
-				if (flywheel != null ) flywheel.setState(FlywheelState.IDLE);
+				if (flywheel != null ) flywheel.setState(Flywheel.State.IDLE);
 			} else {
-				if (flywheel != null && flywheel.getState() == FlywheelState.IDLE) {
-					flywheel.setState(FlywheelState.CHARGING);
+				if (flywheel != null && flywheel.getState() == Flywheel.State.IDLE) {
+					flywheel.setState(Flywheel.State.CHARGING);
 				}
 				CommandScheduler.getInstance().schedule(shootWhenReadyCommand);
 			}
@@ -572,17 +570,17 @@ public class RobotContainer {
 	/** Register the commands here */
 	private void registerCommands() {
 		// Intake Commands
-		NamedCommands.registerCommand("Intake On", Commands.runOnce(() -> intake.setIntakingMode(), intake));
-		NamedCommands.registerCommand("Intake Off", Commands.runOnce(() -> intake.setIdleMode(), intake));
-		NamedCommands.registerCommand("Intake Reverse", Commands.runOnce(() -> intake.setReversingMode(), intake));
+		NamedCommands.registerCommand("Intake On", Commands.runOnce(() -> intake.setIntakingState(), intake));
+		NamedCommands.registerCommand("Intake Off", Commands.runOnce(() -> intake.setIdleState(), intake));
+		NamedCommands.registerCommand("Intake Reverse", Commands.runOnce(() -> intake.setReversingState(), intake));
 
 		NamedCommands.registerCommand("Extender Down", Commands.runOnce(() -> extender.setExtendedState(), extender));
 		NamedCommands.registerCommand("Extender Partial", Commands.runOnce(() -> extender.setPartialState(), extender));
 		NamedCommands.registerCommand("Extender Up", Commands.runOnce(() -> extender.setRetractedState(), extender));
 
 		// Flywheel Commands
-		NamedCommands.registerCommand("Flywheel On", Commands.runOnce(() -> flywheel.setState(FlywheelState.CHARGING), flywheel));
-		NamedCommands.registerCommand("Flywheel Off", Commands.runOnce(() -> flywheel.setState(FlywheelState.IDLE), flywheel));
+		NamedCommands.registerCommand("Flywheel On", Commands.runOnce(() -> flywheel.setState(Flywheel.State.CHARGING), flywheel));
+		NamedCommands.registerCommand("Flywheel Off", Commands.runOnce(() -> flywheel.setState(Flywheel.State.IDLE), flywheel));
 
 		// Shooter Target Commands
 		NamedCommands.registerCommand("Set Shooter Target Hub", Commands.runOnce(ShooterCommands::clearShooterTargetOverride));
@@ -608,11 +606,11 @@ public class RobotContainer {
 	/** Idle all Subsystems.  */
 	public void idleAllSubsystems() {
 		CommandScheduler.getInstance().cancel(shootWhenReadyCommand);
-		intake.setIdleMode();
+		intake.setIdleState();
 		// extender.setIdleState();
-		agitator.setIdleMode();
-		transfer.setIdleMode();
-		flywheel.setState(FlywheelState.IDLE);
+		agitator.setIdleState();
+		transfer.setIdleState();
+		flywheel.setState(Flywheel.State.IDLE);
 		if (hang != null) hang.setIdle();
 	} // End idleBallHandling
 
@@ -675,7 +673,7 @@ public class RobotContainer {
 				robotLengthMeters / 2 + intakeExtendMeters,
 				-robotWidthMeters / 2 + intakeInsetMeters,
 				robotWidthMeters / 2 - intakeInsetMeters,
-				() -> extender.getState() == ExtenderState.EXTENDED,
+				() -> extender.getState() == Extender.State.EXTENDED,
 				intakeCallback);
 	} // End configureFuelSimRobot
 

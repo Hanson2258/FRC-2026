@@ -9,7 +9,7 @@ import frc.robot.commands.ShooterCommands;
 import frc.robot.subsystems.agitator.Agitator;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
-import frc.robot.subsystems.shooter.flywheel.Flywheel.FlywheelState;
+import frc.robot.subsystems.shooter.flywheel.Flywheel.State;
 import frc.robot.subsystems.shooter.hood.Hood;
 import frc.robot.subsystems.shooter.transfer.Transfer;
 import frc.robot.subsystems.shooter.turret.Turret;
@@ -84,7 +84,7 @@ public class Shooter extends SubsystemBase {
     Logger.recordOutput("ShooterCommand/Ready/TurretAtTarget", turret.aimedAtHub());
     Logger.recordOutput("ShooterCommand/Ready/HoodAtTarget", !hoodEnabled || hood.atTarget());
     Logger.recordOutput("ShooterCommand/Ready/FlywheelAtTarget", flywheel.atTargetVelocity());
-    Logger.recordOutput("ShooterCommand/Ready/FlywheelNotIdle", flywheel.getState() != FlywheelState.IDLE);
+    Logger.recordOutput("ShooterCommand/Ready/FlywheelNotIdle", flywheel.getState() != State.IDLE);
 
     ShooterCommands.setShooterTarget(drive, turret, hood, flywheel, hoodEnabled, !manualOverrideSupplier.getAsBoolean());
   } // End periodic
@@ -96,7 +96,7 @@ public class Shooter extends SubsystemBase {
     }
     if (!turret.isHubInRange()) return false;
     if (!turret.aimedAtHub()) return false;
-    if (flywheel.getState() == FlywheelState.IDLE) return false;
+    if (flywheel.getState() == State.IDLE) return false;
     if (!flywheel.atTargetVelocity()) return false;
     if (hoodEnabled && !hood.atTarget()) return false;
     return true;

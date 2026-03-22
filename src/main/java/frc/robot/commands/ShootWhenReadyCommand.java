@@ -53,22 +53,22 @@ public class ShootWhenReadyCommand extends Command {
     }
 
     if (!shooter.isReadyToShoot()) {
-      // Reset the modes of the Agitator and Transfer if we become "unready" to shoot after the command has started
-      agitator.setIdleMode();
-      transfer.setIdleMode();
+      // Reset the states of the Agitator and Transfer if we become "unready" to shoot after the command has started
+      agitator.setIdleState();
+      transfer.setIdleState();
       transferOn = false;
       return;
     }
 
     if (!transferOn) {
-      transfer.setShootingMode();
+      transfer.setShootingState();
       transferOn = true;
       timerSec = 0.0;
     }
 
     timerSec += kLoopPeriodSec;
     if (timerSec >= kAgitatorDelaySec) {
-      agitator.setShootingMode();
+      agitator.setShootingState();
     }
   } // End execute
 
@@ -89,8 +89,8 @@ public class ShootWhenReadyCommand extends Command {
   @Override
   public void end(boolean interrupted) {
     shooter.setShootCommandActive(false);
-    transfer.setIdleMode();
-    agitator.setIdleMode();
+    transfer.setIdleState();
+    agitator.setIdleState();
   } // End end
 
   @Override

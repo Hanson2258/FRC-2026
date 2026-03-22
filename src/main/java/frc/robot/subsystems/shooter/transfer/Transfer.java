@@ -10,17 +10,17 @@ import org.littletonrobotics.junction.Logger;
 /** Transfer subsystem: staging (low voltage, stop when sensor tripped (optional)) or shooting (high voltage). */
 public class Transfer extends SubsystemBase {
 
-  /** Transfer mode: idle, staging (slow pre-load), or shooting. */
-  public enum Mode {
+  /** Transfer state: idle, staging (slow pre-load), or shooting. */
+  public enum State {
     IDLE,
     STAGING,
     SHOOTING
-  }
+  } // End State enum
 
   private final TransferIO transferIO;
   private final TransferIO.TransferIOInputs transferInputs = new TransferIO.TransferIOInputs();
 
-  private Mode mode = Mode.IDLE;
+  private State state = State.IDLE;
   private boolean colourSensorEnabled = false;
   private boolean ballStaged = false;
   private double targetVoltage = kIdleVoltage;
@@ -37,7 +37,7 @@ public class Transfer extends SubsystemBase {
     Logger.recordOutput("Subsystems/Shooter/Transfer/Inputs/AppliedVolts", transferInputs.appliedVolts);
     Logger.recordOutput("Subsystems/Shooter/Transfer/Inputs/SupplyCurrentAmps", transferInputs.supplyCurrentAmps);
     Logger.recordOutput("Subsystems/Shooter/Transfer/Inputs/ColorSensorTripped", transferInputs.colorSensorTripped);
-    Logger.recordOutput("Subsystems/Shooter/Transfer/Mode", mode.name());
+    Logger.recordOutput("Subsystems/Shooter/Transfer/State", state.name());
     Logger.recordOutput("Subsystems/Shooter/Transfer/BallStaged", ballStaged);
 
     if (DriverStation.isDisabled()) {
@@ -45,8 +45,8 @@ public class Transfer extends SubsystemBase {
       return;
     }
 
-    // Set the Transfer voltage based on the current mode
-    switch (mode) {
+    // Set the Transfer voltage based on the current state
+    switch (state) {
       case IDLE:
         transferIO.stop();
         break;
@@ -54,7 +54,7 @@ public class Transfer extends SubsystemBase {
         if (colourSensorEnabled && transferInputs.colorSensorTripped) {
           transferIO.stop();
           ballStaged = true;
-          mode = Mode.IDLE;
+          state = State.IDLE;
         } else {
           transferIO.setVoltage(targetVoltage);
         }
@@ -68,24 +68,24 @@ public class Transfer extends SubsystemBase {
     }
   } // End periodic
   
-  /** Set mode to idle (motor stopped). */
-  public void setIdleMode() {
-    mode = Mode.IDLE;
+  /** Set state to idle (motor stopped). */
+  public void setIdleState() {
+    state = State.IDLE;
     targetVoltage = kIdleVoltage;
-  } // End setIdleMode
+  } // End setIdleState
 
-  /** Set mode to staging (slow pre-load; stop when colour sensor tripped (optional)). */
-  public void setStagingMode() {
-    mode = Mode.STAGING;
+  /** Set state to staging (slow pre-load; stop when colour sensor tripped (optional)). */
+  public void setStagingState() {
+    state = State.STAGING;
     targetVoltage = kStagingVoltage;
-  } // End setStagingMode
+  } // End setStagingState
 
-  /** Set mode to shooting (fast load); clears ballStaged. */
-  public void setShootingMode() {
-    mode = Mode.SHOOTING;
+  /** Set state to shooting (fast load); clears ballStaged. */
+  public void setShootingState() {
+    state = State.SHOOTING;
     ballStaged = false;
     targetVoltage = kShootingVoltage;
-  } // End setShootingMode
+  } // End setShootingState
 
   /** Set the target voltage. */
   public void setTargetVoltage(double volts) {
@@ -99,20 +99,20 @@ public class Transfer extends SubsystemBase {
 
   /** Step the target voltage by the given amount. */
   public void stepVoltage(double stepVoltage) {
-    if (getMode() == Mode.IDLE) {
-      setStagingMode();
+    if (getState() == State.IDLE) {
+      setStagingState();
       setTargetVoltage(stepVoltage);
     }
     else {
       setTargetVoltage(MathUtil.clamp(getTargetVoltage() + stepVoltage, -kMaxVoltage, kMaxVoltage));
     }
-    if (getTargetVoltage() == kIdleVoltage) setIdleMode();
+    if (getTargetVoltage() == kIdleVoltage) setIdleState();
   } // End stepVoltage
 
-  /** Current mode. */
-  public Mode getMode() {
-    return mode;
-  } // End getMode
+  /** Current state. */
+  public State getState() {
+    return state;
+  } // End getState
 
   /** True when staging and colour sensor was tripped (ball at transfer). */
   public boolean isBallStaged() {

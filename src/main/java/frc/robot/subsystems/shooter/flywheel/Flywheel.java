@@ -12,16 +12,16 @@ import static frc.robot.subsystems.shooter.flywheel.FlywheelConstants.*;
 public class Flywheel extends SubsystemBase {
 
   /** Flywheel state: Idle (low velocity), Charging (ramping to target), AtSpeed (ready to shoot). */
-  public enum FlywheelState {
+  public enum State {
     IDLE,
     CHARGING,
     AT_SPEED
-  }
+  } // End State enum
 
   private final FlywheelIO flywheelIO;
   private final FlywheelIO.FlywheelIOInputs flywheelInputs = new FlywheelIO.FlywheelIOInputs();
 
-  private FlywheelState state = FlywheelState.IDLE;
+  private State state = State.IDLE;
   private double targetVelocityRadPerSec = kDefaultTargetVelocityRadPerSec;
 
   private double lastSmartDashboardTargetVelocityRpm = Units.radiansPerSecondToRotationsPerMinute(kDefaultTargetVelocityRadPerSec);
@@ -44,7 +44,7 @@ public class Flywheel extends SubsystemBase {
     double targetRpm = SmartDashboard.getNumber("Flywheel/TargetVelocityRpm", Units.radiansPerSecondToRotationsPerMinute(kDefaultTargetVelocityRadPerSec));
 
     if (targetRpm != lastSmartDashboardTargetVelocityRpm) {
-      setState(FlywheelState.CHARGING);
+      setState(State.CHARGING);
       setTargetVelocityRadPerSec(Units.rotationsPerMinuteToRadiansPerSecond(targetRpm));
     }
 
@@ -61,13 +61,13 @@ public class Flywheel extends SubsystemBase {
     Logger.recordOutput("Subsystems/Shooter/Flywheel/State", state.name());
 
     // Auto-transition Charging → AtSpeed when at target velocity
-    if (state == FlywheelState.CHARGING && atTargetVelocity()) {
-      state = FlywheelState.AT_SPEED;
+    if (state == State.CHARGING && atTargetVelocity()) {
+      state = State.AT_SPEED;
     }
 
     // If in AtSpeed but velocity fell below/outside tolerance, go back to Charging to re-ramp
-    if (state == FlywheelState.AT_SPEED && !atTargetVelocity()) {
-      state = FlywheelState.CHARGING;
+    if (state == State.AT_SPEED && !atTargetVelocity()) {
+      state = State.CHARGING;
     }
 
     double velocityRadPerSecToUse = getTargetVelocityRadPerSec();
@@ -81,7 +81,7 @@ public class Flywheel extends SubsystemBase {
   } // End periodic
 
   /** Set the Flywheel state. */
-  public void setState(FlywheelState newState) {
+  public void setState(State newState) {
     state = newState;
   } // End setState
 
@@ -93,13 +93,13 @@ public class Flywheel extends SubsystemBase {
   } // End setTargetVelocityRadPerSec
 
   /** Get the current Flywheel state. */
-  public FlywheelState getState() {
+  public State getState() {
     return state;
   } // End getState
 
   /** Get the current target velocity for the current state. */
   public double getTargetVelocityRadPerSec() {
-    return state == FlywheelState.IDLE ? kIdleVelocityRadPerSec : targetVelocityRadPerSec;
+    return state == State.IDLE ? kIdleVelocityRadPerSec : targetVelocityRadPerSec;
   } // End getTargetVelocityRadPerSec
 
   /** Get the current target velocity. */
@@ -119,7 +119,7 @@ public class Flywheel extends SubsystemBase {
 
   /** Step the target velocity by the given amount. */
   public void stepVelocityRadPerSec(double stepVelocityRadPerSec) {
-    setState(FlywheelState.CHARGING);
+    setState(State.CHARGING);
     setTargetVelocityRadPerSec(getTargetVelocityRadPerSec() + stepVelocityRadPerSec);
   } // End stepVelocityRadPerSec
 

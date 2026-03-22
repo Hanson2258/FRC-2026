@@ -4,26 +4,23 @@ import static frc.robot.subsystems.agitator.AgitatorConstants.*;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
 /** Agitator subsystem: storage-to-shooter transfer */
 public class Agitator extends SubsystemBase {
 
-  /** Agitator mode: idle, staging (slow pre-load), or shooting. */
-  public enum Mode {
+  /** Agitator state: idle, staging (slow pre-load), or shooting. */
+  public enum State {
     IDLE,
     STAGING,
     SHOOTING
-  }
+  } // End State enum
 
   private final AgitatorIO agitatorIO;
   private final AgitatorIO.AgitatorIOInputs agitatorInputs = new AgitatorIO.AgitatorIOInputs();
-  private Timer dejamTimer = new Timer();
-  private boolean isDejamming = false;
 
-  private Mode mode = Mode.IDLE;
+  private State state = State.IDLE;
   private double targetVoltage = kIdleVoltage;
 
   public Agitator(AgitatorIO io) {
@@ -37,31 +34,21 @@ public class Agitator extends SubsystemBase {
     Logger.recordOutput("Subsystems/Agitator/Inputs/TargetVolts", getTargetVoltage());
     Logger.recordOutput("Subsystems/Agitator/Inputs/AppliedVolts", agitatorInputs.appliedVolts);
     Logger.recordOutput("Subsystems/Agitator/Inputs/SupplyCurrentAmps", agitatorInputs.supplyCurrentAmps);
-    Logger.recordOutput("Subsystems/Agitator/Mode", mode.name());
+    Logger.recordOutput("Subsystems/Agitator/State", state.name());
 
     if (DriverStation.isDisabled()) {
       agitatorIO.stop();
       return;
     }
 
-    // Set the Agitator voltage based on the current mode
-    switch (mode) {
+    // Set the Agitator voltage based on the current state
+    switch (state) {
       case IDLE:
         agitatorIO.stop();
         break;
       case STAGING:
       case SHOOTING:
-        if (dejamTimer.hasElapsed(3) && !isDejamming) {
-          agitatorIO.setVoltage(-targetVoltage/2);
-          isDejamming = true;
-        } else if(isDejamming && dejamTimer.hasElapsed(3.2)) {
-          dejamTimer.reset();
-          isDejamming = false;
-        } else if(!isDejamming) {
-          agitatorIO.setVoltage(targetVoltage);
-        }
-        
-
+        agitatorIO.setVoltage(targetVoltage);
         break;
       default:
         agitatorIO.stop();
@@ -69,25 +56,23 @@ public class Agitator extends SubsystemBase {
     }
   } // End periodic
 
-  /** Set mode to idle (motor stopped). */
-  public void setIdleMode() {
-    mode = Mode.IDLE;
+  /** Set state to idle (motor stopped). */
+  public void setIdleState() {
+    state = State.IDLE;
     targetVoltage = kIdleVoltage;
-  } // End setIdleMode
+  } // End setIdleState
 
-  /** Set mode to staging (slow pre-load). */
-  public void setStagingMode() {
-    mode = Mode.STAGING;
+  /** Set state to staging (slow pre-load). */
+  public void setStagingState() {
+    state = State.STAGING;
     targetVoltage = kStagingVoltage;
-  } // End setStagingMode
+  } // End setStagingState
 
-  /** Set mode to shooting (fast loading). */
-  public void setShootingMode() {
-    mode = Mode.SHOOTING;
-    dejamTimer.reset();
-    dejamTimer.start();
+  /** Set state to shooting (fast loading). */
+  public void setShootingState() {
+    state = State.SHOOTING;
     targetVoltage = kShootingVoltage;
-  } // End setShootingMode
+  } // End setShootingState
 
   /** Set the target voltage. */
   public void setTargetVoltage(double volts) {
@@ -96,14 +81,14 @@ public class Agitator extends SubsystemBase {
 
   /** Step the target voltage by the given amount. */
   public void stepVoltage(double stepVoltage) {
-    if (getMode() == Mode.IDLE) {
-      setStagingMode();
+    if (getState() == State.IDLE) {
+      setStagingState();
       setTargetVoltage(stepVoltage);
     }
     else {
       setTargetVoltage(MathUtil.clamp(getTargetVoltage() + stepVoltage, -kMaxVoltage, kMaxVoltage));
     }
-    if (getTargetVoltage() == kIdleVoltage) setIdleMode();
+    if (getTargetVoltage() == kIdleVoltage) setIdleState();
   } // End stepVoltage
 
   /** Get the current target voltage. */
@@ -111,8 +96,8 @@ public class Agitator extends SubsystemBase {
     return targetVoltage;
   } // End getTargetVoltage
 
-  /** Current mode. */
-  public Mode getMode() {
-    return mode;
-  } // End getMode
+  /** Current state. */
+  public State getState() {
+    return state;
+  } // End getState
 }

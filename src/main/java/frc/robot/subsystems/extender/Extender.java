@@ -13,17 +13,17 @@ import static frc.robot.subsystems.extender.ExtenderConstants.*;
 public class Extender extends SubsystemBase {
 
   /** Extender state: Retracted (facing up), Extended (facing forward). */
-  public enum ExtenderState {
+  public enum State {
     IDLE,
     RETRACTED,
     PARTIAL,
     EXTENDED
-  }
+  } // End State enum
 
   private final ExtenderIO extenderIO;
   private final ExtenderIO.ExtenderIOInputs extenderInputs = new ExtenderIO.ExtenderIOInputs();
 
-  private ExtenderState state = ExtenderState.RETRACTED;
+  private State state = State.RETRACTED;
   private double targetPositionRad = kUpExtenderRad;
 
   public Extender(ExtenderIO io) {
@@ -76,31 +76,31 @@ public class Extender extends SubsystemBase {
 
   /** Set state to idle state (stop Extender) */
   public void setIdleState() {
-    state = ExtenderState.IDLE;
+    state = State.IDLE;
     setTargetPositionRad(getPositionRad());
     extenderIO.stop();
   } // End setIdleState
 
   /** Set state to retracted state (Go to up position) */
   public void setRetractedState() {
-    state = ExtenderState.RETRACTED;
+    state = State.RETRACTED;
     setTargetPositionRad(kUpExtenderRad);
   } // End setRetractedState
 
   /** Set state to partial state (Go to middle position) */
   public void setPartialState() {
-    state = ExtenderState.PARTIAL;
+    state = State.PARTIAL;
     setTargetPositionRad(kPartialExtenderRad);
   } // End setPartialState
 
   /** Set state to extended state (Go to down position and rest on bumpers) */
   public void setExtendedState() {
-    state = ExtenderState.EXTENDED;
+    state = State.EXTENDED;
     setTargetPositionRad(kExtendedExtenderRad);
   } // End setUpState
 
   /** Returns the Extender's current state */
-  public ExtenderState getState() {
+  public State getState() {
     return state;
   } // End getState
 
