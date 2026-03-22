@@ -413,22 +413,13 @@ public class RobotContainer {
 			return;
 		}
 
-		// ------------------------------------------ Operator Manual Override ------------------------------------------
-		// If Manual Override is false, become true. 
-		// If true, reset encoder positions and then become false.
-		operatorController.back().onTrue(
-			new ConditionalCommand(
-				Commands.runOnce(() -> operatorManualOverride = false),
-				Commands.runOnce(() -> operatorManualOverride = true),
-				() -> operatorManualOverride));
-
 		// Intake Manual Voltage Control
 		// Raise Intake voltage
 		operatorController.povLeft().onTrue(
 			new ConditionalCommand(
 				Commands.runOnce(() -> intake.stepVoltage(IntakeConstants.kStepVolts), intake),
 				new InstantCommand(),
-				() -> (operatorManualOverride && intake != null)
+				() -> intake != null
 			)
 		);
 		// Lower Intake voltage
@@ -436,7 +427,7 @@ public class RobotContainer {
 			new ConditionalCommand(
 				Commands.runOnce(() -> intake.stepVoltage(-IntakeConstants.kStepVolts), intake),
 				new InstantCommand(),
-				() -> (operatorManualOverride && intake != null)
+				() -> intake != null
 			)
 		);
 
@@ -448,7 +439,7 @@ public class RobotContainer {
 					extender.stepPositionRad(ExtenderConstants.kStepRad);
 				}),
 				new InstantCommand(),
-				() -> (operatorManualOverride && extender != null))
+				() -> extender != null)
 		);
 		// Lower Extender Position
 		operatorController.rightTrigger().onTrue(
@@ -457,8 +448,36 @@ public class RobotContainer {
 					extender.stepPositionRad(-ExtenderConstants.kStepRad);
 				}),
 				new InstantCommand(),
-				() -> (operatorManualOverride && extender != null))
+				() -> extender != null)
 		);
+
+		// Hang Manual Control (step target pot voltage, no position conversion)
+		// Lower Hang (Retract - higher voltage)
+		operatorController.x().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> hang.stepVolts(HangConstants.kStepVolts), hang),
+				new InstantCommand(),
+				() -> hang != null
+			)
+		);
+		// Raise Hang (Extend - lower voltage)
+		operatorController.b().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> hang.stepVolts(-HangConstants.kStepVolts), hang),
+				new InstantCommand(),
+				() -> hang != null
+			)
+		);
+
+
+		// ------------------------------------------ Operator Manual Override ------------------------------------------
+		// If Manual Override is false, become true. 
+		// If true, reset encoder positions and then become false.
+		operatorController.back().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> operatorManualOverride = false),
+				Commands.runOnce(() -> operatorManualOverride = true),
+				() -> operatorManualOverride));
 
 		// Agitator Manual Voltage Control
 		// Raise Agitator voltage
@@ -523,24 +542,6 @@ public class RobotContainer {
 				}, turret, extender),
 				new InstantCommand(),
 				() -> (operatorManualOverride && turret != null)
-			)
-		);
-
-		// Hang Manual Control (step target pot voltage, no position conversion)
-		// Lower Hang (Retract - higher voltage)
-		operatorController.x().onTrue(
-			new ConditionalCommand(
-				Commands.runOnce(() -> hang.stepVolts(HangConstants.kStepVolts), hang),
-				new InstantCommand(),
-				() -> (operatorManualOverride && hang != null)
-			)
-		);
-		// Raise Hang (Extend - lower voltage)
-		operatorController.b().onTrue(
-			new ConditionalCommand(
-				Commands.runOnce(() -> hang.stepVolts(-HangConstants.kStepVolts), hang),
-				new InstantCommand(),
-				() -> (operatorManualOverride && hang != null)
 			)
 		);
 
