@@ -34,9 +34,9 @@ public class Agitator extends SubsystemBase {
   public void periodic() {
     agitatorIO.updateInputs(agitatorInputs);
     Logger.recordOutput("Subsystems/Agitator/Inputs/MotorConnected", agitatorInputs.motorConnected);
-    Logger.recordOutput("Subsystems/Agitator/Inputs/TargetVolts", getTargetVoltage());
     Logger.recordOutput("Subsystems/Agitator/Inputs/AppliedVolts", agitatorInputs.appliedVolts);
     Logger.recordOutput("Subsystems/Agitator/Inputs/SupplyCurrentAmps", agitatorInputs.supplyCurrentAmps);
+    Logger.recordOutput("Subsystems/Agitator/TargetVolts", getTargetVoltage());
     Logger.recordOutput("Subsystems/Agitator/State", state.name());
 
     if (DriverStation.isDisabled()) {
@@ -92,7 +92,7 @@ public class Agitator extends SubsystemBase {
     return targetVoltage;
   } // End getTargetVoltage
 
-  
+
   /** Set supplier for ignoring limits. */
   public void setIgnoreLimitsSupplier(BooleanSupplier supplier) {
     ignoreLimitsSupplier = supplier != null ? supplier : () -> false;

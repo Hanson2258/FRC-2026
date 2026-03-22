@@ -36,10 +36,10 @@ public class Transfer extends SubsystemBase {
   public void periodic() {
     transferIO.updateInputs(transferInputs);
     Logger.recordOutput("Subsystems/Shooter/Transfer/Inputs/MotorConnected", transferInputs.motorConnected);
-    Logger.recordOutput("Subsystems/Shooter/Transfer/Inputs/TargetVolts", getTargetVoltage());
     Logger.recordOutput("Subsystems/Shooter/Transfer/Inputs/AppliedVolts", transferInputs.appliedVolts);
     Logger.recordOutput("Subsystems/Shooter/Transfer/Inputs/SupplyCurrentAmps", transferInputs.supplyCurrentAmps);
     Logger.recordOutput("Subsystems/Shooter/Transfer/Inputs/ColorSensorTripped", transferInputs.colorSensorTripped);
+    Logger.recordOutput("Subsystems/Shooter/Transfer/TargetVolts", getTargetVoltage());
     Logger.recordOutput("Subsystems/Shooter/Transfer/BallStaged", ballStaged);
     Logger.recordOutput("Subsystems/Shooter/Transfer/State", state.name());
 
