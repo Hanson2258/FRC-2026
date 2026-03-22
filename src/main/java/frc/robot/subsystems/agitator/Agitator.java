@@ -7,7 +7,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
-/** Agitator subsystem: storage-to-shooter transfer */
+/** Agitator subsystem: storage-to-shooter transfer. */
 public class Agitator extends SubsystemBase {
 
   /** Agitator state: Idle, Staging (slow pre-load), or Shooting. */
@@ -41,7 +41,7 @@ public class Agitator extends SubsystemBase {
       return;
     }
 
-    // Set the Agitator voltage based on the current state
+    // Set the Agitator voltage based on the current state.
     switch (state) {
       case IDLE:
         agitatorIO.stop();

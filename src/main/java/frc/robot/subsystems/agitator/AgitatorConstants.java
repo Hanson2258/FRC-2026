@@ -7,7 +7,7 @@ public final class AgitatorConstants { // XXX: Add correct values
 
   private AgitatorConstants() {}
 
-  /** CAN ID of the Agitator motor (NEO 550 on SPARK MAX). */
+  /** CAN ID of the Agitator motor. */
   public static final int kMotorId = 20;
 
   /** Idle behavior when output is zero (coast or brake). */

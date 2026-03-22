@@ -15,9 +15,7 @@ public class AgitatorIOSim implements AgitatorIO {
 
   private final DCMotor motorModel = DCMotor.getNeo550(1);
   private final DCMotorSim motorSim =
-      new DCMotorSim(
-          LinearSystemId.createDCMotorSystem(motorModel, 0.001, 1.0),
-          motorModel);
+      new DCMotorSim(LinearSystemId.createDCMotorSystem(motorModel, 0.001, 1.0), motorModel);
 
   private double appliedVolts = 0.0;
   private boolean isStopped = true;

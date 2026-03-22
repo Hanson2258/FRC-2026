@@ -18,6 +18,6 @@ public interface AgitatorIO {
   /** Set the motor output voltage. */
   default void setVoltage(double volts) {}
 
-  /** Stop the motor (coast). */
+  /** Stop the motor. */
   default void stop() {}
 }
