@@ -39,4 +39,7 @@ public final class TransferConstants { // XXX: Add correct values
 
   /** Proximity at or above this value = ball present (REV Color Sensor V3: 0–2047). */
   public static final int kColorSensorProximityThreshold = 150;
+
+  /** Delta volts per step. */
+  public static final double kStepVolts = 0.25;
 }

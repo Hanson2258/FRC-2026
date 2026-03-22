@@ -46,5 +46,8 @@ public final class HangConstants { // XXX: Set correct values for your robot
 
   /** Potentiometer voltage tolerance for at-target checks (V). */
   public static final double kAtTargetToleranceVolts = 0.05;
+
+  /** Delta pot setpoint volts per step. */
+  public static final double kStepVolts = 0.1;
 }
 

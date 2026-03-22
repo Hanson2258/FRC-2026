@@ -36,4 +36,7 @@ public final class IntakeConstants { // XXX: Add correct values
 
   /** Voltage magnitude when reversing (negative = spit out). */
   public static final double kReversingVoltage = -2.0;
+
+  /** Delta volts per step. */
+  public static final double kStepVolts = 0.25;
 }

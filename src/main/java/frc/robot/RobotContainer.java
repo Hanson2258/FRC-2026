@@ -425,11 +425,10 @@ public class RobotContainer {
 				() -> operatorManualOverride));
 
 		// Intake Manual Voltage Control
-		final double intakeStepVoltage = 0.25;
 		// Raise Intake voltage
 		operatorController.povLeft().onTrue(
 			new ConditionalCommand(
-				Commands.runOnce(() -> intake.stepVoltage(intakeStepVoltage), intake),
+				Commands.runOnce(() -> intake.stepVoltage(IntakeConstants.kStepVolts), intake),
 				new InstantCommand(),
 				() -> (operatorManualOverride && intake != null)
 			)
@@ -437,7 +436,7 @@ public class RobotContainer {
 		// Lower Intake voltage
 		operatorController.povRight().onTrue(
 			new ConditionalCommand(
-				Commands.runOnce(() -> intake.stepVoltage(-intakeStepVoltage), intake),
+				Commands.runOnce(() -> intake.stepVoltage(-IntakeConstants.kStepVolts), intake),
 				new InstantCommand(),
 				() -> (operatorManualOverride && intake != null)
 			)
@@ -464,11 +463,10 @@ public class RobotContainer {
 		);
 
 		// Agitator Manual Voltage Control
-		final double agitatorStepVoltage = 0.25;
 		// Raise Agitator voltage
 		operatorController.y().onTrue(
 			new ConditionalCommand(
-				Commands.runOnce(() -> agitator.stepVoltage(agitatorStepVoltage), agitator),
+				Commands.runOnce(() -> agitator.stepVoltage(AgitatorConstants.kStepVolts), agitator),
 				new InstantCommand(),
 				() -> (operatorManualOverride && agitator != null)
 			)
@@ -476,18 +474,17 @@ public class RobotContainer {
 		// Lower Agitator voltage
 		operatorController.a().onTrue(
 			new ConditionalCommand(
-				Commands.runOnce(() -> agitator.stepVoltage(-agitatorStepVoltage), agitator),
+				Commands.runOnce(() -> agitator.stepVoltage(-AgitatorConstants.kStepVolts), agitator),
 				new InstantCommand(),
 				() -> (operatorManualOverride && agitator != null)
 			)
 		);
 
 		// Transfer Manual Voltage Control
-		final double transferStepVoltage = 0.25;
 		// Raise Transfer voltage
 		operatorController.leftBumper().onTrue(
 			new ConditionalCommand(
-				Commands.runOnce(() -> transfer.stepVoltage(transferStepVoltage), transfer),
+				Commands.runOnce(() -> transfer.stepVoltage(TransferConstants.kStepVolts), transfer),
 				new InstantCommand(),
 				() -> (operatorManualOverride && transfer != null)
 			)
@@ -495,7 +492,7 @@ public class RobotContainer {
 		// Lower Transfer voltage
 		operatorController.rightBumper().onTrue(
 			new ConditionalCommand(
-				Commands.runOnce(() -> transfer.stepVoltage(-transferStepVoltage), transfer),
+				Commands.runOnce(() -> transfer.stepVoltage(-TransferConstants.kStepVolts), transfer),
 				new InstantCommand(),
 				() -> (operatorManualOverride && transfer != null)
 			)
@@ -532,11 +529,10 @@ public class RobotContainer {
 		);
 
 		// Hang Manual Control (step target pot voltage, no position conversion)
-		double hangStepVolts = 0.1;
 		// Lower Hang (Retract - higher voltage)
 		operatorController.x().onTrue(
 			new ConditionalCommand(
-				Commands.runOnce(() -> hang.stepVolts(hangStepVolts), hang),
+				Commands.runOnce(() -> hang.stepVolts(HangConstants.kStepVolts), hang),
 				new InstantCommand(),
 				() -> (operatorManualOverride && hang != null)
 			)
@@ -544,7 +540,7 @@ public class RobotContainer {
 		// Raise Hang (Extend - lower voltage)
 		operatorController.b().onTrue(
 			new ConditionalCommand(
-				Commands.runOnce(() -> hang.stepVolts(-hangStepVolts), hang),
+				Commands.runOnce(() -> hang.stepVolts(-HangConstants.kStepVolts), hang),
 				new InstantCommand(),
 				() -> (operatorManualOverride && hang != null)
 			)

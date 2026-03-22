@@ -37,7 +37,7 @@ public final class FlywheelConstants { // XXX: Add correct values
   /** Tolerance for at-target velocity (Charging → AtSpeed). */
   public static final double kAtTargetVelocityToleranceRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(50.0);
 
-  /** Operator adjust Rad per step. */
+  /** Delta Rad per step. */
   public static final double kStepRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(50.0);
 
   /** Velocity PIDF gains (onboard and sim). */

@@ -33,4 +33,7 @@ public final class AgitatorConstants { // XXX: Add correct values
 
   /** Voltage when shooting (fast loading). */
   public static final double kShootingVoltage = 6.0;
+
+  /** Delta volts per step. */
+  public static final double kStepVolts = 0.25;
 }

@@ -40,7 +40,7 @@ public class ExtenderConstants { // XXX: Add correct values
   /** Tolerance for at-target position. */
   public static final double kAtTargetToleranceRad = Units.degreesToRadians(2.0);
 
-  /** Operator adjust Rad per step. */
+  /** Delta Rad per step. */
   public static final double kStepRad = Units.degreesToRadians(5.0);
 
   /** PID values for to-position target */

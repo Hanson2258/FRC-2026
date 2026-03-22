@@ -50,7 +50,7 @@ public final class TurretConstants { // XXX: Add correct values
   /** Hub aim “at target” tolerance. */
   public static final double kAtHubToleranceRad = Units.degreesToRadians(2.0);
 
-  /** Operator adjust Rad per step. */
+  /** Delta Rad per step. */
   public static final double kStepRad = Units.degreesToRadians(5.0);
 
   /** PID gains for onboard position control and for sim software control. */
