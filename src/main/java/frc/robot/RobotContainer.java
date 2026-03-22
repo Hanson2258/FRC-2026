@@ -248,6 +248,9 @@ public class RobotContainer {
 		shooter.setShootCommandScheduledSupplier(shootWhenReadyCommand::isScheduled);
 		shooter.setManualOverrideSupplier(() -> operatorManualOverride);
 
+		// Subsystem Manual Override Ignore Limits Supplier
+		agitator.setIgnoreLimitsSupplier(() -> operatorManualOverride);
+
 		/// -------------------------------------------------------------------------------------------
 		/// ------------------------------------- Drive Commands --------------------------------------		
 		/// -------------------------------------------------------------------------------------------

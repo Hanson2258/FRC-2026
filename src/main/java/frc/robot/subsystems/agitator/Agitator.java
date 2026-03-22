@@ -3,8 +3,10 @@ package frc.robot.subsystems.agitator;
 import static frc.robot.subsystems.agitator.AgitatorConstants.*;
 
 import edu.wpi.first.math.MathUtil;
+import frc.robot.Constants;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.Logger;
 
 /** Agitator subsystem: storage-to-shooter transfer. */
@@ -22,6 +24,7 @@ public class Agitator extends SubsystemBase {
 
   private State state = State.IDLE;
   private double targetVoltage = kIdleVoltage;
+  private BooleanSupplier ignoreLimitsSupplier = () -> false;
 
   public Agitator(AgitatorIO io) {
     agitatorIO = io;
@@ -48,7 +51,7 @@ public class Agitator extends SubsystemBase {
         break;
       case STAGING:
       case SHOOTING:
-        agitatorIO.setVoltage(targetVoltage);
+        agitatorIO.setVoltage(targetVoltage, ignoreLimitsSupplier.getAsBoolean());
         break;
       default:
         agitatorIO.stop();
@@ -79,14 +82,25 @@ public class Agitator extends SubsystemBase {
     targetVoltage = volts;
   } // End setTargetVoltage
 
+  /** Set supplier for ignoring limits. */
+  public void setIgnoreLimitsSupplier(BooleanSupplier supplier) {
+    ignoreLimitsSupplier = supplier != null ? supplier : () -> false;
+  } // End setIgnoreLimitsSupplier
+
   /** Step the target voltage by the given amount. */
   public void stepVoltage(double stepVoltage) {
+    boolean ignoreLimits = ignoreLimitsSupplier.getAsBoolean();
     if (getState() == State.IDLE) {
       setStagingState();
-      setTargetVoltage(stepVoltage);
+      setTargetVoltage(ignoreLimits 
+        ? MathUtil.clamp(stepVoltage, -Constants.kNominalVoltage, Constants.kNominalVoltage)
+        : MathUtil.clamp(stepVoltage, -kMaxVoltage, kMaxVoltage));
     }
     else {
-      setTargetVoltage(MathUtil.clamp(getTargetVoltage() + stepVoltage, -kMaxVoltage, kMaxVoltage));
+      double stepTargetVoltage = getTargetVoltage() + stepVoltage;
+      setTargetVoltage(ignoreLimits 
+        ? MathUtil.clamp(stepTargetVoltage, -Constants.kNominalVoltage, Constants.kNominalVoltage)
+        : MathUtil.clamp(stepTargetVoltage, -kMaxVoltage, kMaxVoltage));
     }
     if (getTargetVoltage() == kIdleVoltage) setIdleState();
   } // End stepVoltage

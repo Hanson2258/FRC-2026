@@ -4,6 +4,7 @@ import static frc.robot.subsystems.agitator.AgitatorConstants.kMaxVoltage;
 import static frc.robot.subsystems.agitator.AgitatorConstants.kMotorInverted;
 
 import edu.wpi.first.math.MathUtil;
+import frc.robot.Constants;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
@@ -36,8 +37,10 @@ public class AgitatorIOSim implements AgitatorIO {
   } // End updateInputs
 
   @Override
-  public void setVoltage(double volts) {
-    double clamped = MathUtil.clamp(volts, -kMaxVoltage, kMaxVoltage);
+  public void setVoltage(double volts, boolean ignoreLimits) {
+    double clamped = ignoreLimits
+        ? MathUtil.clamp(volts, -Constants.kNominalVoltage, Constants.kNominalVoltage)
+        : MathUtil.clamp(volts, -kMaxVoltage, kMaxVoltage);
     appliedVolts = kMotorInverted ? -clamped : clamped;
     isStopped = false;
   } // End setVoltage
