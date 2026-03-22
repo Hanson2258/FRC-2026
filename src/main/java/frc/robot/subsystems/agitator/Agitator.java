@@ -77,11 +77,22 @@ public class Agitator extends SubsystemBase {
     targetVoltage = kShootingVoltage;
   } // End setShootingState
 
+  /** Get current state. */
+  public State getState() {
+    return state;
+  } // End getState
+
   /** Set the target voltage. */
   public void setTargetVoltage(double volts) {
     targetVoltage = volts;
   } // End setTargetVoltage
 
+  /** Get the current target voltage. */
+  public double getTargetVoltage() {
+    return targetVoltage;
+  } // End getTargetVoltage
+
+  
   /** Set supplier for ignoring limits. */
   public void setIgnoreLimitsSupplier(BooleanSupplier supplier) {
     ignoreLimitsSupplier = supplier != null ? supplier : () -> false;
@@ -104,14 +115,4 @@ public class Agitator extends SubsystemBase {
     }
     if (getTargetVoltage() == kIdleVoltage) setIdleState();
   } // End stepVoltage
-
-  /** Get the current target voltage. */
-  public double getTargetVoltage() {
-    return targetVoltage;
-  } // End getTargetVoltage
-
-  /** Current state. */
-  public State getState() {
-    return state;
-  } // End getState
 }
