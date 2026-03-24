@@ -38,7 +38,7 @@ public final class Constants {
   }
 
   /** Teleop drive speeds and trench/bump alignment. */
-  public static class SwerveConstants { // XXX: Tune SwerveConstants
+  public static class SwerveConstants { // XXX: Tune SwerveConstants, especially TRENCH_ALIGN_TIME_S
     public static final double DEFAULT_DRIVE_SPEED_MPS = 1.6;
     public static final double DEFAULT_ROT_SPEED_RAD_PER_S = 0.75 * 2 * Math.PI;
     /** From Drive.getMaxLinearSpeedMetersPerSec() (TunerConstants.kSpeedAt12Volts = 4.58 m/s). */
