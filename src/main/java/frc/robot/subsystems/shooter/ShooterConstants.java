@@ -12,6 +12,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import static edu.wpi.first.units.Units.Seconds;
 import edu.wpi.first.units.measure.Time;
+import frc.robot.Constants;
 import frc.robot.subsystems.shooter.hood.HoodConstants;
 
 /** Constants for the Shooter assembly (Turret position on robot, camera on Turret, etc.). */
@@ -39,11 +40,25 @@ public final class ShooterConstants {
   public static final Time kActivePreshootTime = Seconds.of(2.0);
 
   /**
-   * Multiplier on calculator exit velocity (e.g. for air resistance). 1.0 = no change; increase if it
-   * is undershooting, decrease if overshooting.
-   * 0.95x for simulator
+   * Multiplier on calculator exit velocity for the Real Robot (e.g. air resistance). 1.0 = no change;
+   * increase if undershooting, decrease if overshooting.
    */
-  public static final double kExitVelocityCompensationMultiplier = 1.19;
+  public static final double kExitVelocityCompensationMultiplierReal = 1.19;
+
+  /**
+   * Multiplier on calculator exit velocity for the Sim Robot (e.g. air resistance). 1.0 = no change;
+   * increase if undershooting, decrease if overshooting.
+   */  public static final double kExitVelocityCompensationMultiplierSim = 1.05;
+
+  /**
+   * Active exit-velocity multiplier for the current {@link Constants#currentMode}: Sim uses
+   * {@link #kExitVelocityCompensationMultiplierSim}; Real and Replay use {@link #kExitVelocityCompensationMultiplierReal}.
+   */
+  public static double kExitVelocityCompensationMultiplier() {
+    return Constants.currentMode == Constants.Mode.SIM
+        ? kExitVelocityCompensationMultiplierSim
+        : kExitVelocityCompensationMultiplierReal;
+  } // End exitVelocityCompensationMultiplier
 
   /**
    * Single flywheel at bottom: flywheel surface speed = exit velocity / this divider (e.g. 0.5

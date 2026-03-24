@@ -161,17 +161,14 @@ public final class ShooterCommands {
               ShooterConstants.kLookaheadIterations);
     }
 
-    double distanceM =
-        ShooterCalculator.getDistanceToTarget(estimatedPose, shot.getTarget()).in(Meters);
+    double distanceM = ShooterCalculator.getDistanceToTarget(estimatedPose, shot.getTarget()).in(Meters);
     Logger.recordOutput("Shooter/DistanceToHubMeters", distanceM);
     Logger.recordOutput("Shooter/CalculatorHoodDeg", Units.radiansToDegrees(shot.getHoodAngle().in(Radians)));
     double exitVelMps = shot.getExitVelocity().in(MetersPerSecond);
     double flywheelSurfaceSpeedMps = exitVelMps / ShooterConstants.kFlywheelSurfaceDivider
-            * ShooterConstants.kExitVelocityCompensationMultiplier;
-    double flywheelRadPerSec =
-        ShooterCalculator.linearToAngularVelocity(
-                MetersPerSecond.of(flywheelSurfaceSpeedMps), Meters.of(FlywheelConstants.kFlywheelRadiusMeters))
-            .in(RadiansPerSecond);
+            * ShooterConstants.kExitVelocityCompensationMultiplier();
+    double flywheelRadPerSec = ShooterCalculator.linearToAngularVelocity(
+            MetersPerSecond.of(flywheelSurfaceSpeedMps), Meters.of(FlywheelConstants.kFlywheelRadiusMeters)).in(RadiansPerSecond);
     Logger.recordOutput("Shooter/CalculatorVelocityRpm", Units.radiansPerSecondToRotationsPerMinute(flywheelRadPerSec));
     Logger.recordOutput("Shooter/ExitVelocityMps", exitVelMps);
 

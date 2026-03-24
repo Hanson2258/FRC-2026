@@ -71,16 +71,21 @@ public class RobotContainer {
 	private boolean isCompetition = false;
 
 	// Subsystems Toggle
-	private boolean isDriveEnabled = true;
-	private boolean isVisionEnabled = true;
-	private boolean isIntakeEnabled = true;
+	private boolean isDriveEnabled 		= true;
+	private boolean isVisionEnabled 	= true;
+	private boolean isIntakeEnabled 	= true;
 	private boolean isExtenderEnabled = true;
 	private boolean isAgitatorEnabled = true;
 	private boolean isTransferEnabled = true;
-	private boolean isTurretEnabled = true;
-	private boolean isHoodEnabled = false;
+	private boolean isTurretEnabled 	= true;
+	private boolean isHoodEnabled 		= false;
 	private boolean isFlywheelEnabled = true;
-	private boolean isHangEnabled = true;
+	private boolean isHangEnabled 		= true;
+
+	// Simulation Toggle
+	private boolean halfFuelOnly 			= true;
+	private boolean shooterSimEnabled	= true;
+	private boolean fuelSimEnabled 		= true;
 
 	// Subsystems
 	private final Drive drive;
@@ -207,8 +212,9 @@ public class RobotContainer {
 				flywheel = new Flywheel(new FlywheelIOSim());
 				hang = new Hang(new HangIOSim());
 
-				shooterSim = new ShooterSim(fuelSim);
-				shooterSimVisualizer = new ShooterSimVisualizer(() -> {
+				// Shooter Sim Visualizer
+				if (shooterSimEnabled) {
+					shooterSimVisualizer = new ShooterSimVisualizer(() -> {
 							Pose2d simPose = driveSimulation.getSimulatedDriveTrainPose();
 							return new Pose3d(
 									simPose.getX(),
@@ -217,9 +223,18 @@ public class RobotContainer {
 									new Rotation3d(0, 0, simPose.getRotation().getRadians()));
 						},
 						drive::getFieldRelativeChassisSpeeds);
+					shooterSim = new ShooterSim(fuelSim, fuelSimEnabled, shooterSimVisualizer);
+				} else {
+					shooterSim = null;
+					shooterSimVisualizer = null;
+				}
 
-				configureFuelSim();
-				configureFuelSimRobot(() -> extender.getState() == Extender.State.EXTENDED, shooterSim::intakeFuel);
+				// Fuel Sim
+				if (fuelSimEnabled) {
+					configureFuelSim();
+					Runnable intakeFuelCallback = shooterSim != null ? shooterSim::intakeFuel : () -> {};
+					configureFuelSimRobot(() -> extender.getState() == Extender.State.EXTENDED, intakeFuelCallback);
+				}
 				break;
 
 			// Replayed Robot, disable IO implementations
@@ -650,7 +665,7 @@ public class RobotContainer {
 
   /** Configures FuelSim for robot-ball collision in simulation. */
   private void configureFuelSim() {
-    fuelSim.setShowHalfFuel(false);
+    fuelSim.setShowHalfFuel(halfFuelOnly);
 		fuelSim.enableAirResistance();
     fuelSim.spawnStartingFuel();
 
@@ -732,13 +747,17 @@ public class RobotContainer {
 		}
 
 		// Fuel sim (robot-ball collision)
-		fuelSim.updateSim();
+		if (fuelSimEnabled) {
+			fuelSim.updateSim();
+		}
 
 		// Log balls in robot and hub scores (FuelSim)
 		if (shooterSim != null) {
 			Logger.recordOutput("FuelSim/BallsInRobot", shooterSim.getFuelStored());
 		}
-		Logger.recordOutput("FuelSim/BlueHubScore", FuelSim.Hub.BLUE_HUB.getScore());
-		Logger.recordOutput("FuelSim/RedHubScore", FuelSim.Hub.RED_HUB.getScore());
+		if (fuelSimEnabled) {
+			Logger.recordOutput("FuelSim/BlueHubScore", FuelSim.Hub.BLUE_HUB.getScore());
+			Logger.recordOutput("FuelSim/RedHubScore", FuelSim.Hub.RED_HUB.getScore());
+		}
 	} // End updateSimulation
 }

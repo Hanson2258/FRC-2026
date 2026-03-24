@@ -547,8 +547,10 @@ public class FuelSim {
      *
      * @param launchVelocity Initial launch velocity
      * @param hoodAngle Hood angle where 0 is launching horizontally and 90 degrees is launching straight up
-     * @param turretYaw <i>Robot-relative</i> Turret yaw
-     * @param robotToLaunchPoint Transform from robot center to launch point (e.g. Turret pivot); used for launch position
+     * @param turretYaw Aim direction in <i>robot frame</i> (0 = robot +X forward), added to the robot's field heading for
+     *     horizontal velocity. Do not use the composed launch-pose yaw (e.g. after {@code robotToLaunchPoint} with a fixed
+     *     twist); that would double-count mount offsets.
+     * @param robotToLaunchPoint Transform from robot center to launch point (e.g. Turret pivot); used for launch position only
      * @throws IllegalStateException if robot is not registered
      */
     public void launchFuel(
@@ -560,17 +562,15 @@ public class FuelSim {
             throw new IllegalStateException("Robot must be registered before launching fuel.");
         }
 
-        Pose3d launchPose = new Pose3d(this.robotPoseSupplier.get()).plus(robotToLaunchPoint);
+        Pose2d robotPose = robotPoseSupplier.get();
+        Pose3d launchPose = new Pose3d(robotPose).plus(robotToLaunchPoint);
         ChassisSpeeds fieldSpeeds = this.robotFieldSpeedsSupplier.get();
 
         double horizontalVel = Math.cos(hoodAngle.in(Radians)) * launchVelocity.in(MetersPerSecond);
         double verticalVel = Math.sin(hoodAngle.in(Radians)) * launchVelocity.in(MetersPerSecond);
-        double xVel = horizontalVel
-                * Math.cos(
-                        turretYaw.plus(launchPose.getRotation().getMeasureZ()).in(Radians));
-        double yVel = horizontalVel
-                * Math.sin(
-                        turretYaw.plus(launchPose.getRotation().getMeasureZ()).in(Radians));
+        double shotYawFieldRad = turretYaw.in(Radians) + robotPose.getRotation().getRadians();
+        double xVel = horizontalVel * Math.cos(shotYawFieldRad);
+        double yVel = horizontalVel * Math.sin(shotYawFieldRad);
 
         xVel += fieldSpeeds.vxMetersPerSecond;
         yVel += fieldSpeeds.vyMetersPerSecond;
