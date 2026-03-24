@@ -12,11 +12,12 @@ import org.littletonrobotics.junction.Logger;
 /** Intake subsystem: field-to-storage transfer. */
 public class Intake extends SubsystemBase {
 
-  /** Intake state: Idle, Intaking (pull in), or Reversing (spit out). */
+  /** Intake state: Idle, Intaking (pull in), Reversing (spit out), or Manual. */
   public enum State {
     IDLE,
     INTAKING,
-    REVERSING
+    REVERSING,
+    MANUAL
   } // End State enum
 
   private final IntakeIO intakeIO;
@@ -51,6 +52,7 @@ public class Intake extends SubsystemBase {
         break;
       case INTAKING:
       case REVERSING:
+      case MANUAL:
         intakeIO.setVoltage(targetVoltage, ignoreLimitsSupplier.getAsBoolean());
         break;
       default:
@@ -100,9 +102,10 @@ public class Intake extends SubsystemBase {
 
   /** Step the target voltage by the given amount. */
   public void stepVoltage(double stepVoltage) {
+    boolean wasIdle = getState() == State.IDLE;
+    state = State.MANUAL;
     boolean ignoreLimits = ignoreLimitsSupplier.getAsBoolean();
-    if (getState() == State.IDLE) {
-      setIntakingState();
+    if (wasIdle) {
       setTargetVoltage(ignoreLimits 
         ? MathUtil.clamp(stepVoltage, -Constants.kNominalVoltage, Constants.kNominalVoltage)
         : MathUtil.clamp(stepVoltage, -kMaxVoltage, kMaxVoltage));

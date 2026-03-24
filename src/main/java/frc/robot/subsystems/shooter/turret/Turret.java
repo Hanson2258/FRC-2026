@@ -16,11 +16,12 @@ import org.littletonrobotics.junction.Logger;
 /** Turret subsystem: one motor with onboard position control, aimed at a target angle. */
 public class Turret extends SubsystemBase {
 
-  /** Turret state: Idle, Tracking (approaching target), or At_Target. */
+  /** Turret state: Idle, Tracking (approaching target), At_Target, or Manual. */
   public enum State {
     IDLE,
     TRACKING,
-    AT_TARGET
+    AT_TARGET,
+    MANUAL
   } // End State enum
 
   private final TurretIO turretIO;
@@ -82,7 +83,7 @@ public class Turret extends SubsystemBase {
       } else if (targetRobotFrameRad != lastSmartDashboardTargetPosRad) {
         setTargetRelativeToRobot(Rotation2d.fromRadians(targetRobotFrameRad));
       }
-      state = atTarget() ? State.AT_TARGET : State.TRACKING;
+      state = State.MANUAL;
 
       lastSmartDashboardTargetPosRad = targetRobotFrameRad;
       velocityFeedforwardRadPerSec = 0.0;

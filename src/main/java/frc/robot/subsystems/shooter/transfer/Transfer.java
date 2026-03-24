@@ -12,11 +12,12 @@ import org.littletonrobotics.junction.Logger;
 /** Transfer subsystem: Staging (low voltage, stop when sensor tripped (optional)) or Shooting (high voltage). */
 public class Transfer extends SubsystemBase {
 
-  /** Transfer state: Idle, Staging (slow pre-load), or Shooting. */
+  /** Transfer state: Idle, Staging (slow pre-load), Shooting, or Manual. */
   public enum State {
     IDLE,
     STAGING,
-    SHOOTING
+    SHOOTING,
+    MANUAL
   } // End State enum
 
   private final TransferIO transferIO;
@@ -63,6 +64,7 @@ public class Transfer extends SubsystemBase {
         }
         break;
       case SHOOTING:
+      case MANUAL:
         transferIO.setVoltage(targetVoltage, ignoreLimitsSupplier.getAsBoolean());
         break;
       default:
@@ -113,9 +115,10 @@ public class Transfer extends SubsystemBase {
 
   /** Step the target voltage by the given amount. */
   public void stepVoltage(double stepVoltage) {
+    boolean wasIdle = getState() == State.IDLE;
+    state = State.MANUAL;
     boolean ignoreLimits = ignoreLimitsSupplier.getAsBoolean();
-    if (getState() == State.IDLE) {
-      setStagingState();
+    if (wasIdle) {
       setTargetVoltage(ignoreLimits 
         ? MathUtil.clamp(stepVoltage, -Constants.kNominalVoltage, Constants.kNominalVoltage)
         : MathUtil.clamp(stepVoltage, -kMaxVoltage, kMaxVoltage));

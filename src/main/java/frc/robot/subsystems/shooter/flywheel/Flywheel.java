@@ -11,11 +11,12 @@ import static frc.robot.subsystems.shooter.flywheel.FlywheelConstants.*;
 /** Flywheel subsystem: one motor with onboard velocity control; state machine Idle / Charging / At Speed. */
 public class Flywheel extends SubsystemBase {
 
-  /** Flywheel state: Idle (low velocity), Charging (ramping to target), At_Speed (ready to shoot). */
+  /** Flywheel state: Idle (low velocity), Charging (ramping to target), At_Speed (ready to shoot) or Manual. */
   public enum State {
     IDLE,
     CHARGING,
-    AT_SPEED
+    AT_SPEED,
+    MANUAL
   } // End State enum
 
   private final FlywheelIO flywheelIO;
@@ -117,9 +118,9 @@ public class Flywheel extends SubsystemBase {
     return Units.radiansPerSecondToRotationsPerMinute(flywheelInputs.velocityRadsPerSec);
   } // End getVelocityRpm
 
-  /** Step the target velocity by the given amount; sets state to Charging. */
+  /** Step the target velocity by the given amount; sets state to Manual. */
   public void stepVelocityRadPerSec(double stepVelocityRadPerSec) {
-    setState(State.CHARGING);
+    setState(State.MANUAL);
     setTargetVelocityRadPerSec(getTargetVelocityRadPerSec() + stepVelocityRadPerSec);
   } // End stepVelocityRadPerSec
 

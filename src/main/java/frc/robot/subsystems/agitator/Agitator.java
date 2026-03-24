@@ -12,11 +12,12 @@ import org.littletonrobotics.junction.Logger;
 /** Agitator subsystem: storage-to-shooter transfer. */
 public class Agitator extends SubsystemBase {
 
-  /** Agitator state: Idle, Staging (slow pre-load), or Shooting. */
+  /** Agitator state: Idle, Staging (slow pre-load), Shooting, or Manual. */
   public enum State {
     IDLE,
     STAGING,
-    SHOOTING
+    SHOOTING,
+    MANUAL
   } // End State enum
 
   private final AgitatorIO agitatorIO;
@@ -51,6 +52,7 @@ public class Agitator extends SubsystemBase {
         break;
       case STAGING:
       case SHOOTING:
+      case MANUAL:
         agitatorIO.setVoltage(targetVoltage, ignoreLimitsSupplier.getAsBoolean());
         break;
       default:
@@ -100,9 +102,10 @@ public class Agitator extends SubsystemBase {
 
   /** Step the target voltage by the given amount. */
   public void stepVoltage(double stepVoltage) {
+    boolean wasIdle = getState() == State.IDLE;
+    state = State.MANUAL;
     boolean ignoreLimits = ignoreLimitsSupplier.getAsBoolean();
-    if (getState() == State.IDLE) {
-      setStagingState();
+    if (wasIdle) {
       setTargetVoltage(ignoreLimits 
         ? MathUtil.clamp(stepVoltage, -Constants.kNominalVoltage, Constants.kNominalVoltage)
         : MathUtil.clamp(stepVoltage, -kMaxVoltage, kMaxVoltage));

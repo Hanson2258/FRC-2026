@@ -13,12 +13,13 @@ import org.littletonrobotics.junction.Logger;
 /** Extender subsystem: one motor with onboard position control. */
 public class Extender extends SubsystemBase {
 
-  /** Extender state: Idle, Retracted (facing up), Partial, or Extended (facing forward). */
+  /** Extender state: Idle, Retracted (facing up), Partial, Extended (facing forward) or Manual. */
   public enum State {
     IDLE,
     RETRACTED,
     PARTIAL,
-    EXTENDED
+    EXTENDED,
+    MANUAL
   } // End State enum
 
   private final ExtenderIO extenderIO;
@@ -69,8 +70,11 @@ public class Extender extends SubsystemBase {
         if (getPositionRad() > targetPositionRad - kAtTargetToleranceRad) {
           extenderIO.stop();
         } else {
-          extenderIO.setTargetPosition(getSetpointRad());
+          extenderIO.setTargetPosition(targetPositionRad);
         }
+        break;
+      case MANUAL:
+        extenderIO.setTargetPosition(targetPositionRad);
         break;
       case IDLE:
       default:
@@ -156,6 +160,7 @@ public class Extender extends SubsystemBase {
   
   /** Step the target position in radians. */
   public void stepPositionRad(double stepPositionRad) {
+    state = State.MANUAL;
     setTargetPositionRad(getTargetPositionRad() + stepPositionRad);
   } // End stepPositionRad
 }
