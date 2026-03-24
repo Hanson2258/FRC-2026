@@ -33,15 +33,11 @@ ExecStart=/home/eas/venv3/bin/python post-detect.py
 [Install]
 WantedBy=multi-user.target
 ```
-### NOTES: There may be some changes needed above.
-- `After=multi-user.target` might be changed to `After=network.target`
-- `Type=idle` might need to be changed to `Type=simple`
 
-### Explanation of `ExecStart` line
-All the action happens in the `ExecStart` line
-1. the virtual environment [venv3] is activated
-2. changes into `eas` folder where the script code resides
-3. starts the (unfortunately long-named) python script
+### Explanation
+Most of the action happens in the last two lines of the [Service] section
+1. Working Directory is set explicitly where python script resides
+2. The virtual environment (venv3) is specified so that the venv Python binary is explicitly used, avoiding the need to use a 'source' call to activate venv
 
 ## Set File Permissions
 Type the following terminal command:
