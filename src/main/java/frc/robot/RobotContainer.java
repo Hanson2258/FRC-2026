@@ -366,15 +366,6 @@ public class RobotContainer {
       }
     }, drive));
 
-		// Toggles automatically selecting shooting target on/off (Currently disabled)
-		//driverController.b().onTrue(
-		//	new ConditionalCommand(
-		//		Commands.runOnce(() -> shooter.autoSelectShootingTarget = true), 
-		//		Commands.runOnce(() -> shooter.autoSelectShootingTarget = false), 
-		//		() -> !shooter.autoSelectShootingTarget
-		//));
-
-
 		// Enable Hang/ Retract mode, stop when released
 		if (hang != null) {
 			driverController.b().onTrue(
