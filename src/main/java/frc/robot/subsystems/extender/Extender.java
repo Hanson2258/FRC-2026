@@ -36,8 +36,6 @@ public class Extender extends SubsystemBase {
     SmartDashboard.putNumber("Extender/kI", kI);
     SmartDashboard.putNumber("Extender/kD", kD);
     SmartDashboard.putNumber("Extender/TargetPositionDeg", Units.radiansToDegrees(targetPositionRad));
-
-    targetPositionRad = kUpExtenderRad;
   } // End Extender Constructor
 
   @Override
