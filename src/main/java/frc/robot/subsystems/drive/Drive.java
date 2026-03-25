@@ -94,6 +94,7 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
 
 	public static final DriveTrainSimulationConfig mapleSimConfig = DriveTrainSimulationConfig.Default()
       .withRobotMass(Kilograms.of(ROBOT_MASS_KG))
+      .withBumperSize(Constants.Dimensions.FULL_LENGTH, Constants.Dimensions.FULL_WIDTH)
       .withCustomModuleTranslations(getModuleTranslations())
       .withGyro(COTS.ofPigeon2())
       .withSwerveModule(new SwerveModuleSimulationConfig(
