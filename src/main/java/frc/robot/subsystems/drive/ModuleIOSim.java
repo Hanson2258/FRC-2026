@@ -31,7 +31,6 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
@@ -52,7 +51,7 @@ import org.littletonrobotics.junction.Logger;
 public class ModuleIOSim implements ModuleIO {
   private static final Object driveMultiplierLock = new Object();
   private static final double[] driveSpeedMultipliers = {1.0, 1.0, 1.0, 1.0};
-  private static double driveMultiplierLastResampleTimeSec = Double.NaN;
+  private static boolean driveSpeedMultipliersInitialized = false;
   private static final Random driveMultiplierRandom = new Random();
 
   private final int moduleIndex;
@@ -104,6 +103,7 @@ public class ModuleIOSim implements ModuleIO {
     this.moduleIndex = moduleIndex;
     this.constants = PhoenixUtil.regulateModuleConstantForSimulation(constants);
     this.simulation = simulation;
+    ensureDriveSpeedMultipliersInitialized();
 
     driveTalon = new TalonFX(this.constants.DriveMotorId, TunerConstants.kCANBus);
     turnTalon = new TalonFX(this.constants.SteerMotorId, TunerConstants.kCANBus);
@@ -250,7 +250,6 @@ public class ModuleIOSim implements ModuleIO {
 
   @Override
   public void setDriveVelocity(double velocityRadPerSec) {
-    tickDriveSpeedMultipliersIfNeeded();
     double scaledRadPerSec = velocityRadPerSec * driveSpeedMultipliers[moduleIndex];
     double velocityRotPerSec =
         Units.radiansToRotations(scaledRadPerSec) * constants.DriveMotorGearRatio;
@@ -261,18 +260,15 @@ public class ModuleIOSim implements ModuleIO {
         });
   } // End setDriveVelocity
 
-  private static void tickDriveSpeedMultipliersIfNeeded() {
+  private static void ensureDriveSpeedMultipliersInitialized() {
     synchronized (driveMultiplierLock) {
-      double now = Timer.getFPGATimestamp();
-      double period = Constants.SimulationDrive.kDriveSpeedMultiplierResamplePeriodS;
-      if (Double.isNaN(driveMultiplierLastResampleTimeSec)
-          || now - driveMultiplierLastResampleTimeSec >= period) {
+      if (!driveSpeedMultipliersInitialized) {
         resampleDistinctDriveSpeedMultipliers();
-        driveMultiplierLastResampleTimeSec = now;
+        driveSpeedMultipliersInitialized = true;
         Logger.recordOutput("Subsystems/Drive/Sim/DriveSpeedMultipliers", driveSpeedMultipliers);
       }
     }
-  } // End tickDriveSpeedMultipliersIfNeeded
+  } // End ensureDriveSpeedMultipliersInitialized
 
   /**
    * Fills {@link #driveSpeedMultipliers} with four distinct values in

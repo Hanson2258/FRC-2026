@@ -69,7 +69,6 @@ public final class Constants {
     /** Per-module closed-loop drive velocity scale; four wheels get four distinct values in range. */
     public static final double kDriveSpeedMultiplierMin = 0.97;
     public static final double kDriveSpeedMultiplierMax = 1.0;
-    public static final double kDriveSpeedMultiplierResamplePeriodS = 5.0;
   }
 
   /** Runtime mode. */
