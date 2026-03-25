@@ -15,7 +15,7 @@ public final class HangConstants { // XXX: Add correct values
   public static final SparkBaseConfig.IdleMode kIdleMode = SparkBaseConfig.IdleMode.kBrake;
 
   /** Set true if positive output moves the Hang the opposite direction. */
-  public static final boolean kMotorInverted = true;
+  public static final boolean kMotorInverted = false;
 
   /** Smart current limit. */
   public static final int kSmartCurrentLimitAmps = 40;

@@ -13,19 +13,19 @@ public final class ExtenderConstants { // XXX: Add correct values
   public static final int kMotorId = 6;
 
   /** Idle behavior when output is zero (coast or brake). */
-  public static final SparkBaseConfig.IdleMode kIdleMode = SparkBaseConfig.IdleMode.kCoast;
+  public static final SparkBaseConfig.IdleMode kIdleMode = SparkBaseConfig.IdleMode.kBrake;
 
   /** Set true if positive output moves the Extender the opposite direction. */
-  public static final boolean kMotorInverted = true;
+  public static final boolean kMotorInverted = false;
 
   /** Smart current limit. */
   public static final int kSmartCurrentLimitAmps = 25;
 
   /** Extender radians per motor rotation 1.0 = 1:1 */
-  public static final double kGearRatio = 48.0 * 38.0 / 18.0;
+  public static final double kGearRatio = 100;
 
   /** PID gains for onboard position control. */
-  public static final double kP = 2.0;
+  public static final double kP = 10.0;
   public static final double kI = 0.0;
   public static final double kD = 0.0;
 
@@ -37,10 +37,10 @@ public final class ExtenderConstants { // XXX: Add correct values
   public static final double kUpExtenderRad = Units.degreesToRadians(0.0);
 
   /** Target position when the Extender is in Partial mode. */
-  public static final double kPartialExtenderRad = Units.degreesToRadians(45.0);
+  public static final double kPartialExtenderRad = Units.degreesToRadians(35.0);
 
   /** Target position when the Extender is in Extended mode. */
-  public static final double kExtendedExtenderRad = Units.degreesToRadians(90.0);
+  public static final double kExtendedExtenderRad = Units.degreesToRadians(80.0);
 
   /** Minimum angle (fully retracted). */
   public static final double kMinRad = Units.degreesToRadians(0.0);
