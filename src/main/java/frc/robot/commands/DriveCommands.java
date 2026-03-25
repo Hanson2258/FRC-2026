@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.FieldConstants;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.shooter.turret.TurretConstants;
 import frc.robot.util.AllianceUtil;
 import org.littletonrobotics.junction.Logger;
 import java.text.DecimalFormat;
@@ -107,7 +108,7 @@ public class DriveCommands {
    */
   public static double computeOmegaToFaceHub(Drive drive, ProfiledPIDController faceTargetController) {
     Rotation2d angleFromPivotToHub = ShooterCommands.getFieldAngleToHubFromPivot(drive);
-    Rotation2d targetAngle = angleFromPivotToHub.plus(Rotation2d.kPi);
+    Rotation2d targetAngle = angleFromPivotToHub.plus(TurretConstants.kDefaultAimDirectionRobotFrame);
     return faceTargetController.calculate(drive.getRotation().getRadians(), targetAngle.getRadians());
   } // End computeOmegaToFaceHub
 

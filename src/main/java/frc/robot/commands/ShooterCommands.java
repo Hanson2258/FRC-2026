@@ -182,11 +182,11 @@ public final class ShooterCommands {
       flywheel.setTargetVelocityRadPerSec(flywheelRadPerSec);
     }
 
-    // Turret aims in robot frame here; Turret converts that to its internal 0 = back frame.
-    lastTurretAngleFromShot =
-        Rotation2d.fromRadians(
-            ShooterCalculator.calculateAzimuthAngle(
-                    estimatedPose, shot.getTarget(), turret.getRobotFramePosition().getRadians())
-                .in(Radians));
+    // We provide the turret "current angle" to the calculator in the turret's internal frame
+    // so shortest-path selection respects kMinAngleRad/kMaxAngleRad.
+    lastTurretAngleFromShot = Rotation2d.fromRadians(
+        ShooterCalculator.calculateAzimuthAngle(
+                estimatedPose, shot.getTarget(), turret.getPosition().getRadians())
+            .in(Radians));
   } // End setShooterTarget
 }

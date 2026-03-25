@@ -36,7 +36,7 @@ public class Turret extends SubsystemBase {
   private Rotation2d targetRelativeToRobot = kDefaultAimDirectionRobotFrame; // Target in robot frame (0 = forward).
   private double lastTargetPositionRad = 0.0; // Last position setpoint sent to IO.
   private double velocityFeedforwardRadPerSec = 0.0;
-  private double lastSmartDashboardTargetPosRad = Math.PI;
+  private double lastSmartDashboardTargetPosRad = kDefaultAimDirectionRobotFrame.getRadians();
   private boolean lastManualOverride = false;
 
   public Turret(TurretIO io) {
@@ -45,7 +45,7 @@ public class Turret extends SubsystemBase {
     SmartDashboard.putNumber("Turret/kP", kP);
     SmartDashboard.putNumber("Turret/kI", kI);
     SmartDashboard.putNumber("Turret/kD", kD);
-    SmartDashboard.putNumber("Turret/TargetPositionDeg", 180.0);
+    SmartDashboard.putNumber("Turret/TargetPositionDeg", Units.radiansToDegrees(kDefaultAimDirectionRobotFrame.getRadians()));
   } // End Turret Constructor
 
   @Override
@@ -76,7 +76,8 @@ public class Turret extends SubsystemBase {
     }
     // Manual Override: Manually overriding the Turret position.
     else {
-      double targetRobotFrameRad = Units.degreesToRadians(SmartDashboard.getNumber("Turret/TargetPositionDeg", 180.0));
+      double targetRobotFrameRad = Units.degreesToRadians(SmartDashboard.getNumber("Turret/TargetPositionDeg", 
+          Units.radiansToDegrees(kDefaultAimDirectionRobotFrame.getRadians())));
       boolean manualRisingEdge = !lastManualOverride;
       if (manualRisingEdge) {
         setTargetRelativeToRobot(Rotation2d.fromRadians(getRobotFramePosition().getRadians()));
@@ -164,34 +165,94 @@ public class Turret extends SubsystemBase {
   } // End getTargetRelativeToRobot
 
 
-  /** Convert robot-frame angle (0 = forward) to Turret frame (0 = back). */
+  /**
+   * Convert robot-frame angle (0 = forward, per {@link TurretConstants#kDefaultAimDirectionRobotFrame})
+   * to Turret internal frame.
+   *
+   * This keeps the turret math consistent if you change which robot direction you consider
+   * "turret frame 0".
+   */
   private static double robotToTurretFrameRad(double robotFrameRad) {
-    return MathUtil.inputModulus(robotFrameRad - Math.PI, -Math.PI, Math.PI);
+    double turretFrameRad = robotFrameRad - kDefaultAimDirectionRobotFrame.getRadians();
+
+    double twoPi = 2.0 * Math.PI;
+    return MathUtil.inputModulus(turretFrameRad, kMinAngleRad, kMinAngleRad + twoPi);
   } // End robotToTurretFrameRad
 
-  /** Convert Turret-frame angle (0 = back) to robot frame (0 = forward). */
+  /**
+   * Convert Turret internal frame (0 = turret internal 0) to robot-frame angle, using
+   * {@link TurretConstants#kDefaultAimDirectionRobotFrame} as the offset.
+   */
   private static double turretToRobotFrameRad(double turretFrameRad) {
-    return MathUtil.inputModulus(turretFrameRad + Math.PI, -Math.PI, Math.PI);
+    return turretFrameRad + kDefaultAimDirectionRobotFrame.getRadians();
   } // End turretToRobotFrameRad
 
   /** Get and convert target (robot frame) to Turret frame and clamp to mechanical limits if manual override is not enabled. */
   private double getSetpointRad() {
-    return manualOverrideSupplier.getAsBoolean() 
-        ? robotToTurretFrameRad(targetRelativeToRobot.getRadians())
-        : MathUtil.clamp(robotToTurretFrameRad(targetRelativeToRobot.getRadians()), kMinAngleRad, kMaxAngleRad);
+    // Convert robot-frame target into turret internal frame (0 = turret internal 0).
+    // IMPORTANT: the turret has >180° travel, so we must choose the closest equivalent
+    // representation (angle, angle±2π) within limits to avoid taking the long way around.
+    double turretRawRad =
+        targetRelativeToRobot.getRadians() - kDefaultAimDirectionRobotFrame.getRadians();
+    double twoPi = 2.0 * Math.PI;
+
+    double[] candidates = {turretRawRad, turretRawRad + twoPi, turretRawRad - twoPi};
+
+    double best = Double.NaN;
+    double bestAbsError = Double.POSITIVE_INFINITY;
+
+    for (double c : candidates) {
+      if (c < kMinAngleRad || c > kMaxAngleRad) continue;
+      double absError = Math.abs(c - turretInputs.positionRads);
+      if (absError < bestAbsError) {
+        bestAbsError = absError;
+        best = c;
+      }
+    }
+
+    if (manualOverrideSupplier.getAsBoolean()) {
+      // Manual override: still pick the closest *reachable* representation, but do not force
+      // a hard clamp if none are in-range (driver may be intentionally commanding past limits).
+      return Double.isNaN(best) ? turretRawRad : best;
+    }
+
+    if (!Double.isNaN(best)) return best;
+
+    // Normal mode: if the target orientation is unreachable (in the "missing" window),
+    // drive to whichever mechanical limit is closer to the *desired target orientation*.
+    // (This creates the expected midpoint behavior, e.g. around 140° for -200°..+120°.)
+    //
+    // Then use current position only as a tie-breaker.
+    double toMin = Math.min(
+        Math.abs(turretRawRad - kMinAngleRad),
+        Math.min(Math.abs((turretRawRad + twoPi) - kMinAngleRad), Math.abs((turretRawRad - twoPi) - kMinAngleRad)));
+    double toMax = Math.min(
+        Math.abs(turretRawRad - kMaxAngleRad),
+        Math.min(Math.abs((turretRawRad + twoPi) - kMaxAngleRad), Math.abs((turretRawRad - twoPi) - kMaxAngleRad)));
+
+    if (toMin < toMax) return kMinAngleRad;
+    if (toMax < toMin) return kMaxAngleRad;
+
+    double curToMin = Math.abs(kMinAngleRad - turretInputs.positionRads);
+    double curToMax = Math.abs(kMaxAngleRad - turretInputs.positionRads);
+    return (curToMin <= curToMax) ? kMinAngleRad : kMaxAngleRad;
   } // End getSetpointRad
 
 
   /** Whether the target is reachable within Turret travel limits. */
   public boolean isTargetInRange() {
-    double turretSetpointRad = robotToTurretFrameRad(targetRelativeToRobot.getRadians());
-    return turretSetpointRad >= kMinAngleRad && turretSetpointRad <= kMaxAngleRad;
+    double turretRawRad = targetRelativeToRobot.getRadians() - kDefaultAimDirectionRobotFrame.getRadians();
+    double twoPi = 2.0 * Math.PI;
+
+    return (turretRawRad >= kMinAngleRad && turretRawRad <= kMaxAngleRad)
+        || (turretRawRad + twoPi >= kMinAngleRad && turretRawRad + twoPi <= kMaxAngleRad)
+        || (turretRawRad - twoPi >= kMinAngleRad && turretRawRad - twoPi <= kMaxAngleRad);
   } // End isTargetInRange
 
   /** Whether Turret is at target position within tolerance. */
   public boolean atTarget() {
     double targetTurretRad = getSetpointRad();
-    return Math.abs(MathUtil.angleModulus(turretInputs.positionRads - targetTurretRad)) <= kAtTargetToleranceRad;
+    return Math.abs(turretInputs.positionRads - targetTurretRad) <= kAtTargetToleranceRad;
   } // End atTarget
 
   
@@ -200,8 +261,8 @@ public class Turret extends SubsystemBase {
     turretIO.stop();
     turretIO.resetEncoder();
     setTargetRelativeToRobot(kDefaultAimDirectionRobotFrame);
-    lastTargetPositionRad = 0.0;
-    SmartDashboard.putNumber("Turret/TargetPositionDeg", 180.0);
+    lastTargetPositionRad = robotToTurretFrameRad(kDefaultAimDirectionRobotFrame.getRadians());
+    SmartDashboard.putNumber("Turret/TargetPositionDeg", Units.radiansToDegrees(kDefaultAimDirectionRobotFrame.getRadians()));
   } // End resetMotorEncoder
 
   /** Step the target position in Turret frame. */
