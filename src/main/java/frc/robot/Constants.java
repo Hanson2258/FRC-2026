@@ -22,10 +22,10 @@ public final class Constants {
   public static final double kNominalVoltage = 12.0;
 
   public static class Dimensions {
-    public static final Distance BUMPER_THICKNESS = Inches.of(2.5); // Frame to edge of bumper
-    public static final Distance BUMPER_HEIGHT = Inches.of(5.971); // Height from floor to top of bumper
-    public static final Distance FRAME_SIZE_X = Inches.of(26.5); // Front to back (x-axis)
-    public static final Distance FRAME_SIZE_Y = Inches.of(28.5); // Left to right (y-axis)
+    public static final Distance BUMPER_THICKNESS = Inches.of(3.0); // Frame to edge of bumper
+    public static final Distance BUMPER_HEIGHT = Inches.of(5.995); // Height from floor to top of bumper
+    public static final Distance FRAME_SIZE_X = Inches.of(26.0); // Front to back (x-axis)
+    public static final Distance FRAME_SIZE_Y = Inches.of(28.0); // Left to right (y-axis)
 
     public static final Distance FULL_LENGTH = FRAME_SIZE_X.plus(BUMPER_THICKNESS.times(2));
     public static final Distance FULL_WIDTH = FRAME_SIZE_Y.plus(BUMPER_THICKNESS.times(2));
