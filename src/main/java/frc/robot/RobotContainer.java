@@ -316,8 +316,9 @@ public class RobotContainer {
 		// Record zeroed Robot components (model_0 Turret, model_1 Extender) – initial only; updated in updateSimulation()
 		Logger.recordOutput("ComponentPoses/Final",
 				new Pose3d[] {
-					new Pose3d(-0.125, -0.17, 0.27, new Rotation3d(0, 0, 0)), // model_0 Turret
-					new Pose3d(0.28, 0, 0.15, new Rotation3d(0, 0, 0)),  // model_1 Extender
+					new Pose3d(-0.095, -0.17, 0.31, new Rotation3d(0, 0, 0)), // model_0 Turret
+					new Pose3d(0.275, 0, 0.195, new Rotation3d(0, 0, 0)),  // model_1 Extender
+					new Pose3d(-0.29635, 0.055, 0.215, new Rotation3d(0, 0, 0))   // model_2 Hang
 				});
 			
 
@@ -707,15 +708,10 @@ public class RobotContainer {
 		Logger.recordOutput("FieldSimulation/RobotPosition", robotPose);
 
 		// Robot-relative component poses for visualization
-		Pose3d turretComponentPose = new Pose3d(-0.125, -0.17, 0.27, new Rotation3d(0, 0, turret.getRobotFramePosition().getRadians() + Math.toRadians(90)));
-		Pose3d extenderComponentPose;
-		if (DriverStation.isTeleopEnabled()) {
-			extenderComponentPose = new Pose3d(0.28, 0, 0.15, new Rotation3d(0, extender.getPositionRad(), 0));
-		} else {
-			extenderComponentPose = new Pose3d(0.28, 0, 0.15, new Rotation3d(0, 0, 0));
-		}
-		// TODO: Add Hopper
-		Logger.recordOutput("ComponentPoses/Final", new Pose3d[] {turretComponentPose, extenderComponentPose});
+		Pose3d turretComponentPose 	 = new Pose3d(-0.095, -0.17, 0.31, new Rotation3d(0, 0, turret.getRobotFramePosition().getRadians() + Math.toRadians(90)));
+		Pose3d extenderComponentPose = new Pose3d(0.275, 0, 0.195, new Rotation3d(0, extender.getPositionRad() - Math.toRadians(90), 0));
+		Pose3d hangComponentPose 		 = new Pose3d(-0.29635, 0.055, 0.215 + hang.getPositionMeters(), new Rotation3d(0, 0, 0)); // Placeholder pose for Hang; update when Hang sim is implemented
+		Logger.recordOutput("ComponentPoses/Final", new Pose3d[] {turretComponentPose, extenderComponentPose, hangComponentPose});
 
 		// Update field view
 		field.setRobotPose(robotPose);
