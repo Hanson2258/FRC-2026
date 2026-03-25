@@ -414,10 +414,8 @@ public class RobotContainer {
     // Pathfind then follow path to outpost
     driverController.leftStick().whileTrue(DriveCommands.pathfindThenFollowPath(drive, "GoTo-Outpost"));
 
-    driverController.povLeft().onTrue(DriveCommands.pathfindThenFollowPath(drive, "HangingPosition-Left"));
-    driverController.povRight().onTrue(DriveCommands.pathfindThenFollowPath(drive, "HangingPosition-Right"));
-    driverController.povUp().onTrue(DriveCommands.pathfindThenFollowPath(drive, "ShootingPosition-Left-11ft"));
-    driverController.povDown().onTrue(DriveCommands.pathfindThenFollowPath(drive, "ShootingPosition-Right-11ft"));
+    driverController.povLeft().whileTrue(DriveCommands.pathfindThenFollowPath(drive, "HangingPosition-Left"));
+    driverController.povRight().whileTrue(DriveCommands.pathfindThenFollowPath(drive, "HangingPosition-Right"));
 
 		// ------------------------------------------- Driver Manual Override -------------------------------------------
 		// If Manual Override is false, become true. 
