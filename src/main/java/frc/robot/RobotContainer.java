@@ -127,6 +127,8 @@ public class RobotContainer {
 	public static boolean driverManualOverride = false;
 	@AutoLogOutput(key = "ManualOverride/Operator")
 	public static boolean operatorManualOverride = false;
+	@AutoLogOutput(key = "Subsystems/Shooter/Turret/DriverTurretOverride")
+	private boolean driverTurretOverride = false;
 
 	// Dashboard inputs
 	private final LoggedDashboardChooser<Command> autoChooser;
@@ -292,7 +294,7 @@ public class RobotContainer {
 		/// ------------------------------- Shooter Subsystem Commands --------------------------------
 		/// -------------------------------------------------------------------------------------------
 		// Turret aims at predicted target; velocity feedforward for spin compensation. Only active if not in manualOverride
-		turret.setManualOverrideSupplier(() -> operatorManualOverride);
+		turret.setManualOverrideSupplier(() -> operatorManualOverride || driverTurretOverride);
 		turret.setDrive(drive);
 		turret.setAimAtTargetSupplier(() -> shootWhenReadyCommand.isScheduled());
 
@@ -350,6 +352,40 @@ public class RobotContainer {
 				default -> throw new IllegalArgumentException("Unexpected value: " + extender.getState());
 			}
 		}, extender));
+
+		// Set to Retracted, must turn off AutoShoot, and set Turret Target to 0
+		driverController.povDown().onTrue(
+			Commands.sequence(
+				Commands.runOnce(() -> {
+					// Turn off AutoShoot (ShootWhenReady) so the shooter/transfer/agitator command stops.
+					if (shootWhenReadyCommand.isScheduled()) {
+						CommandScheduler.getInstance().cancel(shootWhenReadyCommand);
+					}
+
+					// Ensure flywheel is not actively spinning from a prior manual or auto shot.
+					if (flywheel != null) flywheel.setState(Flywheel.State.IDLE);
+
+					// Turret only "chases" a setpoint in manual mode, so temporarily enable a driver-only manual override.
+					// We set the SmartDashboard target to 1 deg first so the next update to 0deg is guaranteed to be detected.
+					driverTurretOverride = true;
+					SmartDashboard.putNumber("Turret/TargetPositionDeg", 1.0);
+				}, extender, turret, flywheel),
+				Commands.parallel(
+					// Turret: switch target to 0 deg, then wait until it's on target (or timeout).
+					Commands.sequence(
+						Commands.waitSeconds(0.02),
+						Commands.runOnce(() -> SmartDashboard.putNumber("Turret/TargetPositionDeg", 0.0)),
+						Commands.waitUntil(() -> turret != null && turret.atTarget()).withTimeout(1.0),
+						Commands.runOnce(() -> driverTurretOverride = false)
+					),
+					// Extender: wait exactly 0.25s after the pre-setup, then retract.
+					Commands.sequence(
+						Commands.waitSeconds(0.25),
+						Commands.runOnce(() -> extender.setRetractedState(), extender)
+					)
+				)
+			)
+		);
 
 		// Intake toggle: right bumper = Intaking ↔ Idle, left bumper = Reversing ↔ Idle
 		driverController.leftBumper().onTrue(
