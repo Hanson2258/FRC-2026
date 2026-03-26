@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 158.201
+    "rotation": 66.33921342560613
   },
   "reversed": false,
   "folder": "Shooting Positions",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 158.201
+    "rotation": 66.33921342560613
   },
   "useDefaultConstraints": true
 }

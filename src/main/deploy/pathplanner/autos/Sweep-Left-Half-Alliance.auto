@@ -29,12 +29,6 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "Flywheel On"
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "Sweep-Half-Alliance-LeftToRight"
@@ -47,15 +41,21 @@
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "GoTo-Sweep-Shooting-11ft-From-LeftSweep"
+            "name": "Flywheel On"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "Shoot When Ready"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "GoTo-Sweep-Shooting-11ft-From-LeftSweep"
           }
         },
         {
