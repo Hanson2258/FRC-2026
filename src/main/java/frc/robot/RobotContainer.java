@@ -611,7 +611,7 @@ public class RobotContainer {
 		NamedCommands.registerCommand("Set Shooter Target Passing Spot Center", Commands.runOnce(ShooterCommands::setPassingSpotCenter));
 		NamedCommands.registerCommand("Set Shooter Target Passing Spot Right", Commands.runOnce(ShooterCommands::setPassingSpotRight));
 		// With timeout so the sequential auto can advance to path commands (reference codebases build autos in code with paths only)
-		NamedCommands.registerCommand("Shoot When Ready", shootWhenReadyCommand);
+		NamedCommands.registerCommand("Shoot When Ready", Commands.runOnce(() -> CommandScheduler.getInstance().schedule(shootWhenReadyCommand)));
 	} // End registerCommands
 
 	/**
