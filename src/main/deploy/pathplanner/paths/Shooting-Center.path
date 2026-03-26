@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.580486111111111,
-        "y": 4.022819444444444
+        "x": 3.617,
+        "y": 4.035
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.314066464388764,
-        "y": 4.056753944825184
+        "x": 3.348427889616679,
+        "y": 4.035
       },
       "isLocked": false,
       "linkedName": "StartingPosition-Center"
@@ -20,8 +20,8 @@
         "y": 4.0
       },
       "prevControl": {
-        "x": 3.0941701746240495,
-        "y": 4.04532839752319
+        "x": 3.0954627143269593,
+        "y": 4.0
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": 0.0
   },
   "reversed": false,
   "folder": "Simple Shooting",

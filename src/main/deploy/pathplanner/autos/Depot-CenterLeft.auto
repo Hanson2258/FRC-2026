@@ -7,13 +7,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Intake On"
+            "name": "Set Shooter Target Hub"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Set Shooter Target Hub"
+            "name": "Extender Down"
           }
         },
         {
@@ -25,13 +25,19 @@
         {
           "type": "named",
           "data": {
-            "name": "Extender Down"
+            "name": "Shoot When Ready"
           }
         },
         {
           "type": "path",
           "data": {
             "pathName": "GoTo-Depot-From-CenterLeft"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake On"
           }
         },
         {
@@ -50,12 +56,6 @@
           "type": "path",
           "data": {
             "pathName": "Depot-Shoot11ft"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Shoot When Ready"
           }
         },
         {
