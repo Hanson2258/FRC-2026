@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.4980322003577814,
-        "y": 0.6520035778175304
+        "x": 0.4318,
+        "y": 0.6659565
       },
       "prevControl": null,
       "nextControl": {
-        "x": 0.4677257784558884,
-        "y": 1.3268461526967563
+        "x": 0.6085766952966369,
+        "y": 0.8427331952966368
       },
       "isLocked": false,
       "linkedName": "Outpost"
     },
     {
       "anchor": {
-        "x": 1.7350931677018626,
-        "y": 2.2362910381543917
+        "x": 2.0,
+        "y": 2.015
       },
       "prevControl": {
-        "x": 0.6472045421462498,
-        "y": 1.633492697197318
+        "x": 1.823223304703363,
+        "y": 1.8382233047033631
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -152.5255683737228
+    "rotation": 180.0
   },
   "reversed": false,
   "folder": "Outpost",

@@ -17,15 +17,15 @@
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "Shooting-Center"
-          }
-        },
-        {
           "type": "named",
           "data": {
             "name": "Shoot When Ready"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Shooting-Center"
           }
         },
         {

@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.3,
-        "y": 4.0
+        "x": 2.0,
+        "y": 4.035
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.549789342066495,
-        "y": 4.01026082793869
+        "x": 2.2497893420664954,
+        "y": 4.04526082793869
       },
       "isLocked": true,
       "linkedName": "ShootingPosition-Center"
     },
     {
       "anchor": {
-        "x": 2.3,
-        "y": 4.0
+        "x": 2.0,
+        "y": 4.035
       },
       "prevControl": {
-        "x": 2.019497425012762,
-        "y": 3.9884503632075132
+        "x": 1.7194974250127624,
+        "y": 4.023450363207513
       },
       "nextControl": null,
       "isLocked": true,
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 180.0
   },
   "reversed": false,
   "folder": "Shooting Positions",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 180.0
   },
   "useDefaultConstraints": true
 }

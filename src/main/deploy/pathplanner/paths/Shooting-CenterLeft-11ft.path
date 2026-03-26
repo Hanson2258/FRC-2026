@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.3505804644228987,
-        "y": 6.0849353729702855
+        "x": 3.367,
+        "y": 6.051
       },
       "isLocked": false,
       "linkedName": "StartingPosition-CenterLeft"
     },
     {
       "anchor": {
-        "x": 1.2155555555555557,
-        "y": 4.98536629696471
+        "x": 2.0,
+        "y": 6.051
       },
       "prevControl": {
-        "x": 2.009725730179605,
-        "y": 5.0306946944879
+        "x": 2.25,
+        "y": 6.051
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -1.7739539277855623
+    "rotation": 180.0
   },
   "reversed": false,
   "folder": "Simple Shooting",

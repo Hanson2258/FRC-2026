@@ -13,13 +13,19 @@
         {
           "type": "named",
           "data": {
+            "name": "Extender Partial"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "Flywheel On"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Extender Partial"
+            "name": "Shoot When Ready"
           }
         },
         {
@@ -38,12 +44,6 @@
           "type": "path",
           "data": {
             "pathName": "Outpost-Shooting-11ft"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Shoot When Ready"
           }
         },
         {

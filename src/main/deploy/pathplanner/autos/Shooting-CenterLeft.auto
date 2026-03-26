@@ -17,15 +17,15 @@
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "Shooting-CenterLeft-11ft"
-          }
-        },
-        {
           "type": "named",
           "data": {
             "name": "Shoot When Ready"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Shooting-CenterLeft-11ft"
           }
         },
         {

@@ -7,13 +7,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Flywheel On"
+            "name": "Set Shooter Target Hub"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Set Shooter Target Hub"
+            "name": "Flywheel On"
           }
         },
         {
