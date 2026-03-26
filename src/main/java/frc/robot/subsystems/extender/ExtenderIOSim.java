@@ -1,5 +1,7 @@
 package frc.robot.subsystems.extender;
 
+import static frc.robot.subsystems.extender.ExtenderConstants.kMaxRad;
+
 import edu.wpi.first.math.MathUtil;
 
 /** Extender IO for simulation; rate-limited setpoint following. */
@@ -38,7 +40,7 @@ public class ExtenderIOSim implements ExtenderIO {
 
   @Override
   public void resetEncoders() {
-    currentPositionRad = 0.0;
+    currentPositionRad = kMaxRad;
   } // End resetEncoders
 
   @Override
