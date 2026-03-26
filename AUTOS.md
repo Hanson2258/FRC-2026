@@ -40,6 +40,36 @@ Travels from the center right starting position then moves back (while rotating 
 <img width="349" height="173" alt="image" src="https://github.com/user-attachments/assets/dce1f28b-8360-4797-8b54-708f3313c170" />
 
 ### Sweep-Left-Full-Alliance
+Starts at the left starting position, them moves to the neutral zone's balls. Then sweeps *all* the balls only on the alliance side. Then tries to shoot, but currently does not have enough time. <br>
+<img width="349" height="175" alt="image" src="https://github.com/user-attachments/assets/d3e95844-5e04-4236-b9fc-affce6974e71" />
+
+### Sweep-Left-Full-Center
+Starts at the left starting position, them moves to the neutral zone's balls. Then sweeps *all* the balls cutting through the middle. Then tries to shoot, but currently does not have enough time. Very agressive auto. <br>
+<img width="349" height="172" alt="image" src="https://github.com/user-attachments/assets/ba3813ca-8183-4fb0-81ff-74ab767248e1" />
+
+### Sweep-Left-Half-Alliance
+Starts at the left starting position, them moves to the neutral zone's balls. Then sweeps *half* the balls only on the alliance side. Then tries to shoot, but currently *may* not have enough time. <br>
+<img width="353" height="178" alt="image" src="https://github.com/user-attachments/assets/0385c737-852f-44cf-b448-e6c163d2e3db" />
+
+### Sweep-Left-Half-Center
+Starts at the left starting position, them moves to the neutral zone's balls. Then sweeps *half* the balls cutting through the middle. Then tries to shoot, but currently *may* not have enough time. Agressive auto. <br>
+<img width="351" height="173" alt="image" src="https://github.com/user-attachments/assets/6301acd1-0056-4b55-bb05-34ce5d350c11" />
+
+### Sweep-Right-Full-Alliance
+Starts at the right starting position, them moves to the neutral zone's balls. Then sweeps *all* the balls only on the alliance side. Then tries to shoot, but currently does not have enough time. <br>
+<img width="352" height="173" alt="image" src="https://github.com/user-attachments/assets/e740fa54-8c3f-4124-b801-432c6aed56d4" />
+
+### Sweep-Right-Full-Center
+Starts at the right starting position, them moves to the neutral zone's balls. Then sweeps *all* the balls cutting through the middle. Then tries to shoot, but currently does not have enough time. Very agressive auto. <br>
+<img width="350" height="167" alt="image" src="https://github.com/user-attachments/assets/9987baa2-1743-4199-9ab7-7f032116680f" />
+
+### Sweep-Right-Half-Alliance
+Starts at the right starting position, them moves to the neutral zone's balls. Then sweeps *half* the balls only on the alliance side. Then tries to shoot, but currently *may* not have enough time. <br>
+<img width="353" height="176" alt="image" src="https://github.com/user-attachments/assets/9c306724-3541-4e94-8ee8-b64bc368fdb4" />
+
+### Sweep-Right-Half-Center
+Starts at the right starting position, them moves to the neutral zone's balls. Then sweeps *half* the balls cutting through the middle. Then tries to shoot, but currently *may* not have enough time. Agressive auto. <br>
+<img width="354" height="175" alt="image" src="https://github.com/user-attachments/assets/cf6905c0-b278-4311-b00c-d6cafd6ad787" />
 
 ### Hang-Center `WIP`
 DO NOT USE, WIP
