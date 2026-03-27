@@ -71,7 +71,7 @@ public class RobotContainer {
 
 	// Competition Toggle
 	@AutoLogOutput(key = "CompetitionToggle")
-	private boolean isCompetition = false;
+	private boolean isCompetition = false; // TODO: Swerve Calibrations and then disable
 
 	// Subsystems Toggle
 	private boolean isDriveEnabled 		= true;
@@ -88,7 +88,7 @@ public class RobotContainer {
 	// Simulation Toggle
 	private boolean halfFuelOnly 			= true;
 	private boolean shooterSimEnabled	= true;
-	private boolean fuelSimEnabled 		= true;
+	private boolean fuelSimEnabled 		= false;
 
 	// Subsystems
 	private final Drive drive;
