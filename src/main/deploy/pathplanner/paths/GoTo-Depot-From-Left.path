@@ -17,15 +17,15 @@
     {
       "anchor": {
         "x": 0.468,
-        "y": 7.05
+        "y": 7.15
       },
       "prevControl": {
         "x": 0.718,
-        "y": 7.05
+        "y": 7.15
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "DepotSweepPickup-S"
+      "linkedName": "Depot-PickupFuel-S"
     }
   ],
   "rotationTargets": [],
@@ -48,7 +48,7 @@
   "folder": "Depot",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": 0.0
   },
   "useDefaultConstraints": true
 }

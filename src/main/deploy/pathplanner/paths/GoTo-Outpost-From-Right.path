@@ -9,7 +9,7 @@
       "prevControl": null,
       "nextControl": {
         "x": 3.1839872981077804,
-        "y": 0.6819999999999997
+        "y": 0.6819999999999996
       },
       "isLocked": false,
       "linkedName": "StartingPosition-Right"
@@ -48,7 +48,7 @@
   "folder": "Outpost",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": 0.0
   },
   "useDefaultConstraints": true
 }

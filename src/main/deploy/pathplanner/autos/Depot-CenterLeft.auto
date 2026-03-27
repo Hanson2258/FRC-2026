@@ -61,7 +61,7 @@
       ]
     }
   },
-  "resetOdom": true,
+  "resetOdom": false,
   "folder": "Depot",
   "choreoAuto": false
 }
