@@ -63,7 +63,7 @@
         "layouts": [
           {
             "title": "Shooter Tuner",
-            "x": 1045.0,
+            "x": 1235.0,
             "y": 475.0,
             "width": 285.0,
             "height": 285.0,
@@ -301,6 +301,37 @@
               "trajectory_color": 4294967295,
               "show_robot_outside_widget": true
             }
+          },
+          {
+            "title": "Intake State",
+            "x": 950.0,
+            "y": 665.0,
+            "width": 285.0,
+            "height": 95.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/Subsystems/Intake/State",
+              "period": 0.06,
+              "data_type": "string",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Is Intaking",
+            "x": 950.0,
+            "y": 475.0,
+            "width": 285.0,
+            "height": 190.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/Subsystems/Intake/IsIntaking",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
           }
         ]
       }
@@ -311,7 +342,7 @@
         "layouts": [
           {
             "title": "Shooter Tuner",
-            "x": 1045.0,
+            "x": 1235.0,
             "y": 475.0,
             "width": 285.0,
             "height": 285.0,
@@ -548,6 +579,37 @@
               "false_color": 4294198070,
               "true_icon": "None",
               "false_icon": "None"
+            }
+          },
+          {
+            "title": "Is Intaking",
+            "x": 950.0,
+            "y": 475.0,
+            "width": 285.0,
+            "height": 190.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/Subsystems/Intake/IsIntaking",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Intake State",
+            "x": 950.0,
+            "y": 665.0,
+            "width": 285.0,
+            "height": 95.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/Subsystems/Intake/State",
+              "period": 0.06,
+              "data_type": "string",
+              "show_submit_button": false
             }
           }
         ]

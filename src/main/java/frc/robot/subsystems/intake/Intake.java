@@ -38,6 +38,7 @@ public class Intake extends SubsystemBase {
     Logger.recordOutput("Subsystems/Intake/Inputs/AppliedVolts", intakeInputs.appliedVolts);
     Logger.recordOutput("Subsystems/Intake/Inputs/SupplyCurrentAmps", intakeInputs.supplyCurrentAmps);
     Logger.recordOutput("Subsystems/Intake/TargetVolts", getTargetVoltage());
+    Logger.recordOutput("Subsystems/Intake/IsIntaking", state.name() == State.INTAKING.name());
     Logger.recordOutput("Subsystems/Intake/State", state.name());
 
     if (DriverStation.isDisabled()) {
