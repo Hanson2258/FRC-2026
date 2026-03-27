@@ -31,7 +31,7 @@ public final class ShooterCommands {
 
   private ShooterCommands() {}
 
-  private static final String kTargetAimOffsetDegKey = "Shooter/TurretAimOffsetDeg";
+  private static final String kTargetAimOffsetDegKey = "Shooter/TargetAimOffsetDeg";
   private static final String kExitVelocityMultiplierAdditiveKey =
       "Shooter/ExitVelocityCompensationMultiplierAdditive";
   private static final double kDefaultTargetAimOffsetDeg = 0.0;
@@ -185,7 +185,7 @@ public final class ShooterCommands {
             MetersPerSecond.of(flywheelSurfaceSpeedMps), Meters.of(FlywheelConstants.kFlywheelRadiusMeters)).in(RadiansPerSecond);
     Logger.recordOutput("Shooter/CalculatorVelocityRpm", Units.radiansPerSecondToRotationsPerMinute(flywheelRadPerSec));
     Logger.recordOutput("Shooter/ExitVelocityMps", exitVelMps);
-    Logger.recordOutput("Shooter/ExitVelocityCompensationMultiplierAdditive", exitVelocityMultiplierAdditive);
+    Logger.recordOutput(kExitVelocityMultiplierAdditiveKey, exitVelocityMultiplierAdditive);
 
     double hoodAngleRad =
         MathUtil.clamp(
@@ -204,6 +204,6 @@ public final class ShooterCommands {
           ShooterCalculator.calculateAzimuthAngle(
                 estimatedPose, shot.getTarget(), turret.getPosition().getRadians())
             .in(Radians)).plus(Rotation2d.fromDegrees(ShooterConstants.kTargetAimOffsetDeg + targetAimOffsetDegAdditive));
-    Logger.recordOutput("Shooter/TargetAimOffsetDeg", ShooterConstants.kTargetAimOffsetDeg + targetAimOffsetDegAdditive);
+    Logger.recordOutput(kTargetAimOffsetDegKey, ShooterConstants.kTargetAimOffsetDeg + targetAimOffsetDegAdditive);
   } // End setShooterTarget
 }

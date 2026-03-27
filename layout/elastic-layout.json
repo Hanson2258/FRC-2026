@@ -60,7 +60,49 @@
     {
       "name": "Teleoperated (Blue)",
       "grid_layout": {
-        "layouts": [],
+        "layouts": [
+          {
+            "title": "Shooter Tuner",
+            "x": 1045.0,
+            "y": 475.0,
+            "width": 285.0,
+            "height": 285.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Exit Velocity Modifier",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Shooter/ExitVelocityCompensationMultiplierAdditive",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              },
+              {
+                "title": "Target Aim Offset Deg",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Shooter/TargetAimOffsetDeg",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              }
+            ]
+          }
+        ],
         "containers": [
           {
             "title": "Auto-Shoot Active",
@@ -115,10 +157,10 @@
           },
           {
             "title": "Operator Override",
-            "x": 1710.0,
-            "y": 570.0,
-            "width": 190.0,
-            "height": 190.0,
+            "x": 1615.0,
+            "y": 475.0,
+            "width": 285.0,
+            "height": 285.0,
             "type": "Boolean Box",
             "properties": {
               "topic": "/AdvantageKit/RealOutputs/ManualOverride/Operator",
@@ -206,7 +248,7 @@
             }
           },
           {
-            "title": "IsRobotCentric",
+            "title": "Is Robot Centric",
             "x": 665.0,
             "y": 570.0,
             "width": 285.0,
@@ -223,7 +265,7 @@
             }
           },
           {
-            "title": "IsFacingHub",
+            "title": "Is Robot (Turret Forward) Facing Hub",
             "x": 380.0,
             "y": 570.0,
             "width": 285.0,
@@ -266,7 +308,49 @@
     {
       "name": "Teleoperated (Red)",
       "grid_layout": {
-        "layouts": [],
+        "layouts": [
+          {
+            "title": "Shooter Tuner",
+            "x": 1045.0,
+            "y": 475.0,
+            "width": 285.0,
+            "height": 285.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Exit Velocity Modifier",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Shooter/ExitVelocityCompensationMultiplierAdditive",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              },
+              {
+                "title": "Target Aim Offset Deg",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Shooter/TargetAimOffsetDeg",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              }
+            ]
+          }
+        ],
         "containers": [
           {
             "title": "Auto-Shoot Active",
@@ -412,40 +496,6 @@
             }
           },
           {
-            "title": "IsRobotCentric",
-            "x": 665.0,
-            "y": 570.0,
-            "width": 285.0,
-            "height": 190.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/AdvantageKit/RealOutputs/TeleopDrive/IsRobotCentric",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "IsFacingHub",
-            "x": 380.0,
-            "y": 570.0,
-            "width": 285.0,
-            "height": 190.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/AdvantageKit/RealOutputs/TeleopDrive/IsFacingHub",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
             "title": "Field",
             "x": 0.0,
             "y": 0.0,
@@ -464,6 +514,40 @@
               "robot_color": 4294198070,
               "trajectory_color": 4294967295,
               "show_robot_outside_widget": true
+            }
+          },
+          {
+            "title": "Is Robot (Turret Forward) Facing Hub",
+            "x": 380.0,
+            "y": 570.0,
+            "width": 285.0,
+            "height": 190.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/TeleopDrive/IsFacingHub",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Is Robot Centric",
+            "x": 665.0,
+            "y": 570.0,
+            "width": 285.0,
+            "height": 190.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/TeleopDrive/IsRobotCentric",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
             }
           }
         ]
@@ -701,6 +785,47 @@
                 "type": "Text Display",
                 "properties": {
                   "topic": "/SmartDashboard/Turret/kP",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              }
+            ]
+          },
+          {
+            "title": "Shooter Tuner",
+            "x": 855.0,
+            "y": 95.0,
+            "width": 285.0,
+            "height": 285.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Exit Velocity Modifier",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Shooter/ExitVelocityCompensationMultiplierAdditive",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              },
+              {
+                "title": "Target Aim Offset Deg",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Shooter/TargetAimOffsetDeg",
                   "period": 0.06,
                   "data_type": "double",
                   "show_submit_button": true
@@ -1185,7 +1310,7 @@
           },
           {
             "title": "Hang",
-            "x": 1425.0,
+            "x": 1615.0,
             "y": 0.0,
             "width": 285.0,
             "height": 380.0,
@@ -1245,6 +1370,103 @@
                   "period": 0.06,
                   "data_type": "double",
                   "show_submit_button": false
+                }
+              }
+            ]
+          },
+          {
+            "title": "PostDetection",
+            "x": 1710.0,
+            "y": 380.0,
+            "width": 190.0,
+            "height": 380.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "post_detected",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/PostDetection/post_detected",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "post_lateral",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Large Text Display",
+                "properties": {
+                  "topic": "/PostDetection/post_lateral",
+                  "period": 0.06,
+                  "data_type": "double"
+                }
+              },
+              {
+                "title": "post_depth",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Large Text Display",
+                "properties": {
+                  "topic": "/PostDetection/post_depth",
+                  "period": 0.06,
+                  "data_type": "double"
+                }
+              }
+            ]
+          },
+          {
+            "title": "Shooter Tuner",
+            "x": 1045.0,
+            "y": 0.0,
+            "width": 285.0,
+            "height": 285.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Exit Velocity Modifier",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Shooter/ExitVelocityCompensationMultiplierAdditive",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              },
+              {
+                "title": "Target Aim Offset Deg",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Shooter/TargetAimOffsetDeg",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
                 }
               }
             ]
@@ -1393,6 +1615,23 @@
             "type": "Boolean Box",
             "properties": {
               "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/TurretTargetInRange",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Operator Override",
+            "x": 1330.0,
+            "y": 0.0,
+            "width": 190.0,
+            "height": 190.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ManualOverride/Operator",
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4283215696,
