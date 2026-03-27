@@ -32,7 +32,7 @@ public final class FlywheelConstants { // XXX: Add correct values
   public static final double kS = 0.0;
 
   /** Flywheel radians per motor rotation (output / input). 1.0 = 1:1. */
-  public static final double kGearRatio = 1.0;
+  public static final double kGearRatio = 27.0/30.0;
 
   /** Flywheel radius for converting angular velocity to launch linear velocity (~2 in). */
   public static final double kFlywheelRadiusMeters = 0.0508;
