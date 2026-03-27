@@ -13,7 +13,7 @@ public final class FlywheelConstants { // XXX: Add correct values
   public static final int kMotorId = 7;
 
   /** Max velocity ramp rate per second (RPM/s). */
-  public static final double kVelocityRampRateRpmPerSec = 2000.0;
+  public static final double kVelocityRampRateRpmPerSec = 4000.0;
 
   /** Neutral mode when the motor is not driven (coast or brake). */
   public static final NeutralModeValue kNeutralMode = NeutralModeValue.Coast;
@@ -22,10 +22,10 @@ public final class FlywheelConstants { // XXX: Add correct values
   public static final boolean kMotorInverted = true;
 
   /** Stator current limit (amps); protects motor and gearbox. */
-  public static final double kStatorCurrentLimitAmps = 40.0;
+  public static final double kStatorCurrentLimitAmps = 80.0;
 
   /** PIDF gains for onboard velocity control and for sim. */
-  public static final double kP = 0.02;
+  public static final double kP = 0.2;
   public static final double kI = 0.0;
   public static final double kD = 0.0;
   public static final double kV = 0.117;
