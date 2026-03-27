@@ -7,12 +7,6 @@
         {
           "type": "named",
           "data": {
-            "name": "Set Shooter Target Hub"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "Flywheel On"
           }
         },
@@ -25,7 +19,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Shooting-CenterLeft"
+            "pathName": "Shooting-CenterLeft-11ft"
           }
         },
         {

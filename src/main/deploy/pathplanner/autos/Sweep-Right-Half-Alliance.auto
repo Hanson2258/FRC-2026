@@ -13,13 +13,37 @@
         {
           "type": "named",
           "data": {
-            "name": "Intake On"
+            "name": "Flywheel On"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Set Shooter Target Hub"
+            "name": "Shoot When Ready"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 6.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Flywheel Off"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Cancel Shoot When Ready"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake On"
           }
         },
         {
@@ -29,27 +53,21 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "Flywheel On"
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "Sweep-Half-Alliance-RightToLeft"
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "Extender Partial"
+            "pathName": "Temp Copy of GoTo-Sweep-Shooting-11ft-From-RightSweep"
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "GoTo-Sweep-Shooting-From-RightSweep"
+            "name": "Flywheel On"
           }
         },
         {
@@ -67,7 +85,7 @@
       ]
     }
   },
-  "resetOdom": true,
+  "resetOdom": false,
   "folder": "Right Fuel Sweeps",
   "choreoAuto": false
 }

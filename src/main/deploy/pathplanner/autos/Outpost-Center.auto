@@ -7,7 +7,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Set Shooter Target Hub"
+            "name": "Extender Down"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "GoTo-Outpost-From-Center"
           }
         },
         {
@@ -19,37 +25,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Extender Partial"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "GoTo-Outpost-From-Center"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 3.0
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Outpost-Shooting-11ft"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "Shoot When Ready"
           }
         },
         {
           "type": "wait",
           "data": {
-            "waitTime": 7.0
+            "waitTime": 15.0
           }
         }
       ]

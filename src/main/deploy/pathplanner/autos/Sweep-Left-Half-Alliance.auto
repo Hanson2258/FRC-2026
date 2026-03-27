@@ -7,37 +7,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Set Shooter Target Hub"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "Extender Down"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "GoTo-Sweep-Alliance-From-Left"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Intake On"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Sweep-Half-Alliance-LeftToRight"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Extender Partial"
           }
         },
         {
@@ -53,9 +23,57 @@
           }
         },
         {
+          "type": "wait",
+          "data": {
+            "waitTime": 6.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Flywheel Off"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Cancel Shoot When Ready"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake On"
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "GoTo-Sweep-Shooting-From-LeftSweep"
+            "pathName": "GoTo-Sweep-Alliance-From-Left"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Sweep-Half-Alliance-LeftToRight"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "GoTo-Sweep-Shooting-11ft-From-LeftSweep"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Flywheel On"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot When Ready"
           }
         },
         {
@@ -67,7 +85,7 @@
       ]
     }
   },
-  "resetOdom": true,
+  "resetOdom": false,
   "folder": "Left Fuel Sweeps",
   "choreoAuto": false
 }

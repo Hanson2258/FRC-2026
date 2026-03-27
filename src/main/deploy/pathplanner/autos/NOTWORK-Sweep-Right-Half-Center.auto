@@ -7,25 +7,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Intake On"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "Extender Down"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Set Shooter Target Hub"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "GoTo-Sweep-Center-From-Right"
           }
         },
         {
@@ -35,21 +17,57 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Shoot When Ready"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 6.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Flywheel Off"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Cancel Shoot When Ready"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake On"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "GoTo-Sweep-Center-From-Right"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Sweep-Half-Center-RightToLeft"
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "Extender Partial"
+            "pathName": "GoTo-Sweep-Shooting-11ft-From-RightSweep"
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "GoTo-Sweep-Shooting-From-RightSweep"
+            "name": "Extender Partial"
           }
         },
         {

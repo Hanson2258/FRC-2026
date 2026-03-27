@@ -3,41 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.617,
+        "x": 3.85,
         "y": 0.432
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.9060593931386016,
+        "x": 4.139059393138602,
         "y": 0.43960730555030875
       },
       "isLocked": false,
-      "linkedName": "StartingPosition-Right"
+      "linkedName": "StartingPostionSweep-Right"
     },
     {
       "anchor": {
-        "x": 5.992440106477374,
-        "y": 0.6186601597160597
+        "x": 7.675,
+        "y": 1.0443530701754378
       },
       "prevControl": {
-        "x": 5.747727616882597,
-        "y": 0.5675152925608302
-      },
-      "nextControl": {
-        "x": 6.864586119976211,
-        "y": 0.8009385226807939
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 7.75,
-        "y": 1.2
-      },
-      "prevControl": {
-        "x": 7.366387893644011,
-        "y": 1.2789680082334638
+        "x": 7.291387893644011,
+        "y": 1.1233210784089016
       },
       "nextControl": null,
       "isLocked": false,
@@ -46,7 +30,7 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 1.03225806451613,
+      "waypointRelativePos": 0.45,
       "rotationDegrees": 0.0
     }
   ],
@@ -54,8 +38,8 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 1.0,
-    "maxAcceleration": 1.0,
+    "maxVelocity": 3.0,
+    "maxAcceleration": 2.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -69,7 +53,7 @@
   "folder": "Fuel Sweeps",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": 0.0
   },
   "useDefaultConstraints": true
 }

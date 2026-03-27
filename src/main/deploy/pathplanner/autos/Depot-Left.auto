@@ -7,12 +7,6 @@
         {
           "type": "named",
           "data": {
-            "name": "Set Shooter Target Hub"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "Extender Down"
           }
         },
