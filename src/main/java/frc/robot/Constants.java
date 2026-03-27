@@ -53,7 +53,7 @@ public final class Constants {
     public static final double TRENCH_Y_KP = 8.0;
     public static final double TRENCH_Y_KI = 0.0;
     public static final double TRENCH_Y_KD = 0.05;
-    public static final double TRENCH_Y_TOLERANCE_M = 0.05;
+    public static final double TRENCH_Y_TOLERANCE_M = 0.127;
 
     /** Rotation (trench/bump lock) PID and tolerance. */
     public static final double ROTATION_KP = 5.0;
