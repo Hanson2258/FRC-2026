@@ -9,6 +9,7 @@ import frc.robot.subsystems.agitator.Agitator;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterConstants;
 import frc.robot.subsystems.shooter.transfer.Transfer;
+import frc.robot.util.AllianceUtil;
 
 /**
  * While scheduled: when Shooter is ready (Turret aimed, Flywheel at speed, (Optional) Hood at target),
@@ -74,16 +75,27 @@ public class ShootWhenReadyCommand extends Command {
 
   /** Automatically selects the shooters target depending on the robots x and y */
   private void automaticallySelectShootingTarget() {
-    if (position.get().getX() < FieldConstants.ALLIANCE_ZONE_M + ShooterConstants.kAutoSelectShootingTargetAllianceZoneTolerance) {
+    Pose2d pose = position.get();
+    if (isInAllianceZoneWithTolerance(pose.getX())) {
       ShooterCommands.clearShooterTargetOverride();
-    }
-    else  {
-      if (position.get().getY() > FieldConstants.FIELD_CENTER_Y_M) {
+    } else {
+      boolean aboveCenterY = pose.getY() > FieldConstants.FIELD_CENTER_Y_M;
+      // Passing spots are alliance-relative; red LEFT/RIGHT are Y-mirrored vs blue.
+      boolean passLeft = aboveCenterY ^ AllianceUtil.isRedAlliance();
+      if (passLeft) {
         ShooterCommands.setPassingSpotLeft();
       } else {
-    	  ShooterCommands.setPassingSpotRight();
+        ShooterCommands.setPassingSpotRight();
       }
     }
+  }
+
+  /** Same as {@link AllianceUtil#isInAllianceZone} with auto-select tolerance toward field center. */
+  private static boolean isInAllianceZoneWithTolerance(double robotXM) {
+    double tol = ShooterConstants.kAutoSelectShootingTargetAllianceZoneTolerance;
+    return AllianceUtil.isRedAlliance()
+        ? robotXM > FieldConstants.FIELD_LENGTH_M - FieldConstants.ALLIANCE_ZONE_M - tol
+        : robotXM < FieldConstants.ALLIANCE_ZONE_M + tol;
   }
 
   @Override
