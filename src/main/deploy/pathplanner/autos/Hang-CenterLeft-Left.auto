@@ -47,12 +47,6 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "Drive Back Hang Align"
-          }
-        },
-        {
           "type": "wait",
           "data": {
             "waitTime": 3.0
@@ -62,6 +56,18 @@
           "type": "path",
           "data": {
             "pathName": "Hang-HangingLeft"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Drive Back Hang Align"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.5
           }
         },
         {
