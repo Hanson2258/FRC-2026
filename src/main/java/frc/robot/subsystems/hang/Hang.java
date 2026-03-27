@@ -13,10 +13,11 @@ import org.littletonrobotics.junction.Logger;
 /** Hang subsystem: one motor with onboard position control. */
 public class Hang extends SubsystemBase {
 
-  /** Hang state: Idle, Stored, Level_1, or Manual. */
+  /** Hang state: Idle, Stored, Half, Level_1, or Manual. */
   public enum State {
     IDLE,
     STORED,
+    HALF,
     LEVEL_1,
     MANUAL
   } // End State enum
@@ -60,6 +61,7 @@ public class Hang extends SubsystemBase {
     // Set the Hang position based on the current state.
     switch (state) {
       case STORED:
+      case HALF:
       case LEVEL_1:
       case MANUAL:
         hangIO.setTargetPosition(targetPositionMeters);
@@ -83,6 +85,12 @@ public class Hang extends SubsystemBase {
     state = State.STORED;
     setTargetPositionMeters(kStoredPositionMeters);
   } // End setStoredState
+
+  /** Set state to Half (retracted half way). */
+  public void setHalfState() {
+    state = State.HALF;
+    setTargetPositionMeters(kHalfPositionMeters);
+  } // End setHalfState
 
   /** Set state to Level 1 (extended position). */
   public void setLevel1State() {

@@ -18,7 +18,7 @@ public final class HangConstants { // XXX: Add correct values
   public static final boolean kMotorInverted = false;
 
   /** Smart current limit. */
-  public static final int kSmartCurrentLimitAmps = 35;
+  public static final int kSmartCurrentLimitAmps = 45;
 
   /** Linear travel (meters) per motor rotation. */
   public static final double kMetersPerRotation = 0.01;
@@ -37,6 +37,9 @@ public final class HangConstants { // XXX: Add correct values
 
   /** Target position when the Hang is in Stored (retracted) mode. */
   public static final double kStoredPositionMeters = Units.inchesToMeters(0.0);
+  
+  /** Target position when the Hang is in Half (retracted half way) mode. */
+  public static final double kHalfPositionMeters = Units.inchesToMeters(2.5);
 
   /** Target position when the Hang is in Level_1 (extended) mode. */
   public static final double kLevel1PositionMeters = Units.inchesToMeters(7.75);
