@@ -252,7 +252,8 @@ public class Turret extends SubsystemBase {
   /** Whether Turret is at target position within tolerance. */
   public boolean atTarget() {
     double targetTurretRad = getSetpointRad();
-    return Math.abs(turretInputs.positionRads - targetTurretRad) <= kAtTargetToleranceRad;
+    double tol = ShooterCommands.isShooterTargetHub() ? kAtTargetToleranceRad : kAtTargetToleranceNonHubRad;
+    return Math.abs(turretInputs.positionRads - targetTurretRad) <= tol;
   } // End atTarget
 
   

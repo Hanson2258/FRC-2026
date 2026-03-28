@@ -53,6 +53,12 @@ public final class TurretConstants { // XXX: Add correct values
   /** Tolerance for considering the Turret on target (setpoint vs measured, Turret frame). */
   public static final double kAtTargetToleranceRad = Units.degreesToRadians(4.0);
 
+  /** 
+   * Tolerance for considering the Turret on target (setpoint vs measured, Turret frame).
+   * Larger tolerance than kAtTargetToleranceRad
+   */
+  public static final double kAtTargetToleranceNonHubRad = Units.degreesToRadians(8.0);
+
   /** Delta Rad per step. */
   public static final double kStepRad = Units.degreesToRadians(5.0);
 }
