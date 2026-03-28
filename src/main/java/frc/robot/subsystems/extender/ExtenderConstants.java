@@ -5,7 +5,7 @@ import com.revrobotics.spark.config.SparkBaseConfig;
 import edu.wpi.first.math.util.Units;
 
 /** Constants for the Extender (one motor, position-controlled) subsystem. */
-public final class ExtenderConstants { // XXX: Add correct values
+public final class ExtenderConstants {
 
   private ExtenderConstants() {}
 

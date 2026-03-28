@@ -5,7 +5,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.util.Units;
 
 /** Constants for the Flywheel (one motor, velocity-controlled) subsystem. */
-public final class FlywheelConstants { // XXX: Add correct values
+public final class FlywheelConstants {
 
   private FlywheelConstants() {}
 

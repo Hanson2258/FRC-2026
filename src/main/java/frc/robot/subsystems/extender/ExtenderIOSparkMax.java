@@ -39,7 +39,7 @@ public class ExtenderIOSparkMax implements ExtenderIO {
         .encoder
         .positionConversionFactor(1.0 / kGearRatio)
         .velocityConversionFactor(1.0 / kGearRatio);
-    sparkMaxConfig.closedLoop.p(kP).i(kI).d(kD).maxOutput(0.3).minOutput(-0.3); // XXX: Tune maxOutput/minOutput so the arm has enough torque without overshoot.
+    sparkMaxConfig.closedLoop.p(kP).i(kI).d(kD).maxOutput(0.3).minOutput(-0.3);
     sparkMaxConfig.signals
         .appliedOutputPeriodMs(kSignalsPeriodMs)
         .busVoltagePeriodMs(kSignalsPeriodMs)

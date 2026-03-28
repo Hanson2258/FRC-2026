@@ -4,7 +4,7 @@ import com.revrobotics.spark.config.SparkBaseConfig;
 import edu.wpi.first.math.util.Units;
 
 /** Constants for the Hang (one motor, position-controlled) subsystem. */
-public final class HangConstants { // XXX: Add correct values
+public final class HangConstants {
 
   private HangConstants() {}
 
