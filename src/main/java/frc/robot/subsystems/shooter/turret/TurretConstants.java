@@ -51,7 +51,7 @@ public final class TurretConstants {
   public static final double kMaxVoltage = 12.0;
 
   /** Tolerance for considering the Turret on target (setpoint vs measured, Turret frame). */
-  public static final double kAtTargetToleranceRad = Units.degreesToRadians(4.0);
+  public static final double kAtTargetToleranceRad = Units.degreesToRadians(3.0);
 
   /** 
    * Tolerance for considering the Turret on target (setpoint vs measured, Turret frame).
