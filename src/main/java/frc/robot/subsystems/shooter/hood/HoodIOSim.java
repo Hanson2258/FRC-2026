@@ -1,29 +1,27 @@
 package frc.robot.subsystems.shooter.hood;
 
+import static frc.robot.subsystems.shooter.hood.HoodConstants.*;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
-import edu.wpi.first.math.util.Units;
 
 /** Hood IO for simulation; slew-rate-limited setpoint following. */
 public class HoodIOSim implements HoodIO {
 
-  /** Max setpoint slew rate (rad/s); full range ~30° in ~0.5 s. */
-  private static final double kMaxAngularRateRadPerSec = Units.degreesToRadians(60.0);
-
-  private final SlewRateLimiter slewRateLimiter = new SlewRateLimiter(kMaxAngularRateRadPerSec);
+  private final SlewRateLimiter slewRateLimiter = new SlewRateLimiter(kSimMaxSlewRadPerSec);
 
   private double targetPositionRad = 0.0;
-  private double limitedPositionRad = HoodConstants.kMinAngleRad;
+  private double limitedPositionRad = kDisabledAngleRad;
   private boolean isStopped = false;
 
   public HoodIOSim() {
-    slewRateLimiter.reset(HoodConstants.kMinAngleRad);
-  }
+    slewRateLimiter.reset(kDisabledAngleRad);
+  } // End HoodIOSim Constructor
 
   @Override
   public void updateInputs(HoodIOInputs inputs) {
     if (!isStopped) {
-      double clampedTarget = MathUtil.clamp(targetPositionRad, HoodConstants.kMinAngleRad, HoodConstants.kMaxAngleRad);
+      double clampedTarget = MathUtil.clamp(targetPositionRad, kMinAngleRad, kMaxAngleRad);
       limitedPositionRad = slewRateLimiter.calculate(clampedTarget);
     }
 
@@ -35,10 +33,17 @@ public class HoodIOSim implements HoodIO {
   } // End updateInputs
 
   @Override
-  public void setTargetPosition(double targetRads) {
-    this.targetPositionRad = targetRads;
+  public void setTargetPosition(double targetPositionRad) {
+    this.targetPositionRad = targetPositionRad;
     isStopped = false;
   } // End setTargetPosition
+
+  @Override
+  public void resetEncoder() {
+    limitedPositionRad = kDisabledAngleRad;
+    targetPositionRad = kDisabledAngleRad;
+    slewRateLimiter.reset(kDisabledAngleRad);
+  } // End resetEncoder
 
   @Override
   public void stop() {

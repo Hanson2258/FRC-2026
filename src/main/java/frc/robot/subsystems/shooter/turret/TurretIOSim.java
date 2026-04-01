@@ -6,8 +6,7 @@ import edu.wpi.first.math.MathUtil;
 public class TurretIOSim implements TurretIO {
 
   private static final double kLoopPeriodSecs = 0.02;
-  /** Max turret rate so that 1 rad takes ~0.2s. */
-  private static final double kMaxRadPerSec = 1.0 / 0.2;
+  private static final double kMaxRadPerSec = 1.0 / 0.2; // Max Turret rate so that 1 rad takes ~0.2s.
 
   private double targetPositionRad = 0.0;
   private double velocityFeedforwardRadPerSec = 0.0;
@@ -17,45 +16,37 @@ public class TurretIOSim implements TurretIO {
   @Override
   public void updateInputs(TurretIOInputs inputs) {
     if (!isStopped) {
-      // Feedforward: drift at commanded velocity (e.g. -robot omega for spin compensation)
       currentPositionRad += velocityFeedforwardRadPerSec * kLoopPeriodSecs;
-      double errorRad = MathUtil.angleModulus(targetPositionRad - currentPositionRad);
+
+      double errorRad = targetPositionRad - currentPositionRad;
       double maxStepRad = kMaxRadPerSec * kLoopPeriodSecs;
       double stepRad = MathUtil.clamp(errorRad, -maxStepRad, maxStepRad);
       currentPositionRad += stepRad;
+
       inputs.velocityRadsPerSec = velocityFeedforwardRadPerSec + stepRad / kLoopPeriodSecs;
     } else {
       inputs.velocityRadsPerSec = 0.0;
     }
 
-    currentPositionRad =
-        MathUtil.clamp(currentPositionRad, TurretConstants.kMinAngleRad, TurretConstants.kMaxAngleRad);
-
     inputs.motorConnected = true;
     inputs.positionRads = currentPositionRad;
-    inputs.targetPositionRads = targetPositionRad;
     inputs.appliedVolts = 0.0;
     inputs.supplyCurrentAmps = 0.0;
   } // End updateInputs
 
   @Override
   public void setTargetPosition(double targetRads) {
-    targetPositionRad = MathUtil.clamp(targetRads, TurretConstants.kMinAngleRad, TurretConstants.kMaxAngleRad);
+    targetPositionRad = targetRads;
     velocityFeedforwardRadPerSec = 0.0;
     isStopped = false;
   } // End setTargetPosition
 
   @Override
   public void setTargetPosition(double targetRads, double velocityFeedforwardRadPerSec) {
-    targetPositionRad = MathUtil.clamp(targetRads, TurretConstants.kMinAngleRad, TurretConstants.kMaxAngleRad);
+    targetPositionRad = targetRads;
     this.velocityFeedforwardRadPerSec = velocityFeedforwardRadPerSec;
     isStopped = false;
   } // End setTargetPosition
-
-  @Override
-  public void resetEncoder() { 
-    // TODO: Implement a offset for resetting encoder in Sim
-  } // End resetEncoder
 
   @Override
   public void stop() {

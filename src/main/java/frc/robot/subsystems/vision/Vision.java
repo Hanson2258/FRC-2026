@@ -50,7 +50,7 @@ public class Vision extends SubsystemBase {
   }
 
   /**
-   * Returns the X angle to the best target, which can be used for simple servoing with vision.
+   * Returns the X angle to the best target, which can be used for simple servoing with Vision.
    *
    * @param cameraIndex The index of the camera to use.
    */
@@ -140,7 +140,7 @@ public class Vision extends SubsystemBase {
           angularStdDev *= cameraStdDevFactors[cameraIndex];
         }
 
-        // Send vision observation
+        // Send Vision observation
         consumer.accept(
             observation.pose().toPose2d(),
             observation.timestamp(),

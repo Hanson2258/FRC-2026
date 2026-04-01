@@ -1,0 +1,54 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 5.8,
+        "y": 0.535
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 5.472011368430949,
+        "y": 0.5394828962596946
+      },
+      "isLocked": false,
+      "linkedName": "Sweep-Shooting-Right-S"
+    },
+    {
+      "anchor": {
+        "x": 4.0,
+        "y": 0.5866785290628707
+      },
+      "prevControl": {
+        "x": 4.318457638387248,
+        "y": 0.5844978844140234
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "ShootingPosition-Right-Trench"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 2.0,
+    "maxAcceleration": 2.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "reversed": false,
+  "folder": "Fuel Sweeps",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "useDefaultConstraints": false
+}

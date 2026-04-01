@@ -2,26 +2,27 @@ package frc.robot.subsystems.hang;
 
 import org.littletonrobotics.junction.AutoLog;
 
-/** IO interface for the Hang (climber) subsystem using a SPARK MAX and analog potentiometer. */
+/** IO interface for the Hang (one motor, position controlled). */
 public interface HangIO {
 
   @AutoLog
   class HangIOInputs {
     public boolean motorConnected = false;
+    public double positionMeters = 0.0;
+    public double velocityMetersPerSec = 0.0;
     public double appliedVolts = 0.0;
     public double supplyCurrentAmps = 0.0;
-
-    /** Raw potentiometer voltage from the analog input. */
-    public double potVoltage = 0.0;
   }
 
   /** Update inputs from the hardware. */
   default void updateInputs(HangIOInputs inputs) {}
 
-  /** Set the motor output voltage for the hang mechanism. */
-  default void setVoltage(double volts) {}
+  /** Set the target position in meters. */
+  default void setTargetPosition(double targetMeters) {}
 
-  /** Stop the motor (coast or brake, depending on configuration). */
+  /** Sets the encoder position (implementation-defined). */
+  default void resetEncoders() {}
+
+  /** Stop the motor. */
   default void stop() {}
 }
-

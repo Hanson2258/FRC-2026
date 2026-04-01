@@ -7,25 +7,19 @@
         {
           "type": "named",
           "data": {
-            "name": "Set Shooter Target Hub"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "Flywheel On"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Shooting - CenterRight"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "Shoot When Ready"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Shooting-CenterRight-11ft"
           }
         },
         {
@@ -37,7 +31,7 @@
       ]
     }
   },
-  "resetOdom": true,
+  "resetOdom": false,
   "folder": "Simple Shooting",
   "choreoAuto": false
 }

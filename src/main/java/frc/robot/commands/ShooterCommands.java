@@ -18,6 +18,7 @@ import frc.robot.subsystems.shooter.ShooterCalculator.ShotData;
 import frc.robot.subsystems.shooter.ShooterConstants;
 import frc.robot.subsystems.shooter.flywheel.Flywheel;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.shooter.flywheel.FlywheelConstants;
 import frc.robot.subsystems.shooter.hood.Hood;
 import frc.robot.subsystems.shooter.hood.HoodConstants;
@@ -25,10 +26,21 @@ import frc.robot.subsystems.shooter.turret.Turret;
 import frc.robot.util.AllianceUtil;
 import org.littletonrobotics.junction.Logger;
 
-/** Shooter-related command helpers (hood, flywheel, turret aim via ShooterCalculator). */
+/** Shooter-related command helpers (Hood, Flywheel, Turret aim via ShooterCalculator). */
 public final class ShooterCommands {
 
   private ShooterCommands() {}
+
+  private static final String kTargetAimOffsetDegKey = "Shooter/TargetAimOffsetDeg";
+  private static final String kExitVelocityMultiplierAdditiveKey =
+      "Shooter/ExitVelocityCompensationMultiplierAdditive";
+  private static final double kDefaultTargetAimOffsetDeg = 0.0;
+  private static final double kDefaultExitVelocityMultiplierAdditive = 0.0;
+
+  static {
+    SmartDashboard.putNumber(kTargetAimOffsetDegKey, kDefaultTargetAimOffsetDeg);
+    SmartDashboard.putNumber(kExitVelocityMultiplierAdditiveKey, kDefaultExitVelocityMultiplierAdditive);
+  }
 
   /** Which passing spot is selected; null = aim at hub. */
   private static volatile PassingSpot passingSpotOverride = null;
@@ -57,7 +69,7 @@ public final class ShooterCommands {
     passingSpotOverride = PassingSpot.RIGHT;
   }
 
-  /** Clear override so shooter returns to hub. */
+  /** Clear override so Shooter returns to hub. */
   public static void clearShooterTargetOverride() {
     passingSpotOverride = null;
   }
@@ -76,7 +88,7 @@ public final class ShooterCommands {
     };
   }
 
-  /** Current shooter target: passing spot or alliance hub (funnel top). */
+  /** Current Shooter target: passing spot or alliance hub (funnel top). */
   public static Translation3d getShooterTarget3d() {
     PassingSpot spot = passingSpotOverride;
     if (spot != null) return getPassingSpot3d(spot);
@@ -97,7 +109,7 @@ public final class ShooterCommands {
   }
 
   /**
-   * Field-frame angle from turret pivot to alliance hub (direction to aim in field).
+   * Field-frame angle from Turret pivot to alliance hub (direction to aim in field).
    */
   public static Rotation2d getFieldAngleToHubFromPivot(Drive drive) {
     Pose2d pose = drive.getPose();
@@ -124,11 +136,11 @@ public final class ShooterCommands {
   }
 
   /**
-   * Sets hood and flywheel target from ShooterCalculator. When hoodEnabled is false, uses a fixed
-   * hood angle and solves for velocity only so the shot matches the locked hood. When true, uses
-   * funnel clearance + moving shot. Applies phase delay, then iterative moving shot; clamps hood to
+   * Sets Hood and Flywheel target from ShooterCalculator. When hoodEnabled is false, uses a fixed
+   * Hood angle and solves for velocity only so the shot matches the locked Hood. When true, uses
+   * funnel clearance + moving shot. Applies phase delay, then iterative moving shot; clamps Hood to
    * mechanism limits. Turret aim uses predicted target and shortest-path azimuth.
-   * When {@code enableCalculator} is false (e.g. manual override), hood and flywheel targets are
+   * When {@code enableCalculator} is false (e.g. manual override), Hood and Flywheel targets are
    * not updated so manual override controls are functional.
    */
   public static void setShooterTarget(Drive drive, Turret turret, Hood hood, Flywheel flywheel, boolean hoodEnabled, boolean enableCalculator) {
@@ -161,35 +173,37 @@ public final class ShooterCommands {
               ShooterConstants.kLookaheadIterations);
     }
 
-    double distanceM =
-        ShooterCalculator.getDistanceToTarget(estimatedPose, shot.getTarget()).in(Meters);
+    double distanceM = ShooterCalculator.getDistanceToTarget(estimatedPose, shot.getTarget()).in(Meters);
     Logger.recordOutput("Shooter/DistanceToHubMeters", distanceM);
-    Logger.recordOutput("Shooter/CalculatorAngleDegrees", Units.radiansToDegrees(shot.getHoodAngle().in(Radians)));
+    Logger.recordOutput("Shooter/CalculatorHoodDeg", Units.radiansToDegrees(shot.getHoodAngle().in(Radians)));
     double exitVelMps = shot.getExitVelocity().in(MetersPerSecond);
+    double exitVelocityMultiplierAdditive =
+        SmartDashboard.getNumber(kExitVelocityMultiplierAdditiveKey, kDefaultExitVelocityMultiplierAdditive);
     double flywheelSurfaceSpeedMps = exitVelMps / ShooterConstants.kFlywheelSurfaceDivider
-            * ShooterConstants.kExitVelocityCompensationMultiplier;
-    double flywheelRadsPerSec =
-        ShooterCalculator.linearToAngularVelocity(
-                MetersPerSecond.of(flywheelSurfaceSpeedMps), Meters.of(FlywheelConstants.kFlywheelRadiusMeters))
-            .in(RadiansPerSecond);
-    Logger.recordOutput("Shooter/CalculatorVelocityRpm", Units.radiansPerSecondToRotationsPerMinute(flywheelRadsPerSec));
+            * (ShooterConstants.kExitVelocityCompensationMultiplier() + exitVelocityMultiplierAdditive);
+    double flywheelRadPerSec = ShooterCalculator.linearToAngularVelocity(
+            MetersPerSecond.of(flywheelSurfaceSpeedMps), Meters.of(FlywheelConstants.kFlywheelRadiusMeters)).in(RadiansPerSecond);
+    Logger.recordOutput("Shooter/CalculatorVelocityRpm", Units.radiansPerSecondToRotationsPerMinute(flywheelRadPerSec));
     Logger.recordOutput("Shooter/ExitVelocityMps", exitVelMps);
+    Logger.recordOutput(kExitVelocityMultiplierAdditiveKey, exitVelocityMultiplierAdditive);
 
-    double hoodRad =
+    double hoodAngleRad =
         MathUtil.clamp(
             shot.getHoodAngle().in(Radians),
             HoodConstants.kMinAngleRad,
             HoodConstants.kMaxAngleRad);
     if (enableCalculator) {
-      hood.setTargetAngleRad(hoodRad);
-      flywheel.setTargetVelocityRadsPerSec(flywheelRadsPerSec);
+      hood.setTargetAngleRad(hoodAngleRad);
+      flywheel.setTargetVelocityRadPerSec(flywheelRadPerSec);
     }
 
-    // Turret aims in robot frame here; Turret converts that to its internal 0 = back frame.
-    lastTurretAngleFromShot =
-        Rotation2d.fromRadians(
-            ShooterCalculator.calculateAzimuthAngle(
-                    estimatedPose, shot.getTarget(), turret.getRobotFramePosition().getRadians())
-                .in(Radians));
+    // We provide the turret "current angle" to the calculator in the turret's internal frame
+    // so shortest-path selection respects kMinAngleRad/kMaxAngleRad.
+    double targetAimOffsetDegAdditive = SmartDashboard.getNumber(kTargetAimOffsetDegKey, kDefaultTargetAimOffsetDeg);
+    lastTurretAngleFromShot = Rotation2d.fromRadians(
+          ShooterCalculator.calculateAzimuthAngle(
+                estimatedPose, shot.getTarget(), turret.getPosition().getRadians())
+            .in(Radians)).plus(Rotation2d.fromDegrees(ShooterConstants.kTargetAimOffsetDeg + targetAimOffsetDegAdditive));
+    Logger.recordOutput(kTargetAimOffsetDegKey, ShooterConstants.kTargetAimOffsetDeg + targetAimOffsetDegAdditive);
   } // End setShooterTarget
 }

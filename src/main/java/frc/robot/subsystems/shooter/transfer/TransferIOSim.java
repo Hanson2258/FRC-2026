@@ -4,6 +4,7 @@ import static frc.robot.subsystems.shooter.transfer.TransferConstants.kMaxVoltag
 import static frc.robot.subsystems.shooter.transfer.TransferConstants.kMotorInverted;
 
 import edu.wpi.first.math.MathUtil;
+import frc.robot.Constants;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
@@ -15,9 +16,7 @@ public class TransferIOSim implements TransferIO {
 
   private final DCMotor motorModel = DCMotor.getNeo550(1);
   private final DCMotorSim motorSim =
-      new DCMotorSim(
-          LinearSystemId.createDCMotorSystem(motorModel, 0.001, 1.0),
-          motorModel);
+      new DCMotorSim(LinearSystemId.createDCMotorSystem(motorModel, 0.001, 1.0), motorModel);
 
   private double appliedVolts = 0.0;
   private boolean isStopped = true;
@@ -39,8 +38,10 @@ public class TransferIOSim implements TransferIO {
   } // End updateInputs
 
   @Override
-  public void setVoltage(double volts) {
-    double clamped = MathUtil.clamp(volts, -kMaxVoltage, kMaxVoltage);
+  public void setVoltage(double volts, boolean ignoreLimits) {
+    double clamped = ignoreLimits
+        ? MathUtil.clamp(volts, -Constants.kNominalVoltage, Constants.kNominalVoltage)
+        : MathUtil.clamp(volts, -kMaxVoltage, kMaxVoltage);
     appliedVolts = kMotorInverted ? -clamped : clamped;
     isStopped = false;
   } // End setVoltage

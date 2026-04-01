@@ -10,28 +10,21 @@ import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.StatusCode;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.generated.TunerConstants;
 
-/** Flywheel IO using a Talon FX with onboard velocity control. */
+/** Flywheel IO using Talon FX with onboard velocity control. */
 public class FlywheelIOTalonFX implements FlywheelIO {
 
-  private static final String kPKey = "Flywheel/kP";
-  private static final String kIKey = "Flywheel/kI";
-  private static final String kDKey = "Flywheel/kD";
-  private static final String kVKey = "Flywheel/kV";
-  private static final String kSKey = "Flywheel/kS";
-
-  private static final double kVelocityRampRateRadsPerSecSq =
+  private static final double kVelocityRampRateRadPerSecSq =
       Units.rotationsPerMinuteToRadiansPerSecond(kVelocityRampRateRpmPerSec);
 
   private final TalonFX motor;
   private final VelocityVoltage velocityVoltageRequest = new VelocityVoltage(0.0);
-  private final SlewRateLimiter velocityRamp = new SlewRateLimiter(kVelocityRampRateRadsPerSecSq);
+  private final SlewRateLimiter velocityRamp = new SlewRateLimiter(kVelocityRampRateRadPerSecSq);
 
   private double lastP = kP;
   private double lastI = kI;
@@ -43,11 +36,9 @@ public class FlywheelIOTalonFX implements FlywheelIO {
     motor = new TalonFX(kMotorId, TunerConstants.kCANBus);
 
     var talonFxConfig = new TalonFXConfiguration();
-    talonFxConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    talonFxConfig.MotorOutput.NeutralMode = kNeutralMode;
     talonFxConfig.MotorOutput.Inverted =
-        kMotorInverted
-            ? InvertedValue.Clockwise_Positive
-            : InvertedValue.CounterClockwise_Positive;
+        kMotorInverted ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive;
     talonFxConfig.CurrentLimits.StatorCurrentLimitEnable = true;
     talonFxConfig.CurrentLimits.StatorCurrentLimit = kStatorCurrentLimitAmps;
 
@@ -62,17 +53,19 @@ public class FlywheelIOTalonFX implements FlywheelIO {
 
   @Override
   public void updateInputs(FlywheelIOInputs inputs) {
-    double p = SmartDashboard.getNumber(kPKey, kP);
-    double i = SmartDashboard.getNumber(kIKey, kI);
-    double d = SmartDashboard.getNumber(kDKey, kD);
-    double v = SmartDashboard.getNumber(kVKey, kV);
-    double s = SmartDashboard.getNumber(kSKey, kS);
+    double p = SmartDashboard.getNumber("Flywheel/kP", kP);
+    double i = SmartDashboard.getNumber("Flywheel/kI", kI);
+    double d = SmartDashboard.getNumber("Flywheel/kD", kD);
+    double v = SmartDashboard.getNumber("Flywheel/kV", kV);
+    double s = SmartDashboard.getNumber("Flywheel/kS", kS);
+
     if (p != lastP || i != lastI || d != lastD || v != lastV || s != lastS) {
       lastP = p;
       lastI = i;
       lastD = d;
       lastV = v;
       lastS = s;
+
       var slot0 = new Slot0Configs().withKP(p).withKI(i).withKD(d).withKV(v).withKS(s);
       tryUntilOk(5, () -> motor.getConfigurator().apply(slot0, 0.25));
     }
@@ -90,9 +83,9 @@ public class FlywheelIOTalonFX implements FlywheelIO {
   } // End updateInputs
 
   @Override
-  public void setTargetVelocity(double targetVelocityRadsPerSec) {
-    double rampedRadsPerSec = velocityRamp.calculate(targetVelocityRadsPerSec);
-    double motorRps = (rampedRadsPerSec / (2.0 * Math.PI)) * kGearRatio;
+  public void setTargetVelocity(double targetVelocityRadPerSec) {
+    double rampedRadPerSec = velocityRamp.calculate(targetVelocityRadPerSec);
+    double motorRps = (rampedRadPerSec / (2.0 * Math.PI)) * kGearRatio;
     motor.setControl(velocityVoltageRequest.withVelocity(motorRps));
   } // End setTargetVelocity
 

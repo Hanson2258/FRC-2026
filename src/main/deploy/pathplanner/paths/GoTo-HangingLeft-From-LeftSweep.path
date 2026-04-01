@@ -1,0 +1,54 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.5,
+        "y": 7.5
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 3.323223304703363,
+        "y": 7.3232233047033635
+      },
+      "isLocked": false,
+      "linkedName": "Sweep-Shooting-Left-E"
+    },
+    {
+      "anchor": {
+        "x": 1.072349138,
+        "y": 4.822
+      },
+      "prevControl": {
+        "x": 1.249125833296637,
+        "y": 4.9987766952966375
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "HangingPosition-Left"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 1.0,
+    "maxAcceleration": 1.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 90.0
+  },
+  "reversed": false,
+  "folder": "Hanging",
+  "idealStartingState": {
+    "velocity": 1.0,
+    "rotation": 0.0
+  },
+  "useDefaultConstraints": false
+}

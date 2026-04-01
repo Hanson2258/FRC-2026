@@ -71,13 +71,13 @@ public class ShooterCalculator {
         return MetersPerSecond.of(vel.in(RadiansPerSecond) * radius.in(Meters));
     }
 
-    // calculates the angle of a turret relative to the robot to hit a target
+    // calculates the angle of a Turret relative to the robot to hit a target
     public static Angle calculateAzimuthAngle(Pose2d robot, Translation3d target) {
         return calculateAzimuthAngle(robot, target, 0.0);
     }
 
     /**
-     * Same as above but picks shortest path using current turret angle so the turret does not spin
+     * Same as above but picks shortest path using current Turret angle so the Turret does not spin
      * the long way; respects TurretConstants min/max.
      */
     public static Angle calculateAzimuthAngle(

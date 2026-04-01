@@ -1,0 +1,54 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 0.468,
+        "y": 4.98536629696471
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.1956324137181378,
+        "y": 4.98536629696471
+      },
+      "isLocked": false,
+      "linkedName": "Depot-PickupFuel-E"
+    },
+    {
+      "anchor": {
+        "x": 1.7117324561403509,
+        "y": 4.98536629696471
+      },
+      "prevControl": {
+        "x": 1.4617324561403509,
+        "y": 4.98536629696471
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 2.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 153.14236570816456
+  },
+  "reversed": false,
+  "folder": "Depot",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -90.0
+  },
+  "useDefaultConstraints": true
+}

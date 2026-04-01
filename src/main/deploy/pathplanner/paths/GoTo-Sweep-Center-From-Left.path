@@ -1,0 +1,75 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.85,
+        "y": 7.637
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 4.097887380286732,
+        "y": 7.669432186090072
+      },
+      "isLocked": false,
+      "linkedName": "StartingPositionSweep-Left"
+    },
+    {
+      "anchor": {
+        "x": 6.475314995563443,
+        "y": 7.378908606921029
+      },
+      "prevControl": {
+        "x": 6.2295715014914546,
+        "y": 7.424844814005316
+      },
+      "nextControl": {
+        "x": 6.999060353266088,
+        "y": 7.2810062176768415
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 8.221712511091393,
+        "y": 7.0
+      },
+      "prevControl": {
+        "x": 8.041581652507295,
+        "y": 7.2621799628051615
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "SweepPosition-Left-Center"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.8548387096774218,
+      "rotationDegrees": 0.0
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 4.0,
+    "maxAcceleration": 4.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -135.0
+  },
+  "reversed": false,
+  "folder": "Fuel Sweeps",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "useDefaultConstraints": false
+}

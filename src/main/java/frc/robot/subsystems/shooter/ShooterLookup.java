@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 /**
- * Lookup table for shooter: distance to hub (m) → hood angle (rad) and flywheel velocity (rad/s).
+ * Lookup table for Shooter: distance to hub → Hood angle and Flywheel velocity.
  * One row per distance; linear interpolation between rows. Extrapolation clamps to first/last row.
  */
 public final class ShooterLookup {
@@ -39,7 +39,7 @@ public final class ShooterLookup {
   }
 
   /**
-   * Get hood angle and flywheel velocity for a given distance to hub (meters).
+   * Get Hood angle and Flywheel velocity for a given distance to hub (meters).
    * Linear interpolation between table rows; outside range clamps to first/last row.
    */
   public static Result get(double distanceMeters) {

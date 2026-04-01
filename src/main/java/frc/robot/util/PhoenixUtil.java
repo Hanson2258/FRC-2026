@@ -8,7 +8,6 @@
 package frc.robot.util;
 
 import static edu.wpi.first.units.Units.*;
-import static edu.wpi.first.units.Units.Seconds;
 
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.ParentConfiguration;
@@ -135,7 +134,8 @@ public final class PhoenixUtil {
 						.withKV(1.91)
 						.withKA(0)
 						.withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign))
-				.withSteerMotorGearRatio(16.0)
+				// Give sim modules enough current authority to reverse directions and stop quickly
+				.withSlipCurrent(Amps.of(60))
 				// Adjust friction voltages
 				.withDriveFrictionVoltage(Volts.of(0.1))
 				.withSteerFrictionVoltage(Volts.of(0.05))
