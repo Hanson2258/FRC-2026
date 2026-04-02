@@ -3,7 +3,7 @@ package frc.robot.subsystems.candle;
 /** Constants for the CANdle subsystem */
 public class CANdleConstants {
   /** The device id of the CANdle for controlling the LEDs */
-  public static final int kDeviceID = 0; // TODO: Get CANdle device ID
+  public static final int kDeviceID = 26; // TODO: Get CANdle device ID
 
   /** LED start index to apply color to */
   public static final int kFirstLED = 0;

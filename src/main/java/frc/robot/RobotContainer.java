@@ -20,6 +20,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
+import com.ctre.phoenix6.signals.RGBWColor;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
@@ -33,6 +34,7 @@ import static edu.wpi.first.units.Units.Meters;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -78,17 +80,17 @@ public class RobotContainer {
 	private boolean isCompetition = true;
 
 	// Subsystems Toggle
-	private boolean isDriveEnabled 		= true;
-	private boolean isVisionEnabled 	= true;
-	private boolean isIntakeEnabled 	= true;
-	private boolean isExtenderEnabled = true;
-	private boolean isAgitatorEnabled = true;
-	private boolean isTransferEnabled = true;
-	private boolean isTurretEnabled 	= true;
+	private boolean isDriveEnabled 		= false;
+	private boolean isVisionEnabled 	= false;
+	private boolean isIntakeEnabled 	= false;
+	private boolean isExtenderEnabled = false;
+	private boolean isAgitatorEnabled = false;
+	private boolean isTransferEnabled = false;
+	private boolean isTurretEnabled 	= false;
 	private boolean isHoodEnabled 		= false;
-	private boolean isFlywheelEnabled = true;
+	private boolean isFlywheelEnabled = false;
 	private boolean isCandleEnabled = true;
-	private boolean isHangEnabled 		= true;
+	private boolean isHangEnabled 		= false;
 
 	// Simulation Toggle
 	private boolean halfFuelOnly 			= true;
@@ -349,6 +351,7 @@ public class RobotContainer {
 		);
 		
 
+		//candle.setLEDColor(new RGBWColor(new Color(0, 0, 255)));
     // Configure button bindings
     configureDriverBindings();
     configureOperatorBindings(true); // False to disable operator controls

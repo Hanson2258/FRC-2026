@@ -26,11 +26,11 @@ public class CANdle extends SubsystemBase {
   public void periodic() {
     candleIO.updateInputs(candleIOInputs);
 
-    //aLogger.recordOutput("Subsystems/LED/Inputs/MotorConnected", candleIOInputs.);
-    //aLogger.recordOutput("Subsystems/LED/Inputs/AppliedVolts", candleIOInputs.appliedVolts);
-    //aLogger.recordOutput("Subsystems/LED/Inputs/SupplyCurrentAmps", candleIOInputs.supplyCurrentAmps);
-    //aLogger.recordOutput("Subsystems/LED/TargetVolts", getTargetVoltage());
-    //aLogger.recordOutput("Subsystems/LED/State", state.name());
+    //Logger.recordOutput("Subsystems/LED/Inputs/CurrentAnimationType", candleIOInputs.currentAnimationType);
+    //Logger.recordOutput("Subsystems/LED/Inputs/AppliedVolts", candleIOInputs.appliedVolts);
+    //Logger.recordOutput("Subsystems/LED/Inputs/SupplyCurrentAmps", candleIOInputs.supplyCurrentAmps);
+    //Logger.recordOutput("Subsystems/LED/TargetVolts", getTargetVoltage());
+    //Logger.recordOutput("Subsystems/LED/State", state.name());
 
     if (DriverStation.isDisabled()) {
       candleIO.clear();
