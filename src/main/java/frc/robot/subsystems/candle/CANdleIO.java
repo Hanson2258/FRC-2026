@@ -7,8 +7,6 @@ import static frc.robot.subsystems.candle.CANdleConstants.AnimationType;
 import org.littletonrobotics.junction.AutoLog;
 import com.ctre.phoenix6.signals.RGBWColor;
 
-import edu.wpi.first.wpilibj.util.Color;
-
 /**
  * IO interface for the CANdle
  */
@@ -16,11 +14,8 @@ public interface CANdleIO {
 
     @AutoLog
     class CANdleIOInputs {
-
         AnimationType currentAnimationType = AnimationType.None;
-        AnimationType targetAnimationType = AnimationType.None;
-        RGBWColor currentColor = new RGBWColor(Color.kWhite);
-        RGBWColor targetColor = new RGBWColor(Color.kWhite);
+        //RGBWColor currentColor = new RGBWColor(Color.kWhite);
         int startLEDIndex = kFirstLED;
         int endLEDIndex = kEndLED;
     }

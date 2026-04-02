@@ -45,9 +45,7 @@ public class CANdleIOLEDs implements CANdleIO {
   @Override
   public void updateInputs(CANdleIOInputs inputs) {
     inputs.currentAnimationType = targetAnimationType;
-    inputs.targetAnimationType = targetAnimationType;
-    inputs.currentColor = currentColor;
-    inputs.targetColor = targetColor;
+    //inputs.currentColor = currentColor;s
     inputs.startLEDIndex = startIndex;
     inputs.endLEDIndex = endIndex;
 

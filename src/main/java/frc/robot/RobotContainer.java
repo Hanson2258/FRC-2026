@@ -52,6 +52,7 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 import frc.robot.subsystems.intake.*;
 import frc.robot.subsystems.extender.*;
 import frc.robot.subsystems.agitator.*;
+import frc.robot.subsystems.candle.*;
 import frc.robot.subsystems.shooter.*;
 import frc.robot.subsystems.shooter.transfer.*;
 import frc.robot.subsystems.shooter.turret.*;
@@ -86,6 +87,7 @@ public class RobotContainer {
 	private boolean isTurretEnabled 	= true;
 	private boolean isHoodEnabled 		= false;
 	private boolean isFlywheelEnabled = true;
+	private boolean isCandleEnabled = true;
 	private boolean isHangEnabled 		= true;
 
 	// Simulation Toggle
@@ -104,6 +106,7 @@ public class RobotContainer {
 	private final Turret turret;
 	private final Hood hood;
 	private final Flywheel flywheel;
+	private final CANdle candle;
 	private final Hang hang;
 
 	// Drive Commands
@@ -186,6 +189,7 @@ public class RobotContainer {
 				turret   = isTurretEnabled 	 ? new Turret(new TurretIOSparkMax()) 	  : new Turret(new TurretIO() {});
 				hood     = isHoodEnabled  	 ? new Hood(new HoodIOSparkMax()) 		  	: new Hood(new HoodIO() {});
 				flywheel = isFlywheelEnabled ? new Flywheel(new FlywheelIOTalonFX())  : new Flywheel(new FlywheelIO() {});
+				candle 	 = isCandleEnabled   ? new CANdle(new CANdleIOLEDs())  			  : new CANdle(new CANdleIO() {});
 				hang 	 	 = isHangEnabled		 ? new Hang(new HangIOSparkMax())  				: new Hang(new HangIO() {});
 				shooterSim = null;
 				shooterSimVisualizer = null;
@@ -226,6 +230,7 @@ public class RobotContainer {
 				turret 	 = new Turret(new TurretIOSim());
 				hood 		 = new Hood(new HoodIOSim());
 				flywheel = new Flywheel(new FlywheelIOSim());
+				candle   = new CANdle(new CANdleIO() {});
 				hang 		 = new Hang(new HangIOSim());
 
 				// Shooter Sim Visualizer
@@ -266,6 +271,7 @@ public class RobotContainer {
 				turret 	 = new Turret(new TurretIO() {});
 				hood 		 = new Hood(new HoodIO() {});
 				flywheel = new Flywheel(new FlywheelIO() {});
+				candle   = new CANdle(new CANdleIO() {});
 				hang 		 = new Hang(new HangIO() {});
 				shooterSim = null;
 				shooterSimVisualizer = null;
@@ -339,8 +345,9 @@ public class RobotContainer {
 					new Pose3d(-0.095, -0.17, 0.31, new Rotation3d(0, 0, 0)), // model_0 Turret
 					new Pose3d(0.275, 0, 0.195, new Rotation3d(0, 0, 0)),  // model_1 Extender
 					new Pose3d(-0.29635, 0.055, 0.215, new Rotation3d(0, 0, 0))   // model_2 Hang
-				});
-			
+				}
+		);
+		
 
     // Configure button bindings
     configureDriverBindings();
