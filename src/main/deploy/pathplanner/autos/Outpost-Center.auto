@@ -11,39 +11,15 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "GoTo-Outpost-From-Center"
+          }
+        },
+        {
           "type": "named",
           "data": {
             "name": "Flywheel On"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Set Shooter Target Hub"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Extender Partial"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "DriveToOutpostFromCenter"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 3.0
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "OutpostShooting11ft"
           }
         },
         {
@@ -55,13 +31,13 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 7.0
+            "waitTime": 15.0
           }
         }
       ]
     }
   },
-  "resetOdom": true,
+  "resetOdom": false,
   "folder": "Outpost",
   "choreoAuto": false
 }

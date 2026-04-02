@@ -1,6 +1,7 @@
 package frc.robot.subsystems.extender;
 
-import com.ctre.phoenix6.Utils;
+import static frc.robot.subsystems.extender.ExtenderConstants.*;
+
 import com.revrobotics.PersistMode;
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
@@ -13,8 +14,8 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import static frc.robot.subsystems.extender.ExtenderConstants.*;
 
+/** Extender IO using a single SPARK MAX (NEO 550) with onboard position control. */
 public class ExtenderIOSparkMax implements ExtenderIO {
 
   private final SparkMax motor;
@@ -24,72 +25,71 @@ public class ExtenderIOSparkMax implements ExtenderIO {
   private double lastP = kP;
   private double lastI = kI;
   private double lastD = kD;
-  private double targetPosition;
-  
+
   public ExtenderIOSparkMax() {
     motor = new SparkMax(kMotorId, SparkLowLevel.MotorType.kBrushless);
     closedLoopController = motor.getClosedLoopController();
     encoder = motor.getEncoder();
 
-    SparkMaxConfig sparkMaxConfig = new SparkMaxConfig();
+    var sparkMaxConfig = new SparkMaxConfig();
     sparkMaxConfig.idleMode(kIdleMode);
     sparkMaxConfig.inverted(kMotorInverted);
     sparkMaxConfig.smartCurrentLimit(kSmartCurrentLimitAmps);
     sparkMaxConfig
-      .encoder
-      .positionConversionFactor(1.0 / kGearRatio)
-      .velocityConversionFactor(1.0 / kGearRatio);
-    sparkMaxConfig.closedLoop.p(kP).i(kI).d(kD).maxOutput(0.3).minOutput(-0.3); // TODO: Test Tomorrow - Ensure this is enough to lift.
+        .encoder
+        .positionConversionFactor(1.0 / kGearRatio)
+        .velocityConversionFactor(1.0 / kGearRatio);
+    sparkMaxConfig.closedLoop.p(kP).i(kI).d(kD).maxOutput(0.3).minOutput(-0.3);
     sparkMaxConfig.signals
-        .appliedOutputPeriodMs(31)
-        .busVoltagePeriodMs(31)
-        .outputCurrentPeriodMs(31)
-        .primaryEncoderPositionPeriodMs(499)
-        .primaryEncoderVelocityPeriodMs(499);
+        .appliedOutputPeriodMs(kSignalsPeriodMs)
+        .busVoltagePeriodMs(kSignalsPeriodMs)
+        .outputCurrentPeriodMs(kSignalsPeriodMs)
+        .primaryEncoderPositionPeriodMs(kSignalsPeriodMs)
+        .primaryEncoderVelocityPeriodMs(kEncoderVelocitySignalPeriodMs);
 
-    motor.configure(sparkMaxConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
-  } // End ExtenderIOSParkMax
+    motor.configure(sparkMaxConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+    motor.setPeriodicFrameTimeout(0);
+  } // End ExtenderIOSparkMax Constructor
 
   @Override
   public void updateInputs(ExtenderIOInputs inputs) {
     double p = SmartDashboard.getNumber("Extender/kP", kP);
     double i = SmartDashboard.getNumber("Extender/kI", kI);
     double d = SmartDashboard.getNumber("Extender/kD", kD);
-    if (p != lastP || i != lastI || d != lastD) {
 
+    if (p != lastP || i != lastI || d != lastD) {
       lastP = p;
       lastI = i;
       lastD = d;
 
-      SparkMaxConfig sparkMaxConfig = new SparkMaxConfig();
-      sparkMaxConfig.closedLoop.p(kP).i(kI).d(kD);
+      var sparkMaxConfig = new SparkMaxConfig();
+      sparkMaxConfig.closedLoop.p(p).i(i).d(d);
       sparkMaxConfig.signals
-          .appliedOutputPeriodMs(31)
-          .busVoltagePeriodMs(31)
-          .outputCurrentPeriodMs(31)
-          .primaryEncoderPositionPeriodMs(499)
-          .primaryEncoderVelocityPeriodMs(499);
-      motor.configure(sparkMaxConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+          .appliedOutputPeriodMs(kSignalsPeriodMs)
+          .busVoltagePeriodMs(kSignalsPeriodMs)
+          .outputCurrentPeriodMs(kSignalsPeriodMs)
+          .primaryEncoderPositionPeriodMs(kSignalsPeriodMs)
+          .primaryEncoderVelocityPeriodMs(kEncoderVelocitySignalPeriodMs);
+      motor.configure(sparkMaxConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+      motor.setPeriodicFrameTimeout(0);
     }
 
     inputs.motorConnected = motor.getLastError() == REVLibError.kOk;
     inputs.positionRads = Units.rotationsToRadians(encoder.getPosition());
-    inputs.targetPositionRads = targetPosition;
     inputs.velocityRadsPerSec = Units.rotationsToRadians(encoder.getVelocity() / 60.0);
     inputs.appliedVolts = motor.getAppliedOutput() * motor.getBusVoltage();
     inputs.supplyCurrentAmps = motor.getOutputCurrent();
   } // End updateInputs
 
   @Override
-  public void setTargetPosition(double rads) {
-     double targetRot = Units.radiansToRotations(rads);
-     closedLoopController.setSetpoint(targetRot, SparkBase.ControlType.kPosition);
-     targetPosition = rads;
+  public void setTargetPosition(double targetRads) {
+    double targetRot = Units.radiansToRotations(targetRads);
+    closedLoopController.setSetpoint(targetRot, SparkBase.ControlType.kPosition);
   } // End setTargetPosition
 
   @Override
   public void resetEncoders() {
-    encoder.setPosition(Units.degreesToRadians(kEncoderResetRads));
+    encoder.setPosition(Units.radiansToRotations(kMaxRad));
   } // End resetEncoders
 
   @Override

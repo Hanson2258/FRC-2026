@@ -3,11 +3,11 @@ package frc.robot.subsystems.shooter.transfer;
 import com.revrobotics.spark.config.SparkBaseConfig;
 
 /** Constants for the Transfer (agitator-to-shooter) subsystem. */
-public final class TransferConstants { // XXX: Add correct values
+public final class TransferConstants {
 
   private TransferConstants() {}
 
-  /** CAN ID of the Transfer motor (NEO 550 on SPARK MAX or Kraken on Talon FX). */
+  /** CAN ID of the Transfer motor. */
   public static final int kMotorId = 7;
 
   /** Idle behavior when output is zero (coast or brake). SPARK MAX only. */
@@ -19,24 +19,31 @@ public final class TransferConstants { // XXX: Add correct values
   /** Smart current limit. SPARK MAX only. */
   public static final int kSmartCurrentLimitAmps = 25;
 
+  /** Stator current limit. Talon FX only. */
+  public static final double kStatorCurrentLimitAmps = 30.0;
+  
   /** Open-loop ramp time from 0 to full output. Limits current spikes on step changes. SPARK MAX only. */
-  public static final double kOpenLoopRampRateSec = 0.3;
+  public static final double kOpenLoopRampRateSec = 0.0;
+
+  /** Period for sending signals to the motor. */
+  public static final int kSignalsPeriodMs = 107;
+  public static final int kEncoderVelocitySignalPeriodMs = 251;
 
   /** Max voltage magnitude applied to the motor. */
   public static final double kMaxVoltage = 10.0;
 
-  /** Stator current limit. Talon FX only. */
-  public static final double kStatorCurrentLimitAmps = 30.0;
-
-  /** Voltage when idle. */
+  /** Voltage in Idle state. */
   public static final double kIdleVoltage = 0.0;
 
-  /** Voltage when staging (slow pre-load). */
+  /** Voltage in Staging state (slow pre-load). */
   public static final double kStagingVoltage = 2.0;
 
-  /** Voltage when shooting. */
-  public static final double kShootingVoltage = 6.0;
+  /** Voltage in Shooting state. */
+  public static final double kShootingVoltage = 8.0;
 
   /** Proximity at or above this value = ball present (REV Color Sensor V3: 0–2047). */
   public static final int kColorSensorProximityThreshold = 150;
+
+  /** Delta volts per step. */
+  public static final double kStepVolts = 0.25;
 }

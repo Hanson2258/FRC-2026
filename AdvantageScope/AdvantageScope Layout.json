@@ -1,13 +1,13 @@
 {
   "hubs": [
     {
-      "x": 0,
-      "y": 245,
-      "width": 1920,
-      "height": 835,
+      "x": -8,
+      "y": -8,
+      "width": 2576,
+      "height": 1048,
       "state": {
         "sidebar": {
-          "width": 452,
+          "width": 459,
           "expanded": [
             "/AdvantageKit/RealOutputs/IntakeVisualizer/LeftMechanism/dims",
             "/AdvantageKit/RealOutputs/IntakeVisualizer/LeftMechanism/Intake/Measured Left",
@@ -28,18 +28,24 @@
             "/Vision/Camera0",
             "/RealOutputs/ShooterVisualizer/HoodPose/rotation",
             "/RealOutputs/ShooterVisualizer/TurretPose",
-            "/RealOutputs/Subsystems/Shooter",
-            "/RealOutputs/Subsystems/Shooter/Hood",
             "/RealOutputs/Subsystems/Shooter/Hood/Inputs",
-            "/RealOutputs/Subsystems/Shooter/Flywheel",
             "/RealOutputs/Subsystems/Shooter/Flywheel/Inputs",
             "/RealOutputs/Shooter/Ready",
             "/RealOutputs/Vision/Camera0",
             "/SmartDashboard",
             "/SmartDashboard/Flywheel",
-            "/RealOutputs/Odometry",
-            "/RealOutputs",
-            "/RealOutputs/ComponentPoses"
+            "/RealOutputs/Vision/Summary",
+            "/RealOutputs/Vision/Camera1",
+            "/RealOutputs/Subsystems/Shooter/Turret/Inputs",
+            "/RealOutputs/Subsystems/Extender/Inputs",
+            "/RealOutputs/Subsystems/Shooter/Flywheel",
+            "/RealOutputs/Subsystems/Hang/Inputs",
+            "/RealOutputs/Subsystems/Shooter",
+            "/Drive/Module0",
+            "/RealOutputs/Subsystems/Drive",
+            "/RealOutputs/Subsystems/Drive/Sim",
+            "/RealOutputs/Subsystems/Drive/Sim/DriveSpeedMultipliers",
+            "/RealOutputs"
           ]
         },
         "tabs": {
@@ -64,7 +70,7 @@
                     "logType": "Pose2d",
                     "visible": true,
                     "options": {
-                      "model": "Cranberry Alarm"
+                      "model": "Beta"
                     }
                   },
                   {
@@ -78,6 +84,15 @@
                     "type": "gamePiece",
                     "logKey": "/RealOutputs/FieldSimulation/Fuels",
                     "logType": "Translation3d[]",
+                    "visible": true,
+                    "options": {
+                      "variant": "Fuel"
+                    }
+                  },
+                  {
+                    "type": "gamePiece",
+                    "logKey": "/RealOutputs/ShooterVisualizer/GhostFuel",
+                    "logType": "Pose3d[]",
                     "visible": true,
                     "options": {
                       "variant": "Fuel"
@@ -101,14 +116,14 @@
                 "cameraIndex": -1,
                 "orbitFov": 50,
                 "cameraPosition": [
-                  -11.63367988479383,
-                  7.338858546364048,
-                  0.5958366881804233
+                  -12.36593324799362,
+                  8.108651049441114,
+                  0.06884625808310849
                 ],
                 "cameraTarget": [
-                  -10.8312003844299,
-                  6.742190650403799,
-                  0.5995881447012256
+                  -4.340863079361213,
+                  0.9570091107540878,
+                  0.11014473009179518
                 ]
               },
               "controlsHeight": 324
@@ -124,7 +139,7 @@
                     "logType": "Pose2d",
                     "visible": true,
                     "options": {
-                      "model": "Cranberry Alarm"
+                      "model": "Beta"
                     }
                   },
                   {
@@ -140,7 +155,7 @@
                     "logType": "Pose3d[]",
                     "visible": true,
                     "options": {
-                      "model": "Cranberry Alarm",
+                      "model": "2026 KitBot",
                       "color": "#00ff00"
                     }
                   },
@@ -150,7 +165,17 @@
                     "logType": "Pose3d[]",
                     "visible": true,
                     "options": {
-                      "color": "#00ff00",
+                      "color": "#ff8c00",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "vision",
+                    "logKey": "/RealOutputs/Vision/Camera1/TagPoses",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#ffff00",
                       "size": "normal"
                     }
                   },
@@ -158,9 +183,19 @@
                     "type": "cone",
                     "logKey": "/RealOutputs/Vision/Camera0/CameraPose",
                     "logType": "Pose3d[]",
-                    "visible": false,
+                    "visible": true,
                     "options": {
-                      "color": "#ff0000",
+                      "color": "#ff8c00",
+                      "position": "center"
+                    }
+                  },
+                  {
+                    "type": "cone",
+                    "logKey": "/RealOutputs/Vision/Camera1/CameraPose",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#ffff00",
                       "position": "center"
                     }
                   }
@@ -172,17 +207,17 @@
                 "cameraIndex": -1,
                 "orbitFov": 50,
                 "cameraPosition": [
-                  12.654203393600216,
-                  8.35696380870955,
-                  -0.13116698044091893
+                  13.224677244482773,
+                  8.071327039061426,
+                  -0.19822400182343328
                 ],
                 "cameraTarget": [
-                  -0.9395775970270397,
-                  -1.540142295692766,
-                  -0.037442022454950374
+                  0.5868962911994468,
+                  -1.9222178719802183,
+                  -0.2108960630422302
                 ]
               },
-              "controlsHeight": 285
+              "controlsHeight": 306
             }
           ]
         }

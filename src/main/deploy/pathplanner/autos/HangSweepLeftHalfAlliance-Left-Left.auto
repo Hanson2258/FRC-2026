@@ -1,0 +1,145 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "Extender Down"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Flywheel On"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot When Ready"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 3.25
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Flywheel Off"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Cancel Shoot When Ready"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake On"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "GoTo-Sweep-Alliance-From-Left"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Sweep-Half-Alliance-LeftToRight"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "GoTo-Sweep-Shooting-11ft-From-LeftSweep"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake Off"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Flywheel On"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot When Ready"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Extender Partial"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Hang Level 1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "GoTo-HangingLeft-From-LeftSweep"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Hang-HangingLeft"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Drive Back Hang Align"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.5
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Safe Retract Extender"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Hang Hanging"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 2.0
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": false,
+  "folder": "Hanging",
+  "choreoAuto": false
+}

@@ -1,6 +1,8 @@
 # Welcome
 This is the Repository for **FRC 2026 game, REBUILT** for the Esquimalt Robotics Teams (**7287 Esquimalt Atom Smashers** and **7334 Esquimalt Proton Pulverizers**) from Esquimalt, BC, Canada.
 
+View a description of our autos [here](/AUTOS.md/)
+
 # Setup
 To setup this Repository, please do the following:
 1. Ensure you have the correct seasons's [FRC Game Tools](https://docs.wpilib.org/en/stable/docs/zero-to-robot/step-2/frc-game-tools.html) installed. (Check this by opening the tools and ensure they all say 2026, or in the Driver Station's case, is V26 or higher.)

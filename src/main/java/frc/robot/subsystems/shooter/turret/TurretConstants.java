@@ -6,8 +6,8 @@ import com.revrobotics.spark.config.SparkBaseConfig;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 
-/** Constants for the Turret (position-controlled hub aiming) subsystem. */
-public final class TurretConstants { // XXX: Add correct values
+/** Constants for the Turret (position-controlled targeting) subsystem. */
+public final class TurretConstants {
 
   private TurretConstants() {}
 
@@ -27,32 +27,38 @@ public final class TurretConstants { // XXX: Add correct values
   public static final double kStatorCurrentLimitAmps = 30.0;
 
   /** Turret radians per motor rotation (output / input). 1.0 = 1:1. */
-  public static final double kGearRatio = 27.81;
+  public static final double kGearRatio = 25.4;
 
+  /** PID gains for onboard position control. */
+  public static final double kP = 14.0;
+  public static final double kI = 0.0;
+  public static final double kD = 0.0;
 
-  /** Encoder zero offset. Added to raw encoder so that 0 = Turret pointing robot-backward. */
-  public static final double kEncoderZeroOffsetRad = 0;
+  /** Period for sending signals to the motor. SPARK MAX only. */
+  public static final int kSignalsPeriodMs = 19;
+  public static final int kEncoderVelocitySignalPeriodMs = 19;
+  
+  /** Default aim direction in robot frame (0 = forward); π = toward robot back. */
+  public static final Rotation2d kDefaultAimDirectionRobotFrame = Rotation2d.kZero;
 
   /** Minimum Turret angle. */
-  public static final double kMinAngleRad = Units.degreesToRadians(-90.0);
+  public static final double kMinAngleRad = Units.degreesToRadians(-200.0);
 
   /** Maximum Turret angle. */
-  public static final double kMaxAngleRad = Units.degreesToRadians(90.0);
+  public static final double kMaxAngleRad = Units.degreesToRadians(120.0);
 
   /** Max voltage magnitude applied to the motor. */
   public static final double kMaxVoltage = 12.0;
 
-  /** Vision camera index used for hub aiming (when using fixed camera + tx). */
-  public static final int kVisionCameraIndex = 0;
+  /** Tolerance for considering the Turret on target (setpoint vs measured, Turret frame). */
+  public static final double kAtTargetToleranceRad = Units.degreesToRadians(3.0);
 
-  /** Angle from robot forward to camera boresight (for fixed camera). */
-  public static final Rotation2d kCameraAngleOffset = Rotation2d.kZero;
-  
-  /** The default position for the turret to go to */
-  public static final double kDefaultTurretRads = 0.0;
-  
-  /** PID gains for onboard position control and for sim software control. */
-  public static final double kP = 7.0;
-  public static final double kI = 0.0;
-  public static final double kD = 0.0;
+  /** 
+   * Tolerance for considering the Turret on target (setpoint vs measured, Turret frame).
+   * Larger tolerance than kAtTargetToleranceRad
+   */
+  public static final double kAtTargetToleranceNonHubRad = Units.degreesToRadians(8.0);
+
+  /** Delta Rad per step. */
+  public static final double kStepRad = Units.degreesToRadians(5.0);
 }

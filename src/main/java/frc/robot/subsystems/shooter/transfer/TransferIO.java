@@ -16,9 +16,9 @@ public interface TransferIO {
   /** Update inputs from the hardware. */
   default void updateInputs(TransferIOInputs inputs) {}
 
-  /** Set the motor output voltage. */
-  default void setVoltage(double volts) {}
+  /** Set the motor output voltage, and ignore limits if ignoreLimits is true. */
+  default void setVoltage(double volts, boolean ignoreLimits) {}
 
-  /** Stop the motor (coast). */
+  /** Stop the motor. */
   default void stop() {}
 }

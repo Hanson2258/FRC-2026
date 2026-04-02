@@ -1,80 +1,78 @@
 package frc.robot.subsystems.extender;
 
-import org.littletonrobotics.junction.Logger;
+import static frc.robot.subsystems.extender.ExtenderConstants.*;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import static frc.robot.subsystems.extender.ExtenderConstants.kAtTargetRadsTolerance;
-import static frc.robot.subsystems.extender.ExtenderConstants.kD;
-import static frc.robot.subsystems.extender.ExtenderConstants.kDownExtenderRads;
-import static frc.robot.subsystems.extender.ExtenderConstants.kEncoderResetRads;
-import static frc.robot.subsystems.extender.ExtenderConstants.kI;
-import static frc.robot.subsystems.extender.ExtenderConstants.kMaxRads;
-import static frc.robot.subsystems.extender.ExtenderConstants.kMinRads;
-import static frc.robot.subsystems.extender.ExtenderConstants.kP;
-import static frc.robot.subsystems.extender.ExtenderConstants.kUpExtenderRads;
-import static frc.robot.subsystems.extender.ExtenderConstants.kPartialExtenderRads;
+import java.util.function.BooleanSupplier;
+import org.littletonrobotics.junction.Logger;
 
 /** Extender subsystem: one motor with onboard position control. */
 public class Extender extends SubsystemBase {
 
-  /** Extender state: Retracted (facing up), Extended (facing forward). */
-  public enum ExtenderState {
+  /** Extender state: Idle, Retracted (facing up), Partial, Extended (facing forward) or Manual. */
+  public enum State {
     IDLE,
     RETRACTED,
     PARTIAL,
-    EXTENDED
-  }
+    EXTENDED,
+    MANUAL
+  } // End State enum
 
   private final ExtenderIO extenderIO;
   private final ExtenderIO.ExtenderIOInputs extenderInputs = new ExtenderIO.ExtenderIOInputs();
-  
-  private ExtenderState state = ExtenderState.RETRACTED;
-  private double targetPosition = kUpExtenderRads;
+
+  private State state = State.RETRACTED;
+  private double targetPositionRad = kUpExtenderRad;
+  private BooleanSupplier ignoreLimitsSupplier = () -> false;
 
   public Extender(ExtenderIO io) {
-    extenderIO = io; 
+    extenderIO = io;
 
     SmartDashboard.putNumber("Extender/kP", kP);
     SmartDashboard.putNumber("Extender/kI", kI);
     SmartDashboard.putNumber("Extender/kD", kD);
-    SmartDashboard.putNumber("Extender/TargetPositionRads", extenderInputs.targetPositionRads);
-
-    targetPosition = kUpExtenderRads;
-  }
+    SmartDashboard.putNumber("Extender/TargetPositionDeg", Units.radiansToDegrees(targetPositionRad));
+  } // End Extender Constructor
 
   @Override
   public void periodic() {
     extenderIO.updateInputs(extenderInputs);
     Logger.recordOutput("Subsystems/Extender/Inputs/MotorConnected", extenderInputs.motorConnected);
+    Logger.recordOutput("Subsystems/Extender/Inputs/PositionDeg", Units.radiansToDegrees(extenderInputs.positionRads));
+    Logger.recordOutput("Subsystems/Extender/Inputs/VelocityDegPerSec", Units.radiansToDegrees(extenderInputs.velocityRadsPerSec));
     Logger.recordOutput("Subsystems/Extender/Inputs/AppliedVolts", extenderInputs.appliedVolts);
     Logger.recordOutput("Subsystems/Extender/Inputs/SupplyCurrentAmps", extenderInputs.supplyCurrentAmps);
-    Logger.recordOutput("Subsystems/Extender/Inputs/TargetPositionRads", Units.radiansToDegrees(extenderInputs.targetPositionRads));
-    Logger.recordOutput("Subsystems/Extender/PositionRads", Units.radiansToDegrees(extenderInputs.positionRads));
-    Logger.recordOutput("Subsystems/Extender/VelocityRadsPerSec", extenderInputs.velocityRadsPerSec);
-    Logger.recordOutput("Subsystems/Extender/State", state.name());
+    Logger.recordOutput("Subsystems/Extender/TargetPositionDeg", Units.radiansToDegrees(targetPositionRad));
     Logger.recordOutput("Subsystems/Extender/AtTargetPosition", atTargetPosition());
+    Logger.recordOutput("Subsystems/Extender/State", state.name());
 
     if (DriverStation.isDisabled()) {
       extenderIO.stop();
       return;
     }
 
-    // Set Extender position based on current state
+    // Update the target position.
+    targetPositionRad = getSetpointRad();
+
+    // Set the Extender position based on the current state.
     switch (state) {
       case RETRACTED:
       case PARTIAL:
-        extenderIO.setTargetPosition(clampTargetPosition(targetPosition));
+        extenderIO.setTargetPosition(getSetpointRad());
         break;
       case EXTENDED:
-        if (Units.radiansToDegrees(getPosition()) > targetPosition - kAtTargetRadsTolerance) {
+        if (getPositionRad() > targetPositionRad - kAtTargetToleranceRad) {
           extenderIO.stop();
         } else {
-          extenderIO.setTargetPosition(clampTargetPosition(targetPosition));
+          extenderIO.setTargetPosition(targetPositionRad);
         }
+        break;
+      case MANUAL:
+        extenderIO.setTargetPosition(targetPositionRad);
         break;
       case IDLE:
       default:
@@ -83,71 +81,84 @@ public class Extender extends SubsystemBase {
     }
   } // End periodic
 
-  /** Set state to idle state (stop extender) */
+  /** Set state to Idle (motor stopped). */
   public void setIdleState() {
-    state = ExtenderState.IDLE;
-    setTargetPosition(getPosition());
+    state = State.IDLE;
+    setTargetPositionRad(getPositionRad());
     extenderIO.stop();
   } // End setIdleState
 
-  /** Set state to retracted state (Go to up position) */
+  /** Set state to Retracted (up position). */
   public void setRetractedState() {
-    state = ExtenderState.RETRACTED;
-    setTargetPosition(kUpExtenderRads);
+    state = State.RETRACTED;
+    setTargetPositionRad(kUpExtenderRad);
   } // End setRetractedState
 
-  /** Set state to partial state (Go to middle position) */
+  /** Set state to Partial (middle position). */
   public void setPartialState() {
-    state = ExtenderState.PARTIAL;
-    setTargetPosition(kPartialExtenderRads);
+    state = State.PARTIAL;
+    setTargetPositionRad(kPartialExtenderRad);
   } // End setPartialState
 
-  /** Set state to extended state (Go to down position and rest on bumpers) */
+  /** Set state to Extended (down; rest on bumpers when there). */
   public void setExtendedState() {
-    state = ExtenderState.EXTENDED;
-    setTargetPosition(kDownExtenderRads);
-  } // End setUpState
+    state = State.EXTENDED;
+    setTargetPositionRad(kExtendedExtenderRad);
+  } // End setExtendedState
 
-  /** Returns the extenders current state */
-  public ExtenderState getState() {
+  /** Get current state. */
+  public State getState() {
     return state;
   } // End getState
 
-  /** Sets the motor encoder position to 0 */
+
+  /** Measured position in radians. */
+  public double getPositionRad() {
+    return extenderInputs.positionRads;
+  } // End getPositionRad  
+
+  /** Get the current target position in radians. */
+  public double getTargetPositionRad() {
+    return targetPositionRad;
+  } // End getTargetPositionRad
+
+  /** Set target position in radians (clamped to travel limits if limits override is not enabled). */
+  public void setTargetPositionRad(double targetRad) {
+    targetPositionRad = ignoreLimitsSupplier.getAsBoolean() ? targetRad : clampTargetPosition(targetRad);
+  } // End setTargetPositionRad
+
+  /** Whether Extender is at target position within tolerance. */
+  public boolean atTargetPosition() {
+    return Math.abs(getPositionRad() - targetPositionRad) <= kAtTargetToleranceRad;
+  } // End atTargetPosition
+
+  
+  /** Clamp a target angle to mechanical limits. */
+  public double clampTargetPosition(double targetRad) {
+    return MathUtil.clamp(targetRad, kMinRad, kMaxRad);
+  } // End getClampedTargetPos
+
+  /** Get target position, clamped unless limits override is enabled. */
+  private double getSetpointRad() {
+    return ignoreLimitsSupplier.getAsBoolean() ? targetPositionRad : clampTargetPosition(targetPositionRad);
+  } // End getSetpointRad
+
+
+  /** Stop the motor and reset the encoder to the maximum position. */
   public void resetEncoders() {
     extenderIO.stop();
     extenderIO.resetEncoders();
-    setTargetPosition(kEncoderResetRads);
+    setTargetPositionRad(kMaxRad);
   } // End resetEncoders
 
-  /** Set the target rads, used in RETRACTED/EXTENDED state */
-  public void setTargetPosition(double rads) {
-    System.out.println("Setting target pos to: " + rads);
-    targetPosition = clampTargetPosition(rads);
-  } // End setTargetPosition
-
-  /** Returns the target rads */
-  public double getTargetPosition() {
-    return targetPosition;
-  } // End getTargetPosition
-
-  /** Get the motors current rads */
-  public double getPosition() {
-    return extenderInputs.positionRads;
-  } // End getPosition
-
-  /** Step the target Rads by the given amount. */
-  public void stepPosition(double steps) {
-    setTargetPosition(getTargetPosition() + steps);
-  } // End stepPosition
-
-  /** Returns the clamped targetPosition to kMinRads and kMaxRads */
-  public double clampTargetPosition(double pos) {
-    return MathUtil.clamp(pos, kMinRads, kMaxRads);
-  } // End getClampedTargetPos
-
-  /** Whether the extender is at the target position within tolerance */
-  public boolean atTargetPosition() {
-    return Math.abs(getPosition() - targetPosition) <= kAtTargetRadsTolerance;
-  } // End atTargetPosition
+  /** Set supplier for ignoring limits. */
+  public void setIgnoreLimitsSupplier(BooleanSupplier supplier) {
+    ignoreLimitsSupplier = supplier != null ? supplier : () -> false;
+  } // End setIgnoreLimitsSupplier
+  
+  /** Step the target position in radians. */
+  public void stepPositionRad(double stepPositionRad) {
+    state = State.MANUAL;
+    setTargetPositionRad(getTargetPositionRad() + stepPositionRad);
+  } // End stepPositionRad
 }

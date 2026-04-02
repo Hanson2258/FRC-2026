@@ -23,7 +23,6 @@ import frc.robot.Constants.ControllerConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.FieldConstants;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.util.SlewRateLimiter2d;
 import frc.robot.util.Zones;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -39,14 +38,14 @@ public class TeleopDrive extends Command {
   private final DoubleSupplier xSupplier;
   private final DoubleSupplier ySupplier;
   private final DoubleSupplier omegaSupplier;
-  private final SlewRateLimiter2d driveLimiter;
   private int flipFactor = 1;
 
   @AutoLogOutput
   private final Trigger inTrenchZoneTrigger;
 
-  @AutoLogOutput
-  private final Trigger inBumpZoneTrigger;
+  /// Disabled (Bump Zone is not used)
+  // @AutoLogOutput
+  // private final Trigger inBumpZoneTrigger;
 
   private final PIDController trenchYController =
       new PIDController(SwerveConstants.TRENCH_Y_KP, SwerveConstants.TRENCH_Y_KI, SwerveConstants.TRENCH_Y_KD);
@@ -77,7 +76,6 @@ public class TeleopDrive extends Command {
     this.xSupplier = () -> -controller.getLeftY() * flipFactor;
     this.ySupplier = () -> -controller.getLeftX() * flipFactor;
     this.omegaSupplier = () -> -controller.getRightX();
-    this.driveLimiter = new SlewRateLimiter2d(SwerveConstants.MAX_TELEOP_ACCEL_MPS2);
 
     trenchYController.setTolerance(SwerveConstants.TRENCH_Y_TOLERANCE_M);
     rotationController.setTolerance(SwerveConstants.ROTATION_TOLERANCE_RAD);
@@ -87,13 +85,16 @@ public class TeleopDrive extends Command {
         .willContain(drive::getPose, drive::getFieldRelativeChassisSpeeds, Seconds.of(SwerveConstants.TRENCH_ALIGN_TIME_S))
         .debounce(0.1);
 
-    inBumpZoneTrigger = Zones.BUMP_ZONES
-        .willContain(drive::getPose, drive::getFieldRelativeChassisSpeeds, Seconds.of(SwerveConstants.BUMP_ALIGN_TIME_S))
-        .debounce(0.1);
+    /// Disabled (Bump Zone is not used)
+    // inBumpZoneTrigger = Zones.BUMP_ZONES
+    //     .willContain(drive::getPose, drive::getFieldRelativeChassisSpeeds, Seconds.of(SwerveConstants.BUMP_ALIGN_TIME_S))
+    //     .debounce(0.1);
 
     inTrenchZoneTrigger.onTrue(Commands.runOnce(() -> currentDriveMode = DriveMode.TRENCH_LOCK));
-    inBumpZoneTrigger.onTrue(Commands.runOnce(() -> currentDriveMode = DriveMode.BUMP_LOCK));
-    inTrenchZoneTrigger.or(inBumpZoneTrigger).onFalse(Commands.runOnce(() -> currentDriveMode = DriveMode.NORMAL));
+    /// Disabled (Bump Zone is not used)
+    // inBumpZoneTrigger.onTrue(Commands.runOnce(() -> currentDriveMode = DriveMode.BUMP_LOCK));
+    // inTrenchZoneTrigger.or(inBumpZoneTrigger).onFalse(Commands.runOnce(() -> currentDriveMode = DriveMode.NORMAL));
+    inTrenchZoneTrigger.onFalse(Commands.runOnce(() -> currentDriveMode = DriveMode.NORMAL));
 
     addRequirements(drive);
   } // End TeleopDrive Constructor
@@ -158,7 +159,6 @@ public class TeleopDrive extends Command {
 
     Translation2d linearVelocity = getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
     linearVelocity = linearVelocity.times(maxDriveSpeedMps);
-    linearVelocity = driveLimiter.calculate(linearVelocity);
 
     double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), ControllerConstants.CONTROLLER_DEADBAND);
     omega = Math.copySign(omega * omega, omega);
@@ -178,11 +178,11 @@ public class TeleopDrive extends Command {
             ? DriveCommands.computeOmegaToFaceHub(drive, faceTargetController)
             : maxRotSpeedRadPerS * omega;
 
-        // When the robot is stationary, hold position with X-pattern base
-        if (Math.abs(vx) < 1e-3 && Math.abs(vy) < 1e-3 && Math.abs(rot) < 1e-3) {
-          drive.stopWithX();
-          break;
-        }
+        // // When the robot is stationary, hold position with X-pattern base
+        // if (Math.abs(vx) < 1e-3 && Math.abs(vy) < 1e-3 && Math.abs(rot) < 1e-3) {
+        //   drive.stopWithX();
+        //   break;
+        // }
 
         if (isRobotCentricSupplier.getAsBoolean()) {
           drive.runVelocity(new ChassisSpeeds(vx, vy, rot));

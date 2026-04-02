@@ -7,19 +7,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Set Shooter Target Hub"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "Flywheel On"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Shooting - Center"
           }
         },
         {
@@ -27,11 +15,23 @@
           "data": {
             "name": "Shoot When Ready"
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Shooting-Center"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 7.0
+          }
         }
       ]
     }
   },
-  "resetOdom": true,
+  "resetOdom": false,
   "folder": "Simple Shooting",
   "choreoAuto": false
 }

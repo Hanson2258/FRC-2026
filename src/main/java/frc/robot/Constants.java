@@ -9,6 +9,7 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.RobotBase;
 
@@ -22,10 +23,10 @@ public final class Constants {
   public static final double kNominalVoltage = 12.0;
 
   public static class Dimensions {
-    public static final Distance BUMPER_THICKNESS = Inches.of(2.5); // Frame to edge of bumper
-    public static final Distance BUMPER_HEIGHT = Inches.of(5.971); // Height from floor to top of bumper
-    public static final Distance FRAME_SIZE_X = Inches.of(26.5); // Front to back (x-axis)
-    public static final Distance FRAME_SIZE_Y = Inches.of(28.5); // Left to right (y-axis)
+    public static final Distance BUMPER_THICKNESS = Inches.of(3.0); // Frame to edge of bumper
+    public static final Distance BUMPER_HEIGHT = Inches.of(5.995); // Height from floor to top of bumper
+    public static final Distance FRAME_SIZE_X = Inches.of(26.0); // Front to back (x-axis)
+    public static final Distance FRAME_SIZE_Y = Inches.of(28.0); // Left to right (y-axis)
 
     public static final Distance FULL_LENGTH = FRAME_SIZE_X.plus(BUMPER_THICKNESS.times(2));
     public static final Distance FULL_WIDTH = FRAME_SIZE_Y.plus(BUMPER_THICKNESS.times(2));
@@ -37,15 +38,22 @@ public final class Constants {
     public static final double CONTROLLER_RUMBLE = 0.3;
   }
 
-  /** Teleop drive speeds, accel, and trench/bump alignment. */
-  public static class SwerveConstants { // XXX: Tune SwerveConstants
+  /** Match timing. */
+  public static class MatchTiming {
+    private MatchTiming() {}
+
+    /** Driver hang endgame period. */
+    public static final double HANG_DRIVER_ENDGAME_SECONDS = 30.0;
+  }
+
+  /** Teleop drive speeds and trench/bump alignment. */
+  public static class SwerveConstants { // XXX: Tune SwerveConstants, especially TRENCH_ALIGN_TIME_S
     public static final double DEFAULT_DRIVE_SPEED_MPS = 1.6;
     public static final double DEFAULT_ROT_SPEED_RAD_PER_S = 0.75 * 2 * Math.PI;
     /** From Drive.getMaxLinearSpeedMetersPerSec() (TunerConstants.kSpeedAt12Volts = 4.58 m/s). */
     public static final double FAST_DRIVE_SPEED_MPS = 4.58;
     /** From Drive.getMaxAngularSpeedRadPerSec(): max linear / drive base radius. Radius = hypot(9.75, 10.75) in → 0.36866 m. */
     public static final double FAST_ROT_SPEED_RAD_PER_S = 4.58 / 0.36866;
-    public static final double MAX_TELEOP_ACCEL_MPS2 = 40.0; // TODO: Change back to 4 if needed
     public static final double TRENCH_ALIGN_TIME_S = 0.5;
     public static final double BUMP_ALIGN_TIME_S = 0.3;
 
@@ -53,13 +61,23 @@ public final class Constants {
     public static final double TRENCH_Y_KP = 8.0;
     public static final double TRENCH_Y_KI = 0.0;
     public static final double TRENCH_Y_KD = 0.05;
-    public static final double TRENCH_Y_TOLERANCE_M = 0.05;
+    public static final double TRENCH_Y_TOLERANCE_M = 0.127;
 
     /** Rotation (trench/bump lock) PID and tolerance. */
     public static final double ROTATION_KP = 5.0;
     public static final double ROTATION_KI = 0.0;
     public static final double ROTATION_KD = 0.0;
-    public static final double ROTATION_TOLERANCE_RAD = 0.08;
+    public static final double ROTATION_TOLERANCE_RAD = Units.degreesToRadians(10.0);
+  }
+
+  /**
+   * Drive realism for Maple / {@link frc.robot.subsystems.drive.ModuleIOSim} only (that IO is not
+   * used on the real robot).
+   */
+  public static class SimulationDrive {
+    /** Per-module closed-loop drive velocity scale; four wheels get four distinct values in range. */
+    public static final double kDriveSpeedMultiplierMin = 0.97;
+    public static final double kDriveSpeedMultiplierMax = 1.0;
   }
 
   /** Runtime mode. */

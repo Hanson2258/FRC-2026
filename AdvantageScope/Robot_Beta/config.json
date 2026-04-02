@@ -12,9 +12,9 @@
     }
 ],
 "position": [
-    0,
-    0,
-    0.05
+    0.0,
+    0.0,
+    0.04
 ],
   "cameras": [
     {
@@ -33,6 +33,7 @@
   ],
   "components": [
     { 
+      "_comment": "Turret Rotation and Position",
       "zeroedRotations": [
         {
           "axis": "x",
@@ -44,12 +45,13 @@
         }
       ], 
       "zeroedPosition": [
-        0.125, 
+        0.095, 
         0.17, 
         -0.27
       ] 
     },
     { 
+      "_comment": "Extender Rotation and Position",
       "zeroedRotations": [
         {
           "axis": "x",
@@ -61,10 +63,28 @@
         }
       ], 
       "zeroedPosition": [
-        -0.28, 
+        -0.275, 
         0, 
-        -0.15
+        -0.155
+      ] 
+    },
+    { 
+      "_comment": "Hang Rotation and Position",
+      "zeroedRotations": [
+        {
+          "axis": "x",
+          "degrees": 90
+        },
+        {
+          "axis": "z",
+          "degrees": 90
+        }
+      ], 
+      "zeroedPosition": [
+        0.29635, 
+        -0.055, 
+        -0.175
       ] 
     }
-    ]
+  ]
 }

@@ -1,6 +1,6 @@
 // Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+// Open Source Software; you can modify and/or share it under the terms of the
+// WPILib BSD license file in the root directory of this project.
 
 package frc.robot.subsystems.shooter;
 
@@ -14,66 +14,128 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj.Timer;
+import java.util.ArrayList;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
-/** Add your docs here. */
+/** Logs shooter aim trajectory and, when fuel physics is off, ballistic ghost balls (many may be active at once). */
 public class ShooterSimVisualizer {
-    private Translation3d[] trajectory = new Translation3d[50];
-    private Supplier<Pose3d> poseSupplier;
-    private Supplier<ChassisSpeeds> fieldSpeedsSupplier;
 
-    public ShooterSimVisualizer(Supplier<Pose3d> poseSupplier, Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
-        this.poseSupplier = poseSupplier;
-        this.fieldSpeedsSupplier = fieldSpeedsSupplier;
+  private static final double GHOST_FUEL_RADIUS_M = 0.075;
+  /** Failsafe only; normal removal is when the ball reaches the floor. */
+  private static final double GHOST_MAX_AGE_SEC = 30.0;
+
+  private Translation3d[] trajectory = new Translation3d[50];
+  private Supplier<Pose3d> poseSupplier;
+  private Supplier<ChassisSpeeds> fieldSpeedsSupplier;
+
+  private final ArrayList<GhostProjectile> ghostFuels = new ArrayList<>();
+
+  private static final class GhostProjectile {
+    final double spawnTimeSec;
+    final Translation3d launchPos;
+    final Translation3d vel;
+
+    GhostProjectile(double spawnTimeSec, Translation3d launchPos, Translation3d vel) {
+      this.spawnTimeSec = spawnTimeSec;
+      this.launchPos = launchPos;
+      this.vel = vel;
+    }
+  }
+
+  public ShooterSimVisualizer(Supplier<Pose3d> poseSupplier, Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
+    this.poseSupplier = poseSupplier;
+    this.fieldSpeedsSupplier = fieldSpeedsSupplier;
+  } // End ShooterSimVisualizer Constructor
+
+  private Translation3d launchVel(LinearVelocity vel, Angle elevationAngle, Angle shotYawFieldFrame) {
+    ChassisSpeeds fieldSpeeds = fieldSpeedsSupplier.get();
+
+    double horizontalVel = Math.cos(elevationAngle.in(Radians)) * vel.in(MetersPerSecond);
+    double verticalVel = Math.sin(elevationAngle.in(Radians)) * vel.in(MetersPerSecond);
+    double yawRad = shotYawFieldFrame.in(Radians);
+    double xVel = horizontalVel * Math.cos(yawRad);
+    double yVel = horizontalVel * Math.sin(yawRad);
+
+    xVel += fieldSpeeds.vxMetersPerSecond;
+    yVel += fieldSpeeds.vyMetersPerSecond;
+
+    return new Translation3d(xVel, yVel, verticalVel);
+  } // End launchVel
+
+  /**
+   * @param vel Launch speed
+   * @param hoodAngleRad Hood angle from vertical (radians)
+   * @param turretYawRobotFrame Turret yaw in robot frame (radians); trajectory direction = robot heading + this
+   */
+  public void updateFuel(LinearVelocity vel, Angle hoodAngleRad, Angle turretYawRobotFrame) {
+    Angle elevationAngle = Degrees.of(90).minus(hoodAngleRad);
+    Angle shotYawFieldFrame =
+        Radians.of(
+            poseSupplier.get().getRotation().toRotation2d().getRadians() + turretYawRobotFrame.in(Radians));
+    Translation3d trajVel = launchVel(vel, elevationAngle, shotYawFieldFrame);
+    Translation3d launchPos = poseSupplier.get().plus(ShooterConstants.robotToTurret).getTranslation();
+    for (int i = 0; i < trajectory.length; i++) {
+      double t = i * 0.04;
+      double x = trajVel.getX() * t + launchPos.getX();
+      double y = trajVel.getY() * t + launchPos.getY();
+      double z = trajVel.getZ() * t - 0.5 * 9.81 * t * t + launchPos.getZ();
+
+      trajectory[i] = new Translation3d(x, y, z);
     }
 
-    private Translation3d launchVel(LinearVelocity vel, Angle elevationAngle, Angle shotYawFieldFrame) {
-        ChassisSpeeds fieldSpeeds = fieldSpeedsSupplier.get();
+    Logger.recordOutput("ShooterVisualizer/Trajectory", trajectory);
+    updateGhostFuel();
+  } // End updateFuel
 
-        double horizontalVel = Math.cos(elevationAngle.in(Radians)) * vel.in(MetersPerSecond);
-        double verticalVel = Math.sin(elevationAngle.in(Radians)) * vel.in(MetersPerSecond);
-        double yawRad = shotYawFieldFrame.in(Radians);
-        double xVel = horizontalVel * Math.cos(yawRad);
-        double yVel = horizontalVel * Math.sin(yawRad);
+  /**
+   * Adds a ballistic ghost fuel when {@link frc.robot.simulation.FuelSim} is not spawning projectiles. Each shot is
+   * independent; older ghosts are not cleared when a new one spawns. Removed when the ball center reaches floor height
+   * (ball resting on z = 0) or after {@link #GHOST_MAX_AGE_SEC}.
+   */
+  public void startGhostFuel(LinearVelocity vel, Angle hoodAngleFromVertical, Angle turretYawRobotFrame) {
+    Pose3d robot = poseSupplier.get();
+    Angle elevationAngle = Degrees.of(90).minus(hoodAngleFromVertical);
+    Angle shotYawFieldFrame =
+        Radians.of(robot.getRotation().toRotation2d().getRadians() + turretYawRobotFrame.in(Radians));
+    Translation3d v = launchVel(vel, elevationAngle, shotYawFieldFrame);
+    Translation3d p = robot.plus(ShooterConstants.robotToTurret).getTranslation();
+    ghostFuels.add(new GhostProjectile(Timer.getFPGATimestamp(), p, v));
+  } // End startGhostFuel
 
-        xVel += fieldSpeeds.vxMetersPerSecond;
-        yVel += fieldSpeeds.vyMetersPerSecond;
+  private void updateGhostFuel() {
+    double now = Timer.getFPGATimestamp();
+    ghostFuels.removeIf(
+        g -> {
+          double t = now - g.spawnTimeSec;
+          if (t > GHOST_MAX_AGE_SEC) return true;
+          double z = g.launchPos.getZ() + g.vel.getZ() * t - 0.5 * 9.81 * t * t;
+          // Ball bottom at or below field floor (z = 0): center z <= radius
+          return z <= GHOST_FUEL_RADIUS_M;
+        });
 
-        return new Translation3d(xVel, yVel, verticalVel);
+    Pose3d[] poses = new Pose3d[ghostFuels.size()];
+    for (int i = 0; i < ghostFuels.size(); i++) {
+      GhostProjectile g = ghostFuels.get(i);
+      double t = now - g.spawnTimeSec;
+      double x = g.launchPos.getX() + g.vel.getX() * t;
+      double y = g.launchPos.getY() + g.vel.getY() * t;
+      double z = g.launchPos.getZ() + g.vel.getZ() * t - 0.5 * 9.81 * t * t;
+      poses[i] = new Pose3d(x, y, z, Rotation3d.kZero);
     }
+    Logger.recordOutput("ShooterVisualizer/GhostFuel", poses);
+  } // End updateGhostFuel
 
-    /**
-     * @param vel Launch speed
-     * @param hoodAngleRad Hood angle from vertical (radians)
-     * @param turretYawRobotFrame Turret yaw in robot frame (radians); trajectory direction = robot heading + this
-     */
-    public void updateFuel(LinearVelocity vel, Angle hoodAngleRad, Angle turretYawRobotFrame) {
-        Angle elevationAngle = Degrees.of(90).minus(hoodAngleRad);
-        Angle shotYawFieldFrame =
-                Radians.of(poseSupplier.get().getRotation().toRotation2d().getRadians() + turretYawRobotFrame.in(Radians));
-        Translation3d trajVel = launchVel(vel, elevationAngle, shotYawFieldFrame);
-        Translation3d launchPos = poseSupplier.get().plus(ShooterConstants.robotToTurret).getTranslation();
-        for (int i = 0; i < trajectory.length; i++) {
-            double t = i * 0.04;
-            double x = trajVel.getX() * t + launchPos.getX();
-            double y = trajVel.getY() * t + launchPos.getY();
-            double z = trajVel.getZ() * t - 0.5 * 9.81 * t * t + launchPos.getZ();
-
-            trajectory[i] = new Translation3d(x, y, z);
-        }
-
-        Logger.recordOutput("ShooterVisualizer/Trajectory", trajectory);
-    }
-
-    public void update3dPose(Angle azimuthAngle, Angle hoodAngle) {
-        Pose3d turretPose = new Pose3d(0, 0, 0, new Rotation3d(0, 0, azimuthAngle.in(Radians)));
-        Logger.recordOutput("ShooterVisualizer/TurretPose", turretPose);
-        Pose3d hoodPose = new Pose3d(0.1, 0, 0, new Rotation3d(0, hoodAngle.in(Radians), 0));
-        hoodPose = hoodPose.rotateAround(new Translation3d(), new Rotation3d(0, 0, azimuthAngle.in(Radians)));
-        hoodPose = new Pose3d(
-                hoodPose.getTranslation().plus(ShooterConstants.robotToTurret.getTranslation()),
-                hoodPose.getRotation());
-        Logger.recordOutput("ShooterVisualizer/HoodPose", hoodPose);
-    }
+  public void update3dPose(Angle azimuthAngle, Angle hoodAngle) {
+    Pose3d turretPose = new Pose3d(0, 0, 0, new Rotation3d(0, 0, azimuthAngle.in(Radians)));
+    Logger.recordOutput("ShooterVisualizer/TurretPose", turretPose);
+    Pose3d hoodPose = new Pose3d(0.1, 0, 0, new Rotation3d(0, hoodAngle.in(Radians), 0));
+    hoodPose = hoodPose.rotateAround(new Translation3d(), new Rotation3d(0, 0, azimuthAngle.in(Radians)));
+    hoodPose =
+        new Pose3d(
+            hoodPose.getTranslation().plus(ShooterConstants.robotToTurret.getTranslation()),
+            hoodPose.getRotation());
+    Logger.recordOutput("ShooterVisualizer/HoodPose", hoodPose);
+  } // End update3dPose
 }

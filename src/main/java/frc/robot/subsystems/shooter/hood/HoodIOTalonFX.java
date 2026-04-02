@@ -56,6 +56,11 @@ public class HoodIOTalonFX implements HoodIO {
   } // End setTargetPosition
 
   @Override
+  public void resetEncoder() {
+    motor.setPosition(0);
+  } // End resetEncoder
+
+  @Override
   public void stop() {
     motor.setControl(new NeutralOut());
   } // End stop

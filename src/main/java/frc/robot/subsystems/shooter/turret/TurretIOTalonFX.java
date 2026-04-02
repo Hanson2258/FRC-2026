@@ -20,7 +20,6 @@ public class TurretIOTalonFX implements TurretIO {
   private final TalonFX motor;
   private final PositionVoltage positionVoltageRequest = new PositionVoltage(0.0);
 
-  private double targetPosition;
   private double lastP = kP;
   private double lastI = kI;
   private double lastD = kD;
@@ -63,7 +62,6 @@ public class TurretIOTalonFX implements TurretIO {
     inputs.motorConnected = signalRefreshStatus.equals(StatusCode.OK);
     double motorShaftRotations = motor.getPosition().getValueAsDouble();
     inputs.positionRads = Units.rotationsToRadians(motorShaftRotations) / kGearRatio;
-    inputs.targetPositionRads = targetPosition;
     double motorShaftRps = motor.getVelocity().getValueAsDouble();
     inputs.velocityRadsPerSec = Units.rotationsToRadians(motorShaftRps) / kGearRatio;
     inputs.appliedVolts = motor.getMotorVoltage().getValueAsDouble();
@@ -79,15 +77,13 @@ public class TurretIOTalonFX implements TurretIO {
   public void setTargetPosition(double targetRads, double velocityFeedforwardRadPerSec) {
     double targetRotations = Units.radiansToRotations(targetRads);
     double motorTargetRotations = targetRotations * kGearRatio;
-    // Motor velocity (rot/s) = turret rad/s * gearRatio / (2*pi)
+    // Motor velocity (rot/s) = Turret rad/s * gearRatio / (2*pi)
     double motorVelRotPerSec =
         Units.radiansToRotations(velocityFeedforwardRadPerSec) * kGearRatio;
     motor.setControl(
         positionVoltageRequest
             .withPosition(motorTargetRotations)
             .withVelocity(motorVelRotPerSec));
-
-    targetPosition = targetRads;
   } // End setTargetPosition
 
   @Override

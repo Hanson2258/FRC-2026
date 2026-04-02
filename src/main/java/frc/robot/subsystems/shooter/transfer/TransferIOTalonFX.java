@@ -14,6 +14,7 @@ import edu.wpi.first.math.MathUtil;
 // import edu.wpi.first.wpilibj.I2C;
 import static frc.robot.util.PhoenixUtil.tryUntilOk;
 
+import frc.robot.Constants;
 import frc.robot.generated.TunerConstants;
 
 /** Transfer IO using Talon FX (Kraken) with voltage control and optional colour sensor. */
@@ -53,8 +54,10 @@ public class TransferIOTalonFX implements TransferIO {
   } // End updateInputs
 
   @Override
-  public void setVoltage(double volts) {
-    double clamped = MathUtil.clamp(volts, -kMaxVoltage, kMaxVoltage);
+  public void setVoltage(double volts, boolean ignoreLimits) {
+    double clamped = ignoreLimits
+        ? MathUtil.clamp(volts, -Constants.kNominalVoltage, Constants.kNominalVoltage)
+        : MathUtil.clamp(volts, -kMaxVoltage, kMaxVoltage);
     motor.setControl(voltageRequest.withOutput(clamped));
   } // End setVoltage
 

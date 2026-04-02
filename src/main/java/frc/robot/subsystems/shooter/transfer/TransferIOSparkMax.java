@@ -30,12 +30,13 @@ public class TransferIOSparkMax implements TransferIO {
     sparkMaxConfig.openLoopRampRate(kOpenLoopRampRateSec);
     sparkMaxConfig.voltageCompensation(Constants.kNominalVoltage);
     sparkMaxConfig.signals
-        .appliedOutputPeriodMs(31)
-        .busVoltagePeriodMs(31)
-        .outputCurrentPeriodMs(31)
-        .primaryEncoderPositionPeriodMs(523)
-        .primaryEncoderVelocityPeriodMs(523);
-    motor.configure(sparkMaxConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+        .appliedOutputPeriodMs(kSignalsPeriodMs)
+        .busVoltagePeriodMs(kSignalsPeriodMs)
+        .outputCurrentPeriodMs(kSignalsPeriodMs)
+        .primaryEncoderPositionPeriodMs(kEncoderVelocitySignalPeriodMs)
+        .primaryEncoderVelocityPeriodMs(kEncoderVelocitySignalPeriodMs);
+    motor.configure(sparkMaxConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+    motor.setPeriodicFrameTimeout(0);
   } // End TransferIOSparkMax Constructor
 
   @Override
@@ -48,8 +49,10 @@ public class TransferIOSparkMax implements TransferIO {
   } // End updateInputs
 
   @Override
-  public void setVoltage(double volts) {
-    double clamped = MathUtil.clamp(volts, -kMaxVoltage, kMaxVoltage);
+  public void setVoltage(double volts, boolean ignoreLimits) {
+    double clamped = ignoreLimits
+        ? MathUtil.clamp(volts, -Constants.kNominalVoltage, Constants.kNominalVoltage)
+        : MathUtil.clamp(volts, -kMaxVoltage, kMaxVoltage);
     motor.setVoltage(clamped);
   } // End setVoltage
 

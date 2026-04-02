@@ -7,22 +7,28 @@
 
 package frc.robot.subsystems.shooter;
 
-import static edu.wpi.first.units.Units.Seconds;
-
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
+import static edu.wpi.first.units.Units.Seconds;
 import edu.wpi.first.units.measure.Time;
+import frc.robot.Constants;
 import frc.robot.subsystems.shooter.hood.HoodConstants;
 
-/** Constants for the shooter assembly (turret position on robot, camera on turret, etc.). */
+/** Constants for the Shooter assembly (Turret position on robot, camera on Turret, etc.). */
 public final class ShooterConstants {
 
   private ShooterConstants() {}
 
-  /** Transform from robot center to turret pivot. +X = forward, +Y = left, +Z = up (meters). */
+  /** An extra amount of distance the robot has to be past the alliance zone for auto selecting target to be enabled */
+  public static final double kAutoSelectShootingTargetAllianceZoneTolerance = 1.5;
+
+  /** When aiming at the hub, autoshoot requires at least this horizontal distance to hub center (m). */
+  public static final double kMinHubAutoshootDistanceM = 2.0;
+
+  /** Transform from robot center to Turret pivot. +X = forward, +Y = left, +Z = up (meters). */
   public static final Transform3d robotToTurret =
-      new Transform3d(-0.127, -0.2286, 0.3556, new Rotation3d(0.0, 0.0, Math.PI));
+      new Transform3d(-0.07, -0.165, 0.45, new Rotation3d(0.0, 0.0, Units.degreesToRadians(0.0)));
 
   /** Distance above funnel the trajectory must pass (20 in), meters. */
   public static final double kDistanceAboveFunnelM = Units.inchesToMeters(20.0);
@@ -33,15 +39,38 @@ public final class ShooterConstants {
   /** Phase delay (s) to predict pose forward so shot is for when ball leaves. */
   public static final double kPhaseDelaySec = 0.03;
 
+  /**
+   * After the flywheel leaves target velocity, {@link frc.robot.subsystems.shooter.Shooter#isReadyToShoot}
+   * stays true for this long before reporting not ready. Timer resets when velocity is back on target.
+   */
+  public static final double kFlywheelOffTargetGraceSec = 0.3;
+
   /** Time before the hub is active that we treat the hub as active for the preshoot */
   public static final Time kActivePreshootTime = Seconds.of(2.0);
+  
+  /** Target aim offset (degrees). */
+  public static final double kTargetAimOffsetDeg = 0.0;
 
   /**
-   * Multiplier on calculator exit velocity (e.g. for air resistance). 1.0 = no change; increase if it
-   * is undershooting, decrease if overshooting.
-   * 0.95x for simulator
+   * Multiplier on calculator exit velocity for the Real Robot (e.g. air resistance). 1.0 = no change;
+   * increase if undershooting, decrease if overshooting.
    */
-  public static final double kExitVelocityCompensationMultiplier = 1.19;
+  public static final double kExitVelocityCompensationMultiplierReal = 1.19;
+
+  /**
+   * Multiplier on calculator exit velocity for the Sim Robot (e.g. air resistance). 1.0 = no change;
+   * increase if undershooting, decrease if overshooting.
+   */  public static final double kExitVelocityCompensationMultiplierSim = 1.05;
+
+  /**
+   * Active exit-velocity multiplier for the current {@link Constants#currentMode}: Sim uses
+   * {@link #kExitVelocityCompensationMultiplierSim}; Real and Replay use {@link #kExitVelocityCompensationMultiplierReal}.
+   */
+  public static double kExitVelocityCompensationMultiplier() {
+    return Constants.currentMode == Constants.Mode.SIM
+        ? kExitVelocityCompensationMultiplierSim
+        : kExitVelocityCompensationMultiplierReal;
+  } // End exitVelocityCompensationMultiplier
 
   /**
    * Single flywheel at bottom: flywheel surface speed = exit velocity / this divider (e.g. 0.5
@@ -55,13 +84,13 @@ public final class ShooterConstants {
   public static final double kScaleLinearVelocityPower = 0.3;
 
   /**
-   * Hood angle (from vertical, rad) when hood is disabled / locked. Steeper (smaller value) raises
-   * the trajectory apex so it clears the funnel; 30° from vertical ≈ 60° elevation from horizontal.
+   * Hood angle from vertical when Hood is disabled / locked. Steeper (smaller value) raises the
+   * trajectory apex so it clears the funnel; 30° from vertical ≈ 60° elevation from horizontal.
    */
-  public static final double kFixedHoodAngleWhenDisabledRad = HoodConstants.kMinAngleRad;
+  public static final double kFixedHoodAngleWhenDisabledRad = HoodConstants.kDisabledAngleRad;
 
-  /** Transform from turret pivot to camera (when camera is on turret). */
+  /** Transform from Turret pivot to camera (when camera is on Turret). */
   public static final Transform3d turretToCamera =
       new Transform3d(
-          0.0, 0.0, 0.0, new Rotation3d(0.0, Math.toRadians(-22.2), Math.PI));
+          0.0, 0.0, 0.0, new Rotation3d(0.0, Math.toRadians(-22.2), Units.degreesToRadians(180.0)));
 }

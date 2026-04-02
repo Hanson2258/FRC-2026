@@ -7,13 +7,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Intake On"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Set Shooter Target Hub"
+            "name": "Extender Down"
           }
         },
         {
@@ -25,19 +19,25 @@
         {
           "type": "named",
           "data": {
-            "name": "Extender Down"
+            "name": "Shoot When Ready"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "GoToDepotCenterLeft"
+            "pathName": "GoTo-Depot-From-CenterLeft"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake On"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "DepotSweepPickup"
+            "pathName": "Depot-PickupFuel"
           }
         },
         {
@@ -49,13 +49,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "DepotSweepShoot"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Shoot When Ready"
+            "pathName": "Depot-Shoot"
           }
         },
         {
@@ -67,7 +61,7 @@
       ]
     }
   },
-  "resetOdom": true,
+  "resetOdom": false,
   "folder": "Depot",
   "choreoAuto": false
 }

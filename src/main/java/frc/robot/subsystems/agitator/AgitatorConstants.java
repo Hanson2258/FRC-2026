@@ -3,11 +3,11 @@ package frc.robot.subsystems.agitator;
 import com.revrobotics.spark.config.SparkBaseConfig;
 
 /** Constants for the Agitator (intake-to-transfer) subsystem. */
-public final class AgitatorConstants { // XXX: Add correct values
+public final class AgitatorConstants {
 
   private AgitatorConstants() {}
 
-  /** CAN ID of the Agitator motor (NEO 550 on SPARK MAX). */
+  /** CAN ID of the Agitator motor. */
   public static final int kMotorId = 20;
 
   /** Idle behavior when output is zero (coast or brake). */
@@ -20,17 +20,24 @@ public final class AgitatorConstants { // XXX: Add correct values
   public static final int kSmartCurrentLimitAmps = 25;
 
   /** Open-loop ramp time from 0 to full output. Limits current spikes on step changes. */
-  public static final double kOpenLoopRampRateSec = 0.3;
+  public static final double kOpenLoopRampRateSec = 0.0;
+
+  /** Period for sending signals to the motor. */
+  public static final int kSignalsPeriodMs = 107;
+  public static final int kEncoderVelocitySignalPeriodMs = 251;
 
   /** Max voltage magnitude applied to the motor. */
-  public static final double kMaxVoltage = 8.0;
+  public static final double kMaxVoltage = 11.0;
 
-  /** Voltage when idle. */
+  /** Voltage in Idle state. */
   public static final double kIdleVoltage = 0.0;
 
-  /** Voltage when staging (slow pre-load). */
+  /** Voltage in Staging state (slow pre-load). */
   public static final double kStagingVoltage = 2.0;
 
-  /** Voltage when shooting (fast loading). */
-  public static final double kShootingVoltage = 6.0;
+  /** Voltage in Shooting state (fast loading). */
+  public static final double kShootingVoltage = 9.5;
+
+  /** Delta volts per step. */
+  public static final double kStepVolts = 0.25;
 }

@@ -20,6 +20,9 @@ public interface HoodIO {
   /** Set the target position. */
   default void setTargetPosition(double targetRads) {}
 
+  /** Sets the encoder position to 0. */
+  default void resetEncoder() {}
+
   /** Stop the motor (brake). */
   default void stop() {}
 }

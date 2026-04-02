@@ -7,8 +7,15 @@
 
 package frc.robot;
 
+import java.util.Set;
+import java.util.function.BooleanSupplier;
+
 import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.dyn4j.dynamics.BodyFixture;
+import org.dyn4j.geometry.Mass;
+import org.dyn4j.geometry.Rectangle;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -22,7 +29,6 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.util.Units;
 import static edu.wpi.first.units.Units.Meters;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -34,6 +40,7 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.SafeRetractExtenderCommand;
 import frc.robot.commands.ShootWhenReadyCommand;
 import frc.robot.commands.ShooterCommands;
 import frc.robot.commands.TeleopDrive;
@@ -42,19 +49,14 @@ import frc.robot.simulation.FuelSim;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.vision.*;
 import static frc.robot.subsystems.vision.VisionConstants.*;
-
-import java.util.function.BooleanSupplier;
-
 import frc.robot.subsystems.intake.*;
 import frc.robot.subsystems.extender.*;
-import frc.robot.subsystems.extender.Extender.ExtenderState;
 import frc.robot.subsystems.agitator.*;
 import frc.robot.subsystems.shooter.*;
 import frc.robot.subsystems.shooter.transfer.*;
 import frc.robot.subsystems.shooter.turret.*;
 import frc.robot.subsystems.shooter.hood.*;
 import frc.robot.subsystems.shooter.flywheel.*;
-import frc.robot.subsystems.shooter.flywheel.Flywheel.FlywheelState;
 import frc.robot.subsystems.hang.*;
 
 
@@ -72,19 +74,24 @@ public class RobotContainer {
 
 	// Competition Toggle
 	@AutoLogOutput(key = "CompetitionToggle")
-	private boolean isCompetition = false;
+	private boolean isCompetition = true;
 
 	// Subsystems Toggle
-	private boolean isDriveEnabled = true;
-	private boolean isVisionEnabled = true;
-	private boolean isIntakeEnabled = true;
+	private boolean isDriveEnabled 		= true;
+	private boolean isVisionEnabled 	= true;
+	private boolean isIntakeEnabled 	= true;
 	private boolean isExtenderEnabled = true;
 	private boolean isAgitatorEnabled = true;
 	private boolean isTransferEnabled = true;
-	private boolean isTurretEnabled = true;
-	private boolean isHoodEnabled = false;
+	private boolean isTurretEnabled 	= true;
+	private boolean isHoodEnabled 		= false;
 	private boolean isFlywheelEnabled = true;
-	private boolean isHangEnabled = true; // FIXME: Alpha does not have Hang, must be disabled for Alpha
+	private boolean isHangEnabled 		= true;
+
+	// Simulation Toggle
+	private boolean halfFuelOnly 			= true;
+	private boolean shooterSimEnabled	= true;
+	private boolean fuelSimEnabled 		= false;
 
 	// Subsystems
 	private final Drive drive;
@@ -111,6 +118,9 @@ public class RobotContainer {
 	private final Shooter shooter;
 	private final ShootWhenReadyCommand shootWhenReadyCommand;
 
+	// Safe Extender Retracter
+	private final Command safeRetractExtenderCommand;
+
 	// Field view (robot pose)
 	private final Field2d field = new Field2d();
 
@@ -123,6 +133,12 @@ public class RobotContainer {
 	public static boolean driverManualOverride = false;
 	@AutoLogOutput(key = "ManualOverride/Operator")
 	public static boolean operatorManualOverride = false;
+	@AutoLogOutput(key = "Subsystems/Shooter/Turret/DriverTurretOverride")
+	private boolean driverTurretOverride = false;
+
+	// Hang Hold Mode
+	@AutoLogOutput(key = "Subsystems/Hang/HangHoldModeEnabled")
+	private boolean hangHoldModeEnabled = false;
 
 	// Dashboard inputs
 	private final LoggedDashboardChooser<Command> autoChooser;
@@ -153,7 +169,7 @@ public class RobotContainer {
 					drive = new Drive(new GyroIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {}, (pose) -> {});
 				}
 				
-				// Initialize Vision after drive (Vision needs Drive reference)
+				// Initialize Vision after Drive (Vision needs Drive reference)
 				if (isVisionEnabled) {
 					vision = new Vision(drive,
 							new VisionIOPhotonVision(camera0Name, robotToCamera0), 
@@ -168,9 +184,9 @@ public class RobotContainer {
 				agitator = isAgitatorEnabled ? new Agitator(new AgitatorIOSparkMax()) : new Agitator(new AgitatorIO() {});
 				transfer = isTransferEnabled ? new Transfer(new TransferIOSparkMax()) : new Transfer(new TransferIO() {});
 				turret   = isTurretEnabled 	 ? new Turret(new TurretIOSparkMax()) 	  : new Turret(new TurretIO() {});
-				hood     = isHoodEnabled  	 ? new Hood(new HoodIOSparkMax()) 		  : new Hood(new HoodIO() {});
+				hood     = isHoodEnabled  	 ? new Hood(new HoodIOSparkMax()) 		  	: new Hood(new HoodIO() {});
 				flywheel = isFlywheelEnabled ? new Flywheel(new FlywheelIOTalonFX())  : new Flywheel(new FlywheelIO() {});
-				hang 	 = isHangEnabled	 ? new Hang(new HangIOBrushedSparkMax())  : new Hang(new HangIO() {});
+				hang 	 	 = isHangEnabled		 ? new Hang(new HangIOSparkMax())  				: new Hang(new HangIO() {});
 				shooterSim = null;
 				shooterSimVisualizer = null;
 				break;
@@ -187,32 +203,34 @@ public class RobotContainer {
         SimulatedArena.overrideInstance(new frc.robot.simulation.Arena2026Rebuilt(true));
 
 				driveSimulation = new SwerveDriveSimulation(Drive.mapleSimConfig, new Pose2d(3, 3, new Rotation2d()));
+				applyRearGapToDriveCollision(driveSimulation);
 				SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
 				drive = new Drive(
 						new GyroIOSim(driveSimulation.getGyroSimulation()),
-						new ModuleIOSim(TunerConstants.FrontLeft, driveSimulation.getModules()[0]),
-						new ModuleIOSim(TunerConstants.FrontRight, driveSimulation.getModules()[1]),
-						new ModuleIOSim(TunerConstants.BackLeft, driveSimulation.getModules()[2]),
-						new ModuleIOSim(TunerConstants.BackRight, driveSimulation.getModules()[3]),
+						new ModuleIOSim(TunerConstants.FrontLeft, driveSimulation.getModules()[0], 0),
+						new ModuleIOSim(TunerConstants.FrontRight, driveSimulation.getModules()[1], 1),
+						new ModuleIOSim(TunerConstants.BackLeft, driveSimulation.getModules()[2], 2),
+						new ModuleIOSim(TunerConstants.BackRight, driveSimulation.getModules()[3], 3),
 						driveSimulation::setSimulationWorldPose);
 				
-				// Initialize Vision after drive (Vision needs Drive reference)
+				// Initialize Vision after Drive (Vision needs Drive reference)
 				vision = new Vision(drive,
 						new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, driveSimulation::getSimulatedDriveTrainPose),
 						new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, driveSimulation::getSimulatedDriveTrainPose));
 
 				// Subsystems
-				intake = new Intake(new IntakeIOSim());
+				intake 	 = new Intake(new IntakeIOSim());
 				extender = new Extender(new ExtenderIOSim());
 				agitator = new Agitator(new AgitatorIOSim());
 				transfer = new Transfer(new TransferIOSim());
-				turret = new Turret(new TurretIOSim());
-				hood = new Hood(new HoodIOSim());
+				turret 	 = new Turret(new TurretIOSim());
+				hood 		 = new Hood(new HoodIOSim());
 				flywheel = new Flywheel(new FlywheelIOSim());
-				hang = new Hang(new HangIOSim());
+				hang 		 = new Hang(new HangIOSim());
 
-				shooterSim = new ShooterSim(fuelSim);
-				shooterSimVisualizer = new ShooterSimVisualizer(() -> {
+				// Shooter Sim Visualizer
+				if (shooterSimEnabled) {
+					shooterSimVisualizer = new ShooterSimVisualizer(() -> {
 							Pose2d simPose = driveSimulation.getSimulatedDriveTrainPose();
 							return new Pose3d(
 									simPose.getX(),
@@ -221,9 +239,18 @@ public class RobotContainer {
 									new Rotation3d(0, 0, simPose.getRotation().getRadians()));
 						},
 						drive::getFieldRelativeChassisSpeeds);
+					shooterSim = new ShooterSim(fuelSim, fuelSimEnabled, shooterSimVisualizer);
+				} else {
+					shooterSim = null;
+					shooterSimVisualizer = null;
+				}
 
-				configureFuelSim();
-				configureFuelSimRobot(() -> extender.getState() == ExtenderState.EXTENDED, shooterSim::intakeFuel);
+				// Fuel Sim
+				if (fuelSimEnabled) {
+					configureFuelSim();
+					Runnable intakeFuelCallback = shooterSim != null ? shooterSim::intakeFuel : () -> {};
+					configureFuelSimRobot(() -> extender.getState() == Extender.State.EXTENDED, intakeFuelCallback);
+				}
 				break;
 
 			// Replayed Robot, disable IO implementations
@@ -232,14 +259,14 @@ public class RobotContainer {
 				vision = new Vision(drive, new VisionIO() {}, new VisionIO() {});
 
 				// Subsystems
-				intake = new Intake(new IntakeIO() {});
+				intake 	 = new Intake(new IntakeIO() {});
 				extender = new Extender(new ExtenderIO() {});
 				agitator = new Agitator(new AgitatorIO() {});
 				transfer = new Transfer(new TransferIO() {});
-				turret = new Turret(new TurretIO() {});
-				hood = new Hood(new HoodIO() {});
+				turret 	 = new Turret(new TurretIO() {});
+				hood 		 = new Hood(new HoodIO() {});
 				flywheel = new Flywheel(new FlywheelIO() {});
-				hang = new Hang(new HangIO() {});
+				hang 		 = new Hang(new HangIO() {});
 				shooterSim = null;
 				shooterSimVisualizer = null;
 				break;
@@ -247,9 +274,23 @@ public class RobotContainer {
 
 		// Shooter coordinator and shoot-when-ready command
 		shooter = new Shooter(drive, agitator, transfer, turret, hood, flywheel, isHoodEnabled);
-		shootWhenReadyCommand = new ShootWhenReadyCommand(agitator, transfer, shooter);
+		shootWhenReadyCommand = new ShootWhenReadyCommand(agitator, transfer, shooter, () -> drive.getPose());
+
 		shooter.setShootCommandScheduledSupplier(shootWhenReadyCommand::isScheduled);
 		shooter.setManualOverrideSupplier(() -> operatorManualOverride);
+
+		safeRetractExtenderCommand =
+				SafeRetractExtenderCommand.create(
+						shootWhenReadyCommand, flywheel, extender, turret, b -> driverTurretOverride = b);
+
+		// Subsystem Manual Override Ignore Limits Supplier
+		intake.setIgnoreLimitsSupplier(() 	-> operatorManualOverride);
+		extender.setIgnoreLimitsSupplier(() -> operatorManualOverride);
+		agitator.setIgnoreLimitsSupplier(() -> operatorManualOverride);
+		transfer.setIgnoreLimitsSupplier(() -> operatorManualOverride);
+		hood.setIgnoreLimitsSupplier(() 		-> operatorManualOverride);
+		flywheel.setIgnoreLimitsSupplier(() -> operatorManualOverride);
+		hang.setIgnoreLimitsSupplier(() 		-> operatorManualOverride);
 
 		/// -------------------------------------------------------------------------------------------
 		/// ------------------------------------- Drive Commands --------------------------------------		
@@ -267,7 +308,7 @@ public class RobotContainer {
 		/// ------------------------------- Shooter Subsystem Commands --------------------------------
 		/// -------------------------------------------------------------------------------------------
 		// Turret aims at predicted target; velocity feedforward for spin compensation. Only active if not in manualOverride
-		turret.setManualOverrideSupplier(() -> operatorManualOverride);
+		turret.setManualOverrideSupplier(() -> operatorManualOverride || driverTurretOverride);
 		turret.setDrive(drive);
 		turret.setAimAtTargetSupplier(() -> shootWhenReadyCommand.isScheduled());
 
@@ -288,15 +329,16 @@ public class RobotContainer {
 			// Set up Swerve Calibration Programs
 			DriveCommands.swerveCalibration(autoChooser, drive);
 
-			// Record zeroed Robot components (model_0 turret, model_1 extender, model_2 extending-storage) – initial only; updated in updateSimulation()
+			// Record zeroed Robot components (model_0 Turret, model_1 Extender, model_2 extending-storage) – initial only; updated in updateSimulation()
 			Logger.recordOutput("ComponentPoses/Zeroed", new Pose3d[] {new Pose3d(), new Pose3d(), new Pose3d()});
 		}
 
-		// Record zeroed Robot components (model_0 turret, model_1 extender) – initial only; updated in updateSimulation()
+		// Record zeroed Robot components (model_0 Turret, model_1 Extender) – initial only; updated in updateSimulation()
 		Logger.recordOutput("ComponentPoses/Final",
 				new Pose3d[] {
-					new Pose3d(-0.125, -0.17, 0.27, new Rotation3d(0, 0, 0)), // model_0 turret
-					new Pose3d(0.28, 0, 0.15, new Rotation3d(0, 0, 0)),  // model_1 extender
+					new Pose3d(-0.095, -0.17, 0.31, new Rotation3d(0, 0, 0)), // model_0 Turret
+					new Pose3d(0.275, 0, 0.195, new Rotation3d(0, 0, 0)),  // model_1 Extender
+					new Pose3d(-0.29635, 0.055, 0.215, new Rotation3d(0, 0, 0))   // model_2 Hang
 				});
 			
 
@@ -312,26 +354,38 @@ public class RobotContainer {
   private void configureDriverBindings() {
     drive.setDefaultCommand(teleopDrive);
 
-		// Cycle extender: Extended → Partial → Retracted → Extended
+		// Cycle Extender, starts in Retracted, goes to Extended, and then cycles between Partial and Extended. 
+		// If in Manual, goes to Extended.
 		driverController.leftTrigger().onTrue(Commands.runOnce(() -> {
 			switch (extender.getState()) {
-				case EXTENDED -> extender.setPartialState();
-				case PARTIAL -> extender.setExtendedState();
+				case EXTENDED ->  extender.setPartialState();
+				case PARTIAL -> 	extender.setExtendedState();
 				case RETRACTED -> extender.setExtendedState();
+				case MANUAL -> 		extender.setExtendedState();
+				case IDLE ->			extender.setExtendedState();
+				default -> throw new IllegalArgumentException("Unexpected value: " + extender.getState());
+			}
+
+			// Disable Intake when Extender is Retracted or Partial
+			if (extender.getState() == Extender.State.RETRACTED || extender.getState() == Extender.State.PARTIAL) {
+				intake.setIdleState();
 			}
 		}, extender));
 
-		// Intake toggle: right bumper = intaking ↔ idle, left bumper = reversing ↔ idle
+		// Set to Retracted, must turn off AutoShoot, and set Turret Target to 0
+		driverController.povDown().onTrue(safeRetractExtenderCommand);
+
+		// Intake toggle: right bumper = Intaking ↔ Idle, left bumper = Reversing ↔ Idle
 		driverController.leftBumper().onTrue(
 			new ConditionalCommand(
-				Commands.runOnce(() -> intake.setIdleMode(), intake),
-				Commands.runOnce(() -> intake.setReversingMode(), intake),
-				() -> intake.getMode() == Intake.Mode.REVERSING));
+				Commands.runOnce(() -> intake.setIdleState(), intake),
+				Commands.runOnce(() -> intake.setReversingState(), intake),
+				() -> intake.getState() == Intake.State.REVERSING));
 		driverController.rightBumper().onTrue(
 			new ConditionalCommand(
-				Commands.runOnce(() -> intake.setIdleMode(), intake),
-				Commands.runOnce(() -> intake.setIntakingMode(), intake),
-				() -> intake.getMode() == Intake.Mode.INTAKING));
+				Commands.runOnce(() -> intake.setIdleState(), intake),
+				Commands.runOnce(() -> intake.setIntakingState(), intake),
+				() -> intake.getState() == Intake.State.INTAKING));
 
     // Toggle face-target mode when Y button is pressed
     driverController.y().onTrue(Commands.runOnce(() -> {
@@ -344,26 +398,54 @@ public class RobotContainer {
 
 		// Enable Hang/ Retract mode, stop when released
 		if (hang != null) {
+			// If hangHoldModeEnabled (set by X in endgame), press → Level 1 and release → Idle; 
+			// Else toggle Level 1 / Idle.
 			driverController.b().onTrue(
 				new ConditionalCommand(
-					Commands.runOnce(() -> hang.goToLevel1(), hang), 
-					Commands.runOnce(() -> hang.setIdle(), hang), 
-					() -> hang.getState() == Hang.HangState.LEVEL_1));
+					Commands.runOnce(() -> hang.setLevel1State(), hang),
+					new ConditionalCommand(
+						Commands.runOnce(() -> hang.setIdleState(), hang),
+						Commands.runOnce(() -> hang.setLevel1State(), hang),
+						() -> hang.getState() == Hang.State.LEVEL_1),
+					() -> hangHoldModeEnabled));
+			driverController.b().onFalse(
+				new ConditionalCommand(
+					Commands.runOnce(() -> hang.setIdleState(), hang),
+					new InstantCommand(),
+					() -> hangHoldModeEnabled));
+			// Before Endgame, X toggles Stored / Idle. 
+			// Endgame:        X onTrue sets hangHoldModeEnabled (see B); Hanging state while held, Idle on release
 			driverController.x().onTrue(
 				new ConditionalCommand(
-					Commands.runOnce(() -> hang.goToStored(), hang), 
-					Commands.runOnce(() -> hang.setIdle(), hang), 
-					() -> hang.getState() == Hang.HangState.STORED));
+					Commands.runOnce(() -> hangHoldModeEnabled = true),
+					Commands.runOnce(
+						() -> {
+							if (hang.getState() == Hang.State.STORED) {
+								hang.setIdleState();
+							} else {
+								hang.setStoredState();
+							}
+						},
+						hang),
+					() -> isHangDriverEndgamePeriod()));
+			driverController.x().whileTrue(
+				new ConditionalCommand(
+					Commands.startEnd(
+						() -> hang.setHangingState(),
+						() -> hang.setIdleState(),
+						hang),
+					new InstantCommand(),
+					() -> isHangDriverEndgamePeriod()));
 		}
 
-    // Shoot toggle: on = schedule ShootWhenReadyCommand, set Flywheel to Charging if IDLE; off = cancel (command end() idles Transfer and Agitator)
+    // Shoot toggle: on = schedule ShootWhenReadyCommand, set Flywheel to Charging if Idle; off = cancel (command end() sets Transfer and Agitator to Idle)
 		driverController.a().onTrue(Commands.runOnce(() -> {
 			if (shootWhenReadyCommand.isScheduled()) {
 				CommandScheduler.getInstance().cancel(shootWhenReadyCommand);
-				if (flywheel != null ) flywheel.setState(FlywheelState.IDLE);
+				if (flywheel != null ) flywheel.setState(Flywheel.State.IDLE);
 			} else {
-				if (flywheel != null && flywheel.getState() == FlywheelState.IDLE) {
-					flywheel.setState(FlywheelState.CHARGING);
+				if (flywheel != null && flywheel.getState() == Flywheel.State.IDLE) {
+					flywheel.setState(Flywheel.State.CHARGING);
 				}
 				CommandScheduler.getInstance().schedule(shootWhenReadyCommand);
 			}
@@ -382,13 +464,12 @@ public class RobotContainer {
 
     // -------- Auto Pathfind to Target --------
     // Pathfind then follow path to outpost
-    driverController.leftStick().whileTrue(DriveCommands.pathfindThenFollowPath(drive, "DriveToOutpost"));
+    driverController.leftStick().whileTrue(DriveCommands.pathfindThenFollowPath(drive, "GoTo-Outpost"));
 
-		driverController.povUp().onTrue(DriveCommands.pathfindThenFollowPath(drive, "InnerLeftLadder"));
-    driverController.povLeft().onTrue(DriveCommands.pathfindThenFollowPath(drive, "OuterLeftLadder"));
-    driverController.povRight().onTrue(DriveCommands.pathfindThenFollowPath(drive, "OuterRightLadder"));
-    driverController.povDown().onTrue(DriveCommands.pathfindThenFollowPath(drive, "InnerRightLadder"));
-
+    driverController.povLeft()
+        .whileTrue(Commands.defer(() -> hangAssistAfterPathCommand("Hang-HangingLeft"), Set.of(drive, hang)));
+    driverController.povRight()
+        .whileTrue(Commands.defer(() -> hangAssistAfterPathCommand("Hang-HangingRight-TeleOp"), Set.of(drive, hang)));
 
 		// ------------------------------------------- Driver Manual Override -------------------------------------------
 		// If Manual Override is false, become true. 
@@ -407,7 +488,63 @@ public class RobotContainer {
 			return;
 		}
 
-		
+		// Intake Manual Voltage Control
+		// Raise Intake voltage
+		operatorController.povLeft().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> intake.stepVoltage(IntakeConstants.kStepVolts), intake),
+				new InstantCommand(),
+				() -> intake != null
+			)
+		);
+		// Lower Intake voltage
+		operatorController.povRight().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> intake.stepVoltage(-IntakeConstants.kStepVolts), intake),
+				new InstantCommand(),
+				() -> intake != null
+			)
+		);
+
+		// Extender Manual Position Control
+		// Raise Extender Position
+		operatorController.leftTrigger().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> {
+					extender.stepPositionRad(ExtenderConstants.kStepRad);
+				}),
+				new InstantCommand(),
+				() -> extender != null)
+		);
+		// Lower Extender Position
+		operatorController.rightTrigger().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> {
+					extender.stepPositionRad(-ExtenderConstants.kStepRad);
+				}),
+				new InstantCommand(),
+				() -> extender != null)
+		);
+
+		// Hang Manual Position Control
+		// Raise Hang (Extend)
+		operatorController.b().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> hang.stepPositionMeters(HangConstants.kStepMeters), hang),
+				new InstantCommand(),
+				() -> hang != null
+			)
+		);
+		// Lower Hang (Retract)
+		operatorController.x().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> hang.stepPositionMeters(-HangConstants.kStepMeters), hang),
+				new InstantCommand(),
+				() -> hang != null
+			)
+		);
+
+
 		// ------------------------------------------ Operator Manual Override ------------------------------------------
 		// If Manual Override is false, become true. 
 		// If true, reset encoder positions and then become false.
@@ -417,52 +554,11 @@ public class RobotContainer {
 				Commands.runOnce(() -> operatorManualOverride = true),
 				() -> operatorManualOverride));
 
-		// Intake Manual Voltage Control
-		final double intakeStepVoltage = 0.25;
-		// Raise Intake voltage
-		operatorController.povLeft().onTrue(
-			new ConditionalCommand(
-				Commands.runOnce(() -> intake.stepVoltage(intakeStepVoltage), intake),
-				new InstantCommand(),
-				() -> (operatorManualOverride && intake != null)
-			)
-		);
-		// Lower Intake voltage
-		operatorController.povRight().onTrue(
-			new ConditionalCommand(
-				Commands.runOnce(() -> intake.stepVoltage(-intakeStepVoltage), intake),
-				new InstantCommand(),
-				() -> (operatorManualOverride && intake != null)
-			)
-		);
-
-		// Extender Manul Position Control
-		final double extenderStepPosition = Units.degreesToRadians(5);
-		// Raise Extender Position
-		operatorController.leftTrigger().onTrue(
-			new ConditionalCommand(
-				Commands.runOnce(() -> {
-					extender.stepPosition(extenderStepPosition);
-				}), 
-				new InstantCommand(), 
-				() -> (operatorManualOverride && extender != null))
-		);
-		// Lower Extender Position
-		operatorController.rightTrigger().onTrue(
-			new ConditionalCommand(
-				Commands.runOnce(() -> {
-					extender.stepPosition(-extenderStepPosition);
-				}), 
-				new InstantCommand(), 
-				() -> (operatorManualOverride && extender != null))
-		);
-
 		// Agitator Manual Voltage Control
-		final double agitatorStepVoltage = 0.25;
 		// Raise Agitator voltage
 		operatorController.y().onTrue(
 			new ConditionalCommand(
-				Commands.runOnce(() -> agitator.stepVoltage(agitatorStepVoltage), agitator),
+				Commands.runOnce(() -> agitator.stepVoltage(AgitatorConstants.kStepVolts), agitator),
 				new InstantCommand(),
 				() -> (operatorManualOverride && agitator != null)
 			)
@@ -470,18 +566,17 @@ public class RobotContainer {
 		// Lower Agitator voltage
 		operatorController.a().onTrue(
 			new ConditionalCommand(
-				Commands.runOnce(() -> agitator.stepVoltage(-agitatorStepVoltage), agitator),
+				Commands.runOnce(() -> agitator.stepVoltage(-AgitatorConstants.kStepVolts), agitator),
 				new InstantCommand(),
 				() -> (operatorManualOverride && agitator != null)
 			)
 		);
 
 		// Transfer Manual Voltage Control
-		final double transferStepVoltage = 0.25;
 		// Raise Transfer voltage
 		operatorController.leftBumper().onTrue(
 			new ConditionalCommand(
-				Commands.runOnce(() -> transfer.stepVoltage(transferStepVoltage), transfer),
+				Commands.runOnce(() -> transfer.stepVoltage(TransferConstants.kStepVolts), transfer),
 				new InstantCommand(),
 				() -> (operatorManualOverride && transfer != null)
 			)
@@ -489,27 +584,26 @@ public class RobotContainer {
 		// Lower Transfer voltage
 		operatorController.rightBumper().onTrue(
 			new ConditionalCommand(
-				Commands.runOnce(() -> transfer.stepVoltage(-transferStepVoltage), transfer),
+				Commands.runOnce(() -> transfer.stepVoltage(-TransferConstants.kStepVolts), transfer),
 				new InstantCommand(),
 				() -> (operatorManualOverride && transfer != null)
 			)
 		);
 		
 		// Turret Manual Position Control
-		double turretStepPosition = Units.degreesToRadians(5);
-		// Step turret position up
+		// Step Turret position up
 		operatorController.leftStick().onTrue(
 			new ConditionalCommand(
-				Commands.runOnce(() -> turret.stepRads(turretStepPosition), turret), 
-				new InstantCommand(), 
+				Commands.runOnce(() -> turret.stepPositionRad(TurretConstants.kStepRad), turret),
+				new InstantCommand(),
 				() -> (operatorManualOverride && turret != null)
 			)
 		);
-		// Step turret position down
+		// Step Turret position down
 		operatorController.rightStick().onTrue(
 			new ConditionalCommand(
-				Commands.runOnce(() -> turret.stepRads(-turretStepPosition), turret), 
-				new InstantCommand(), 
+				Commands.runOnce(() -> turret.stepPositionRad(-TurretConstants.kStepRad), turret),
+				new InstantCommand(),
 				() -> (operatorManualOverride && turret != null)
 			)
 		);
@@ -519,6 +613,7 @@ public class RobotContainer {
 				Commands.runOnce(() -> {
 					extender.resetEncoders();
 					turret.resetMotorEncoder();
+					hang.resetEncoders();
 					idleAllSubsystems();
 				}, turret, extender),
 				new InstantCommand(),
@@ -526,40 +621,19 @@ public class RobotContainer {
 			)
 		);
 
-		// Hang Manual Control (step target pot voltage, no position conversion)
-		double hangStepVolts = 0.1;
-		// Lower Hang (Retract - higher voltage)
-		operatorController.x().onTrue(
-			new ConditionalCommand(
-				Commands.runOnce(() -> hang.stepVolts(hangStepVolts), hang),
-				new InstantCommand(),
-				() -> (operatorManualOverride && hang != null)
-			)
-		);
-		// Raise Hang (Extend - lower voltage)
-		operatorController.b().onTrue(
-			new ConditionalCommand(
-				Commands.runOnce(() -> hang.stepVolts(-hangStepVolts), hang),
-				new InstantCommand(),
-				() -> (operatorManualOverride && hang != null)
-			)
-		);
-
 		// Flywheel Manual Velocity Control
-		final double stepRpm = 50.0;
-		final double stepRadsPerSec = Units.rotationsPerMinuteToRadiansPerSecond(stepRpm);
-		// Raise Flywheel rpm
+		// Raise Flywheel RPM
 		operatorController.povUp().onTrue(
 			new ConditionalCommand(
-				Commands.runOnce(() -> flywheel.stepVelocityRadsPerSec(stepRadsPerSec), flywheel),
+				Commands.runOnce(() -> flywheel.stepVelocityRadPerSec(FlywheelConstants.kStepRadPerSec), flywheel),
 				new InstantCommand(),
 				() -> (operatorManualOverride && flywheel != null)
 			)
 		);
-		// Lower Flywheel rpm
+		// Lower Flywheel RPM
 		operatorController.povDown().onTrue(
 			new ConditionalCommand(
-				Commands.runOnce(() -> flywheel.stepVelocityRadsPerSec(-stepRadsPerSec), flywheel),
+				Commands.runOnce(() -> flywheel.stepVelocityRadPerSec(-FlywheelConstants.kStepRadPerSec), flywheel),
 				new InstantCommand(),
 				() -> (operatorManualOverride && flywheel != null)
 			)
@@ -573,17 +647,18 @@ public class RobotContainer {
 	/** Register the commands here */
 	private void registerCommands() {
 		// Intake Commands
-		NamedCommands.registerCommand("Intake On", Commands.runOnce(() -> intake.setIntakingMode(), intake));
-		NamedCommands.registerCommand("Intake Off", Commands.runOnce(() -> intake.setIdleMode(), intake));
-		NamedCommands.registerCommand("Intake Reverse", Commands.runOnce(() -> intake.setReversingMode(), intake));
+		NamedCommands.registerCommand("Intake On", Commands.runOnce(() -> intake.setIntakingState(), intake));
+		NamedCommands.registerCommand("Intake Off", Commands.runOnce(() -> intake.setIdleState(), intake));
+		NamedCommands.registerCommand("Intake Reverse", Commands.runOnce(() -> intake.setReversingState(), intake));
 
 		NamedCommands.registerCommand("Extender Down", Commands.runOnce(() -> extender.setExtendedState(), extender));
 		NamedCommands.registerCommand("Extender Partial", Commands.runOnce(() -> extender.setPartialState(), extender));
 		NamedCommands.registerCommand("Extender Up", Commands.runOnce(() -> extender.setRetractedState(), extender));
+		NamedCommands.registerCommand("Safe Retract Extender", safeRetractExtenderCommand);
 
 		// Flywheel Commands
-		NamedCommands.registerCommand("Flywheel On", Commands.runOnce(() -> flywheel.setState(FlywheelState.CHARGING), flywheel));
-		NamedCommands.registerCommand("Flywheel Off", Commands.runOnce(() -> flywheel.setState(FlywheelState.IDLE), flywheel));
+		NamedCommands.registerCommand("Flywheel On", Commands.runOnce(() -> flywheel.setState(Flywheel.State.CHARGING), flywheel));
+		NamedCommands.registerCommand("Flywheel Off", Commands.runOnce(() -> flywheel.setState(Flywheel.State.IDLE), flywheel));
 
 		// Shooter Target Commands
 		NamedCommands.registerCommand("Set Shooter Target Hub", Commands.runOnce(ShooterCommands::clearShooterTargetOverride));
@@ -591,7 +666,16 @@ public class RobotContainer {
 		NamedCommands.registerCommand("Set Shooter Target Passing Spot Center", Commands.runOnce(ShooterCommands::setPassingSpotCenter));
 		NamedCommands.registerCommand("Set Shooter Target Passing Spot Right", Commands.runOnce(ShooterCommands::setPassingSpotRight));
 		// With timeout so the sequential auto can advance to path commands (reference codebases build autos in code with paths only)
-		NamedCommands.registerCommand("Shoot When Ready", shootWhenReadyCommand);
+		NamedCommands.registerCommand("Shoot When Ready", Commands.runOnce(() -> CommandScheduler.getInstance().schedule(shootWhenReadyCommand)));
+		NamedCommands.registerCommand("Cancel Shoot When Ready", Commands.runOnce(() -> CommandScheduler.getInstance().cancel(shootWhenReadyCommand)));
+
+		// Hang Commands
+		NamedCommands.registerCommand("Hang Level 1", Commands.runOnce(() -> hang.setLevel1State(), hang));
+		NamedCommands.registerCommand("Hang Hanging", Commands.runOnce(() -> hang.setHangingState(), hang));
+		NamedCommands.registerCommand("Hang Stored", Commands.runOnce(() -> hang.setStoredState(), hang));
+
+		// Drive Commands (auto)
+		NamedCommands.registerCommand("Drive Back Hang Align", DriveCommands.timedDriveBackRobotCentric(drive));
 	} // End registerCommands
 
 	/**
@@ -609,13 +693,35 @@ public class RobotContainer {
 	/** Idle all Subsystems.  */
 	public void idleAllSubsystems() {
 		CommandScheduler.getInstance().cancel(shootWhenReadyCommand);
-		intake.setIdleMode();
-		// extender.setIdleState();
-		agitator.setIdleMode();
-		transfer.setIdleMode();
-		flywheel.setState(FlywheelState.IDLE);
-		if (hang != null) hang.setIdle();
+		if (intake != null)		intake.setIdleState();
+		if (extender != null) extender.setIdleState();
+		if (agitator != null) agitator.setIdleState();
+		if (transfer != null) transfer.setIdleState();
+		if (flywheel != null) flywheel.setState(Flywheel.State.IDLE);
+		if (hang != null) 		hang.setIdleState();
 	} // End idleBallHandling
+
+	/**
+	 * Check if we are in the last 30 seconds (Endgame).
+	 * Requires FMS so practice mode (match time often 0) does not always select endgame.
+	 */
+	private boolean isHangDriverEndgamePeriod() {
+		return DriverStation.isTeleop()
+				&& DriverStation.isFMSAttached()
+				&& DriverStation.getMatchTime() <= Constants.MatchTiming.HANG_DRIVER_ENDGAME_SECONDS;
+	}
+	
+  /**
+   * Hang assist: set hang to {@link Hang.State#LEVEL_1}, pathfind and follow the named PathPlanner
+   * path, run the same short robot-centric backup used for hang alignment in autos, then set hang to
+   * {@link Hang.State#HANGING}.
+   */
+  private Command hangAssistAfterPathCommand(String pathName) {
+    return Commands.sequence(
+        Commands.runOnce(() -> hang.setLevel1State(), hang),
+        DriveCommands.pathfindThenFollowPath(drive, pathName),
+        DriveCommands.timedDriveBackRobotCentric(drive));
+  }
 
   /**
    * Update Field2d with the current robot pose. Call from Robot.robotPeriodic().
@@ -638,9 +744,80 @@ public class RobotContainer {
 		SimulatedArena.getInstance().resetFieldForAuto();
 	} // End resetSimulationField
 
+	/**
+	 * Updates the dyn4j chassis collision footprint for the MapleSim drive sim so the rear bumper
+	 * has a centered opening.
+	 *
+	 * This only affects the drive simulation collision detection (not FuelSim).
+	 */
+	private static void applyRearGapToDriveCollision(SwerveDriveSimulation driveSimulation) {
+		// MapleSim / dyn4j dimensions are meters.
+		double bumperLengthX = Constants.Dimensions.FULL_LENGTH.in(Meters);
+		double bumperWidthY = Constants.Dimensions.FULL_WIDTH.in(Meters);
+
+		// Rear gap spec: width = 17" (centered on robot Y=0) and depth = 3" (into the robot in -X).
+		double gapHalfWidthY = 8.5 * 0.0254; // 8.5 in half-width
+		double gapDepthX = 3.0 * 0.0254; // 3 in depth
+
+		double halfLenX = bumperLengthX / 2.0;
+		double halfWidthY = bumperWidthY / 2.0;
+
+		double sideHeightY = halfWidthY - gapHalfWidthY;
+		if (sideHeightY <= 0) {
+			// Avoid generating invalid fixtures if constants are inconsistent.
+			return;
+		}
+
+		// Preserve dyn4j mass/inertia (MapleSim applies forces using its original COM assumptions).
+		// If we recompute mass from the new U-shape fixtures, the COM shifts forward and the
+		// physics can become unstable (robot "haywires" on joystick input).
+		Mass oldMass = driveSimulation.getMass().copy();
+
+		// Remove the default bumper rectangle fixtures and replace with 3 rectangles:
+		// - a front rectangle (full width) stopping at the rear gap start
+		// - a left rear strip
+		// - a right rear strip
+		driveSimulation.removeAllFixtures();
+
+		// Front rectangle: x in [-halfLenX + gapDepthX, +halfLenX]
+		double frontWidthX = bumperLengthX - gapDepthX;
+		double frontCenterX = gapDepthX / 2.0; // midpoint of [-halfLenX + gapDepthX, +halfLenX]
+		Rectangle front = new Rectangle(frontWidthX, bumperWidthY);
+		front.translate(frontCenterX, 0.0);
+		BodyFixture frontFixture = new BodyFixture(front);
+		frontFixture.setFriction(AbstractDriveTrainSimulation.BUMPER_COEFFICIENT_OF_FRICTION);
+		frontFixture.setRestitution(AbstractDriveTrainSimulation.BUMPER_COEFFICIENT_OF_RESTITUTION);
+		frontFixture.setDensity(0.0); // collision-only; keep oldMass for dynamics stability
+		driveSimulation.addFixture(frontFixture);
+
+		// Left & right strips: x in [-halfLenX, -halfLenX + gapDepthX], y outside the gap
+		double stripWidthX = gapDepthX;
+		double stripCenterX = -halfLenX + gapDepthX / 2.0;
+		double sideCenterY = (gapHalfWidthY + halfWidthY) / 2.0;
+
+		Rectangle left = new Rectangle(stripWidthX, sideHeightY);
+		left.translate(stripCenterX, -sideCenterY);
+		BodyFixture leftFixture = new BodyFixture(left);
+		leftFixture.setFriction(AbstractDriveTrainSimulation.BUMPER_COEFFICIENT_OF_FRICTION);
+		leftFixture.setRestitution(AbstractDriveTrainSimulation.BUMPER_COEFFICIENT_OF_RESTITUTION);
+		leftFixture.setDensity(0.0); // collision-only; keep oldMass for dynamics stability
+		driveSimulation.addFixture(leftFixture);
+
+		Rectangle right = new Rectangle(stripWidthX, sideHeightY);
+		right.translate(stripCenterX, sideCenterY);
+		BodyFixture rightFixture = new BodyFixture(right);
+		rightFixture.setFriction(AbstractDriveTrainSimulation.BUMPER_COEFFICIENT_OF_FRICTION);
+		rightFixture.setRestitution(AbstractDriveTrainSimulation.BUMPER_COEFFICIENT_OF_RESTITUTION);
+		rightFixture.setDensity(0.0); // collision-only; keep oldMass for dynamics stability
+		driveSimulation.addFixture(rightFixture);
+
+		// Restore old mass/inertia so COM stays where MapleSim expects.
+		driveSimulation.setMass(oldMass);
+	} // End applyRearGapToDriveCollision
+
   /** Configures FuelSim for robot-ball collision in simulation. */
   private void configureFuelSim() {
-    fuelSim.setShowHalfFuel(false);
+    fuelSim.setShowHalfFuel(halfFuelOnly);
 		fuelSim.enableAirResistance();
     fuelSim.spawnStartingFuel();
 
@@ -676,7 +853,7 @@ public class RobotContainer {
 				robotLengthMeters / 2 + intakeExtendMeters,
 				-robotWidthMeters / 2 + intakeInsetMeters,
 				robotWidthMeters / 2 - intakeInsetMeters,
-				() -> extender.getState() == ExtenderState.EXTENDED,
+				() -> extender.getState() == Extender.State.EXTENDED,
 				intakeCallback);
 	} // End configureFuelSimRobot
 
@@ -691,26 +868,21 @@ public class RobotContainer {
 		Logger.recordOutput("FieldSimulation/RobotPosition", robotPose);
 
 		// Robot-relative component poses for visualization
-		Pose3d turretComponentPose = new Pose3d(-0.125, -0.17, 0.27, new Rotation3d(0, 0, turret.getRobotFramePosition().getRadians() + Math.toRadians(90)));
-		Pose3d extenderComponentPose;
-		if (DriverStation.isTeleopEnabled()) {
-			extenderComponentPose = new Pose3d(0.28, 0, 0.15, new Rotation3d(0, extender.getPosition() ,0));
-		} else {
-			extenderComponentPose = new Pose3d(0.28, 0, 0.15, new Rotation3d(0, 0, 0));
-		}
-		//hopper extender code TBD
-		Logger.recordOutput("ComponentPoses/Final", new Pose3d[] {turretComponentPose, extenderComponentPose});
+		Pose3d turretComponentPose 	 = new Pose3d(-0.095, -0.17, 0.31, new Rotation3d(0, 0, turret.getRobotFramePosition().getRadians() - Math.toRadians(90)));
+		Pose3d extenderComponentPose = new Pose3d(0.275, 0, 0.195, new Rotation3d(0, extender.getPositionRad() - Math.toRadians(90), 0));
+		Pose3d hangComponentPose 		 = new Pose3d(-0.29635, 0.055, 0.215 + hang.getPositionMeters(), new Rotation3d(0, 0, 0)); // Placeholder pose for Hang; update when Hang sim is implemented
+		Logger.recordOutput("ComponentPoses/Final", new Pose3d[] {turretComponentPose, extenderComponentPose, hangComponentPose});
 
 		// Update field view
 		field.setRobotPose(robotPose);
 
-		// Shooter sim: launch fuel only when shooter is ready and shoot command is active
+		// Shooter sim: launch fuel only when Shooter is ready and shoot command is active
 		if (shooterSim != null) {
 			shooterSim.update(shooter, shooter::isShootCommandActive, turret, hood, flywheel);
 		}
 		if (shooterSimVisualizer != null) {
-			double hoodAngleRad = isHoodEnabled ? hood.getAngleRad() : HoodConstants.kMinAngleRad;
-			double flywheelSurfaceMps = flywheel.getTargetVelocityRadsPerSec() * FlywheelConstants.kFlywheelRadiusMeters;
+			double hoodAngleRad = isHoodEnabled ? hood.getAngleRad() : HoodConstants.kDisabledAngleRad;
+			double flywheelSurfaceMps = flywheel.getTargetVelocityRadPerSec() * FlywheelConstants.kFlywheelRadiusMeters;
 			double ballExitVelMps = flywheelSurfaceMps * ShooterConstants.kFlywheelSurfaceDivider;
 			shooterSimVisualizer.updateFuel(
 					edu.wpi.first.units.Units.MetersPerSecond.of(ballExitVelMps),
@@ -722,13 +894,17 @@ public class RobotContainer {
 		}
 
 		// Fuel sim (robot-ball collision)
-		fuelSim.updateSim();
+		if (fuelSimEnabled) {
+			fuelSim.updateSim();
+		}
 
 		// Log balls in robot and hub scores (FuelSim)
 		if (shooterSim != null) {
 			Logger.recordOutput("FuelSim/BallsInRobot", shooterSim.getFuelStored());
 		}
-		Logger.recordOutput("FuelSim/BlueHubScore", FuelSim.Hub.BLUE_HUB.getScore());
-		Logger.recordOutput("FuelSim/RedHubScore", FuelSim.Hub.RED_HUB.getScore());
+		if (fuelSimEnabled) {
+			Logger.recordOutput("FuelSim/BlueHubScore", FuelSim.Hub.BLUE_HUB.getScore());
+			Logger.recordOutput("FuelSim/RedHubScore", FuelSim.Hub.RED_HUB.getScore());
+		}
 	} // End updateSimulation
 }

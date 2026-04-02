@@ -3,11 +3,11 @@ package frc.robot.subsystems.intake;
 import com.revrobotics.spark.config.SparkBaseConfig;
 
 /** Constants for the Intake (one motor, voltage controlled) subsystem. */
-public final class IntakeConstants { // XXX: Add correct values
+public final class IntakeConstants {
 
   private IntakeConstants() {}
 
-  /** CAN ID of the Intake motor (NEO 550 on SPARK MAX). */
+  /** CAN ID of the Intake motor. */
   public static final int kMotorId = 5;
 
   /** Idle behavior when output is zero (coast or brake). */
@@ -17,10 +17,14 @@ public final class IntakeConstants { // XXX: Add correct values
   public static final boolean kMotorInverted = false;
 
   /** Smart current limit. */
-  public static final int kSmartCurrentLimitAmps = 25;
+  public static final int kSmartCurrentLimitAmps = 60;
 
   /** Open-loop ramp time from 0 to full output. Limits current spikes on step changes. */
   public static final double kOpenLoopRampRateSec = 0.3;
+
+  /** Period for sending signals to the motor. */
+  public static final int kSignalsPeriodMs = 127;
+  public static final int kEncoderVelocitySignalPeriodMs = 271;
 
   /** Max voltage magnitude applied to the motor. */
   public static final double kMaxVoltage = 8.0;
@@ -28,12 +32,15 @@ public final class IntakeConstants { // XXX: Add correct values
   /** Min voltage (negative = reverse). */
   public static final double kMinVoltage = -kMaxVoltage;
 
-  /** Voltage when idle. */
+  /** Voltage in Idle state. */
   public static final double kIdleVoltage = 0.0;
 
-  /** Voltage when intaking (positive = pull in). */
+  /** Voltage in Intaking state (positive = pull in). */
   public static final double kIntakingVoltage = 5.0;
 
-  /** Voltage magnitude when reversing (negative = spit out). */
+  /** Voltage magnitude in Reversing state (negative = spit out). */
   public static final double kReversingVoltage = -2.0;
+
+  /** Delta volts per step. */
+  public static final double kStepVolts = 0.25;
 }

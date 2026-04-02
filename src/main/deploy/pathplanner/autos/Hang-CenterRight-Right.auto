@@ -1,0 +1,91 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "Extender Down"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Flywheel On"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot When Ready"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "GoTo-HangingRight-From-CenterRight"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 4.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Safe Retract Extender"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Hang Level 1"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 3.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Hang-HangingRight"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Drive Back Hang Align"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.5
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Hang Hanging"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 6.0
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": false,
+  "folder": "Hanging",
+  "choreoAuto": false
+}
