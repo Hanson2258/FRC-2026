@@ -91,7 +91,7 @@ public class RobotContainer {
 	// Simulation Toggle
 	private boolean halfFuelOnly 			= true;
 	private boolean shooterSimEnabled	= true;
-	private boolean fuelSimEnabled 		= false;
+	private boolean fuelSimEnabled 		= true;
 
 	// Subsystems
 	private final Drive drive;
@@ -249,7 +249,11 @@ public class RobotContainer {
 				if (fuelSimEnabled) {
 					configureFuelSim();
 					Runnable intakeFuelCallback = shooterSim != null ? shooterSim::intakeFuel : () -> {};
-					configureFuelSimRobot(() -> extender.getState() == Extender.State.EXTENDED, intakeFuelCallback);
+					configureFuelSimRobot(
+							() ->
+									extender.getState() == Extender.State.EXTENDED
+											&& (shooterSim == null || shooterSim.canIntake()),
+							intakeFuelCallback);
 				}
 				break;
 
@@ -853,7 +857,7 @@ public class RobotContainer {
 				robotLengthMeters / 2 + intakeExtendMeters,
 				-robotWidthMeters / 2 + intakeInsetMeters,
 				robotWidthMeters / 2 - intakeInsetMeters,
-				() -> extender.getState() == Extender.State.EXTENDED,
+				() -> ableToIntake.getAsBoolean() && intake.getState() == Intake.State.INTAKING,
 				intakeCallback);
 	} // End configureFuelSimRobot
 
