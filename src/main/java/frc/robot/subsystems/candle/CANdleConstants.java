@@ -20,11 +20,18 @@ public class CANdleConstants {
   public static final double kDefaultBrightness = 0.2;
 
   /** Solid orange: default enabled idle indication */
-  public static final RGBWColor kOrange = new RGBWColor(255, 165, 0);
-  /** Solid green: shoot-when-ready active */
-  public static final RGBWColor kGreen = new RGBWColor(0, 255, 0);
+  public static final RGBWColor kIdleColor = new RGBWColor(255, 165, 0);
+  /** Solid green: shoot-when-ready active and can shoot */
+  public static final RGBWColor kShootWhenReadyColor = new RGBWColor(0, 255, 0);
+  /** Solid blue: shoot-when-ready active but cant shoot */
+  public static final RGBWColor kShootWhenReadyScheduledColor = new RGBWColor(0, 0, 255);
   /** Strobe red: driver or operator manual override */
-  public static final RGBWColor kRed = new RGBWColor(255, 0, 0);
+  public static final RGBWColor kManualOverrideColor = new RGBWColor(255, 0, 0);
+
+  /** Strobe animation: manual override is on (Driver or operator) */
+  public static final AnimationType kManualOverrideAnimation = AnimationType.Strobe;
+  /** Rainbow animation: robot is disabled */
+  public static final AnimationType kDisabledAnimation = AnimationType.Rainbow;
 
   /**
   * LED Animation type

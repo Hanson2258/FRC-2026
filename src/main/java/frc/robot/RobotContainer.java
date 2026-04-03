@@ -320,6 +320,7 @@ public class RobotContainer {
 
 		candle.setShootWhenReadySupplier(() -> shootWhenReadyCommand.isScheduled());
 		candle.setManualOverrideSupplier(() -> RobotContainer.driverManualOverride || RobotContainer.operatorManualOverride);
+		candle.setShooter(shooter);
 
 		/// -------------------------------------------------------------------------------------------
 		/// ------------------------------------ Logger Dashboard -------------------------------------
