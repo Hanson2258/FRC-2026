@@ -346,12 +346,32 @@ public class FuelSim {
 
     /** When true, only fuel on the blue side (x <= field center, left side) is spawned; red side fuel is omitted. */
     protected boolean showHalfFuel = false;
-    protected Supplier<Pose2d> robotPoseSupplier = null;
-    protected Supplier<ChassisSpeeds> robotFieldSpeedsSupplier = null;
-    protected double robotWidth; // size along the robot's y axis
-    protected double robotLength; // size along the robot's x axis
-    protected double bumperHeight;
+
+    /** One or two robots; index 0 is the primary (matches legacy {@link #registerRobot}). */
+    protected final ArrayList<RegisteredFuelRobot> registeredRobots = new ArrayList<>();
+
     protected ArrayList<SimIntake> intakes = new ArrayList<>();
+
+    private static final class RegisteredFuelRobot {
+        final double robotWidth;
+        final double robotLength;
+        final double bumperHeight;
+        final Supplier<Pose2d> pose;
+        final Supplier<ChassisSpeeds> fieldSpeeds;
+
+        RegisteredFuelRobot(
+                double robotWidth,
+                double robotLength,
+                double bumperHeight,
+                Supplier<Pose2d> pose,
+                Supplier<ChassisSpeeds> fieldSpeeds) {
+            this.robotWidth = robotWidth;
+            this.robotLength = robotLength;
+            this.bumperHeight = bumperHeight;
+            this.pose = pose;
+            this.fieldSpeeds = fieldSpeeds;
+        }
+    }
     protected int subticks = 2;
 
     /** Publish fuel poses every N robot periods (full array is heavy on NT + AdvantageKit). */
@@ -522,38 +542,60 @@ public class FuelSim {
      * @param poseSupplier
      * @param fieldSpeedsSupplier field-relative `ChassisSpeeds` supplier
      */
+    /**
+     * Clears robots and intakes, then registers the primary (index 0) robot. For two robots, call
+     * {@link #addRegisteredRobot} after this and {@link #registerIntake(int, ...)} per robot.
+     */
     public void registerRobot(
             double width,
             double length,
             double bumperHeight,
             Supplier<Pose2d> poseSupplier,
             Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
-        this.robotPoseSupplier = poseSupplier;
-        this.robotFieldSpeedsSupplier = fieldSpeedsSupplier;
-        this.robotWidth = width;
-        this.robotLength = length;
-        this.bumperHeight = bumperHeight;
+        registeredRobots.clear();
+        intakes.clear();
+        registeredRobots.add(new RegisteredFuelRobot(width, length, bumperHeight, poseSupplier, fieldSpeedsSupplier));
     }
 
     /**
-     * Registers a robot with the fuel simulator
-     * @param width from left to right (y-axis)
-     * @param length from front to back (x-axis)
-     * @param bumperHeight from the ground
-     * @param poseSupplier
-     * @param fieldSpeedsSupplier field-relative `ChassisSpeeds` supplier
+     * @return index of the added robot (1 for second robot when {@link #registerRobot} was already called)
      */
+    public int addRegisteredRobot(
+            double width,
+            double length,
+            double bumperHeight,
+            Supplier<Pose2d> poseSupplier,
+            Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
+        registeredRobots.add(new RegisteredFuelRobot(width, length, bumperHeight, poseSupplier, fieldSpeedsSupplier));
+        return registeredRobots.size() - 1;
+    }
+
     public void registerRobot(
             Distance width,
             Distance length,
             Distance bumperHeight,
             Supplier<Pose2d> poseSupplier,
             Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
-        this.robotPoseSupplier = poseSupplier;
-        this.robotFieldSpeedsSupplier = fieldSpeedsSupplier;
-        this.robotWidth = width.in(Meters);
-        this.robotLength = length.in(Meters);
-        this.bumperHeight = bumperHeight.in(Meters);
+        registerRobot(
+                width.in(Meters),
+                length.in(Meters),
+                bumperHeight.in(Meters),
+                poseSupplier,
+                fieldSpeedsSupplier);
+    }
+
+    public int addRegisteredRobot(
+            Distance width,
+            Distance length,
+            Distance bumperHeight,
+            Supplier<Pose2d> poseSupplier,
+            Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
+        return addRegisteredRobot(
+                width.in(Meters),
+                length.in(Meters),
+                bumperHeight.in(Meters),
+                poseSupplier,
+                fieldSpeedsSupplier);
     }
 
     /**
@@ -577,7 +619,7 @@ public class FuelSim {
 
             handleFuelCollisions(fuels);
 
-            if (robotPoseSupplier != null) {
+            if (!registeredRobots.isEmpty()) {
                 handleRobotCollisions(fuels);
                 handleIntakes(fuels);
             }
@@ -612,13 +654,26 @@ public class FuelSim {
             Angle hoodAngle,
             Angle turretYaw,
             Transform3d robotToLaunchPoint) {
-        if (robotPoseSupplier == null || robotFieldSpeedsSupplier == null) {
-            throw new IllegalStateException("Robot must be registered before launching fuel.");
-        }
+        launchFuel(0, launchVelocity, hoodAngle, turretYaw, robotToLaunchPoint);
+    }
 
-        Pose2d robotPose = robotPoseSupplier.get();
+    /**
+     * @param robotIndex {@link #registerRobot} / {@link #addRegisteredRobot} index for pose and field velocity.
+     */
+    public void launchFuel(
+            int robotIndex,
+            LinearVelocity launchVelocity,
+            Angle hoodAngle,
+            Angle turretYaw,
+            Transform3d robotToLaunchPoint) {
+        if (robotIndex < 0 || robotIndex >= registeredRobots.size()) {
+            throw new IllegalStateException("Invalid fuel robot index: " + robotIndex);
+        }
+        RegisteredFuelRobot r = registeredRobots.get(robotIndex);
+
+        Pose2d robotPose = r.pose.get();
         Pose3d launchPose = new Pose3d(robotPose).plus(robotToLaunchPoint);
-        ChassisSpeeds fieldSpeeds = this.robotFieldSpeedsSupplier.get();
+        ChassisSpeeds fieldSpeeds = r.fieldSpeeds.get();
 
         double horizontalVel = Math.cos(hoodAngle.in(Radians)) * launchVelocity.in(MetersPerSecond);
         double verticalVel = Math.sin(hoodAngle.in(Radians)) * launchVelocity.in(MetersPerSecond);
@@ -644,7 +699,13 @@ public class FuelSim {
                 new Transform3d(new Translation3d(0, 0, launchHeight.in(Meters)), Rotation3d.kZero));
     }
 
-    protected void handleRobotCollision(Fuel fuel, Pose2d robot, Translation2d robotVel) {
+    protected void handleRobotCollision(
+            Fuel fuel,
+            Pose2d robot,
+            Translation2d robotVel,
+            double robotWidth,
+            double robotLength,
+            double bumperHeight) {
         Translation2d relativePos = new Pose2d(fuel.pos.toTranslation2d(), Rotation2d.kZero)
                 .relativeTo(robot)
                 .getTranslation();
@@ -692,39 +753,42 @@ public class FuelSim {
      * Furthest point on bumpers + extended intake from robot center (robot frame), plus fuel radius
      * and slack — balls outside this field-XY circle skip bumper and intake checks.
      */
-    private double robotFieldInfluenceRadiusSq() {
-        double halfL = robotLength * 0.5;
-        double halfW = robotWidth * 0.5;
+    private static double robotFieldInfluenceRadiusSq(RegisteredFuelRobot r) {
+        double halfL = r.robotLength * 0.5;
+        double halfW = r.robotWidth * 0.5;
         double reach = Math.hypot(halfL + kIntakeBeyondFrontMeters, halfW) + FUEL_RADIUS + 0.15;
         return reach * reach;
     } // End robotFieldInfluenceRadiusSq
 
     protected void handleRobotCollisions(ArrayList<Fuel> fuels) {
-        Pose2d robot = robotPoseSupplier.get();
-        ChassisSpeeds speeds = robotFieldSpeedsSupplier.get();
-        Translation2d robotVel = new Translation2d(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
+        for (RegisteredFuelRobot r : registeredRobots) {
+            Pose2d robot = r.pose.get();
+            ChassisSpeeds speeds = r.fieldSpeeds.get();
+            Translation2d robotVel = new Translation2d(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
 
-        double rx = robot.getX();
-        double ry = robot.getY();
-        double reachSq = robotFieldInfluenceRadiusSq();
+            double rx = robot.getX();
+            double ry = robot.getY();
+            double reachSq = robotFieldInfluenceRadiusSq(r);
 
-        for (Fuel fuel : fuels) {
-            double dx = fuel.pos.getX() - rx;
-            double dy = fuel.pos.getY() - ry;
-            if (dx * dx + dy * dy > reachSq) {
-                continue;
+            for (Fuel fuel : fuels) {
+                double dx = fuel.pos.getX() - rx;
+                double dy = fuel.pos.getY() - ry;
+                if (dx * dx + dy * dy > reachSq) {
+                    continue;
+                }
+                handleRobotCollision(fuel, robot, robotVel, r.robotWidth, r.robotLength, r.bumperHeight);
             }
-            handleRobotCollision(fuel, robot, robotVel);
         }
     } // End handleRobotCollisions
 
     protected void handleIntakes(ArrayList<Fuel> fuels) {
-        Pose2d robot = robotPoseSupplier.get();
-        double rx = robot.getX();
-        double ry = robot.getY();
-        double reachSq = robotFieldInfluenceRadiusSq();
-
         for (SimIntake intake : intakes) {
+            RegisteredFuelRobot r = registeredRobots.get(intake.robotIndex);
+            Pose2d robot = r.pose.get();
+            double rx = robot.getX();
+            double ry = robot.getY();
+            double reachSq = robotFieldInfluenceRadiusSq(r);
+
             for (int i = 0; i < fuels.size(); i++) {
                 Fuel fuel = fuels.get(i);
                 double dx = fuel.pos.getX() - rx;
@@ -732,7 +796,7 @@ public class FuelSim {
                 if (dx * dx + dy * dy > reachSq) {
                     continue;
                 }
-                if (intake.shouldIntake(fuel, robot)) {
+                if (intake.shouldIntake(fuel, robot, r.bumperHeight)) {
                     fuels.remove(i);
                     i--;
                 }
@@ -781,18 +845,21 @@ public class FuelSim {
         }
     }
 
-    /**
-     * Registers an intake with the fuel simulator. This intake will remove fuel from the field based on the `ableToIntake` parameter.
-     * @param xMin Minimum x position for the bounding box
-     * @param xMax Maximum x position for the bounding box
-     * @param yMin Minimum y position for the bounding box
-     * @param yMax Maximum y position for the bounding box
-     * @param ableToIntake Should a return a boolean whether the intake is active
-     * @param intakeCallback Function to call when a fuel is intaked
-     */
+    /** Intake for the primary (index 0) fuel robot. */
     public void registerIntake(
             double xMin, double xMax, double yMin, double yMax, BooleanSupplier ableToIntake, Runnable intakeCallback) {
-        intakes.add(new SimIntake(xMin, xMax, yMin, yMax, ableToIntake, intakeCallback));
+        registerIntake(0, xMin, xMax, yMin, yMax, ableToIntake, intakeCallback);
+    }
+
+    public void registerIntake(
+            int robotIndex,
+            double xMin,
+            double xMax,
+            double yMin,
+            double yMax,
+            BooleanSupplier ableToIntake,
+            Runnable intakeCallback) {
+        intakes.add(new SimIntake(robotIndex, xMin, xMax, yMin, yMax, ableToIntake, intakeCallback));
     }
 
     /**
@@ -962,17 +1029,20 @@ public class FuelSim {
     }
 
     protected class SimIntake {
+        final int robotIndex;
         double xMin, xMax, yMin, yMax;
         BooleanSupplier ableToIntake;
         Runnable callback;
 
         protected SimIntake(
+                int robotIndex,
                 double xMin,
                 double xMax,
                 double yMin,
                 double yMax,
                 BooleanSupplier ableToIntake,
                 Runnable intakeCallback) {
+            this.robotIndex = robotIndex;
             this.xMin = xMin;
             this.xMax = xMax;
             this.yMin = yMin;
@@ -981,8 +1051,8 @@ public class FuelSim {
             this.callback = intakeCallback;
         }
 
-        protected boolean shouldIntake(Fuel fuel, Pose2d robotPose) {
-            if (!ableToIntake.getAsBoolean() || fuel.pos.getZ() > bumperHeight) return false;
+        protected boolean shouldIntake(Fuel fuel, Pose2d robotPose, double bumperHeightM) {
+            if (!ableToIntake.getAsBoolean() || fuel.pos.getZ() > bumperHeightM) return false;
 
             Translation2d fuelRelativePos = new Pose2d(fuel.pos.toTranslation2d(), Rotation2d.kZero)
                     .relativeTo(robotPose)

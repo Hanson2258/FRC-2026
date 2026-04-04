@@ -24,13 +24,19 @@ public class Hang extends SubsystemBase {
 
   private final HangIO hangIO;
   private final HangIO.HangIOInputs hangInputs = new HangIO.HangIOInputs();
+  private final String logRoot;
 
   private State state = State.IDLE;
   private double targetPositionMeters = kStoredPositionMeters;
   private BooleanSupplier ignoreLimitsSupplier = () -> false;
 
   public Hang(HangIO io) {
+    this(io, "Subsystems/Hang");
+  } // End Hang Constructor
+
+  public Hang(HangIO io, String logRoot) {
     hangIO = io;
+    this.logRoot = logRoot;
 
     SmartDashboard.putNumber("Hang/kP", kP);
     SmartDashboard.putNumber("Hang/kI", kI);
@@ -41,14 +47,14 @@ public class Hang extends SubsystemBase {
   @Override
   public void periodic() {
     hangIO.updateInputs(hangInputs);
-    Logger.recordOutput("Subsystems/Hang/Inputs/MotorConnected", hangInputs.motorConnected);
-    Logger.recordOutput("Subsystems/Hang/Inputs/PositionInches", Units.metersToInches(hangInputs.positionMeters));
-    Logger.recordOutput("Subsystems/Hang/Inputs/VelocityInchesPerSec", Units.metersToInches(hangInputs.velocityMetersPerSec));
-    Logger.recordOutput("Subsystems/Hang/Inputs/AppliedVolts", hangInputs.appliedVolts);
-    Logger.recordOutput("Subsystems/Hang/Inputs/SupplyCurrentAmps", hangInputs.supplyCurrentAmps);
-    Logger.recordOutput("Subsystems/Hang/TargetPositionInches", Units.metersToInches(targetPositionMeters));
-    Logger.recordOutput("Subsystems/Hang/AtTargetPosition", atTargetPosition());
-    Logger.recordOutput("Subsystems/Hang/State", state.name());
+    Logger.recordOutput(logRoot + "/Inputs/MotorConnected", hangInputs.motorConnected);
+    Logger.recordOutput(logRoot + "/Inputs/PositionInches", Units.metersToInches(hangInputs.positionMeters));
+    Logger.recordOutput(logRoot + "/Inputs/VelocityInchesPerSec", Units.metersToInches(hangInputs.velocityMetersPerSec));
+    Logger.recordOutput(logRoot + "/Inputs/AppliedVolts", hangInputs.appliedVolts);
+    Logger.recordOutput(logRoot + "/Inputs/SupplyCurrentAmps", hangInputs.supplyCurrentAmps);
+    Logger.recordOutput(logRoot + "/TargetPositionInches", Units.metersToInches(targetPositionMeters));
+    Logger.recordOutput(logRoot + "/AtTargetPosition", atTargetPosition());
+    Logger.recordOutput(logRoot + "/State", state.name());
 
     if (DriverStation.isDisabled()) {
       hangIO.stop();

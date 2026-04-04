@@ -24,6 +24,9 @@ import frc.robot.subsystems.shooter.hood.Hood;
 import frc.robot.subsystems.shooter.hood.HoodConstants;
 import frc.robot.subsystems.shooter.turret.Turret;
 import frc.robot.util.AllianceUtil;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.Logger;
 
 /** Shooter-related command helpers (Hood, Flywheel, Turret aim via ShooterCalculator). */
@@ -45,8 +48,32 @@ public final class ShooterCommands {
   /** Which passing spot is selected; null = aim at hub. */
   private static volatile PassingSpot passingSpotOverride = null;
 
-  /** Turret angle to predicted target from last setShooterTarget (accounts for robot velocity). */
-  private static volatile Rotation2d lastTurretAngleFromShot = null;
+  /**
+   * Per-{@link Drive} turret angle from last {@link #setShooterTarget} for that drive (moving shot). Static singleton
+   * cache was wrong with two sim robots: whichever {@link frc.robot.subsystems.shooter.Shooter#periodic} ran last
+   * overwrote the angle and broke the other robot’s turret aim.
+   */
+  private static final Map<Drive, Rotation2d> lastTurretAngleFromShotByDrive = new IdentityHashMap<>();
+
+  /**
+   * Optional per-{@link Drive} alliance for hub and passing-spot targets. Default when absent: {@link
+   * AllianceUtil#isRedAlliance()} (DriverStation). Second sim registers its {@link Drive} with {@link
+   * frc.robot.Constants.SimulationDrive#kSecondSimRobotRedAlliance}.
+   */
+  private static final IdentityHashMap<Drive, BooleanSupplier> targetRedAllianceByDrive =
+      new IdentityHashMap<>();
+
+  /** Call for the second sim drivetrain so {@link #getShooterTarget3d(Drive)} matches {@code kSecondSimRobotRedAlliance}. */
+  public static void registerTargetAllianceSupplier(Drive drive, BooleanSupplier isRedAlliance) {
+    if (drive != null && isRedAlliance != null) {
+      targetRedAllianceByDrive.put(drive, isRedAlliance);
+    }
+  } // End registerTargetAllianceSupplier
+
+  private static boolean isRedAllianceForShooterTarget(Drive drive) {
+    BooleanSupplier s = targetRedAllianceByDrive.get(drive);
+    return s != null ? s.getAsBoolean() : AllianceUtil.isRedAlliance();
+  } // End isRedAllianceForShooterTarget
 
   public enum PassingSpot {
     LEFT,
@@ -79,23 +106,22 @@ public final class ShooterCommands {
     return passingSpotOverride == null;
   }
 
-  private static Translation3d getPassingSpot3d(PassingSpot spot) {
-    boolean red = AllianceUtil.isRedAlliance();
+  private static Translation3d getPassingSpot3d(PassingSpot spot, boolean redAlliance) {
     return switch (spot) {
-      case LEFT -> red ? FieldConstants.RED_PASSING_SPOT_LEFT : FieldConstants.BLUE_PASSING_SPOT_LEFT;
-      case CENTER -> red ? FieldConstants.RED_PASSING_SPOT_CENTER : FieldConstants.BLUE_PASSING_SPOT_CENTER;
-      case RIGHT -> red ? FieldConstants.RED_PASSING_SPOT_RIGHT : FieldConstants.BLUE_PASSING_SPOT_RIGHT;
+      case LEFT -> redAlliance ? FieldConstants.RED_PASSING_SPOT_LEFT : FieldConstants.BLUE_PASSING_SPOT_LEFT;
+      case CENTER ->
+          redAlliance ? FieldConstants.RED_PASSING_SPOT_CENTER : FieldConstants.BLUE_PASSING_SPOT_CENTER;
+      case RIGHT -> redAlliance ? FieldConstants.RED_PASSING_SPOT_RIGHT : FieldConstants.BLUE_PASSING_SPOT_RIGHT;
     };
   }
 
-  /** Current Shooter target: passing spot or alliance hub (funnel top). */
-  public static Translation3d getShooterTarget3d() {
+  /** Current Shooter target for this drivetrain: passing spot or alliance hub (funnel top). */
+  public static Translation3d getShooterTarget3d(Drive drive) {
+    boolean red = isRedAllianceForShooterTarget(drive);
     PassingSpot spot = passingSpotOverride;
-    if (spot != null) return getPassingSpot3d(spot);
-    return AllianceUtil.isRedAlliance()
-        ? FieldConstants.RED_FUNNEL_TOP_CENTER_3D
-        : FieldConstants.BLUE_FUNNEL_TOP_CENTER_3D;
-  }
+    if (spot != null) return getPassingSpot3d(spot, red);
+    return red ? FieldConstants.RED_FUNNEL_TOP_CENTER_3D : FieldConstants.BLUE_FUNNEL_TOP_CENTER_3D;
+  } // End getShooterTarget3d
 
   /** Get current target for logging. */
   public static String getShooterTargetName() {
@@ -115,7 +141,7 @@ public final class ShooterCommands {
     Pose2d pose = drive.getPose();
     return pose.getRotation().plus(
         Rotation2d.fromRadians(
-            ShooterCalculator.calculateAzimuthAngle(pose, getShooterTarget3d()).in(Radians)));
+            ShooterCalculator.calculateAzimuthAngle(pose, getShooterTarget3d(drive)).in(Radians)));
   }
 
   /**
@@ -123,7 +149,7 @@ public final class ShooterCommands {
    */
   public static Rotation2d getTurretAngleToHubFromPivot(Drive drive) {
     return Rotation2d.fromRadians(
-        ShooterCalculator.calculateAzimuthAngle(drive.getPose(), getShooterTarget3d()).in(Radians));
+        ShooterCalculator.calculateAzimuthAngle(drive.getPose(), getShooterTarget3d(drive)).in(Radians));
   }
 
   /**
@@ -131,9 +157,12 @@ public final class ShooterCommands {
    * Fallback to hub angle if shot not yet computed this cycle.
    */
   public static Rotation2d getTurretAngleFromShot(Drive drive) {
-    if (lastTurretAngleFromShot != null) return lastTurretAngleFromShot;
+    Rotation2d cached = lastTurretAngleFromShotByDrive.get(drive);
+    if (cached != null) {
+      return cached;
+    }
     return getTurretAngleToHubFromPivot(drive);
-  }
+  } // End getTurretAngleFromShot
 
   /**
    * Sets Hood and Flywheel target from ShooterCalculator. When hoodEnabled is false, uses a fixed
@@ -146,7 +175,7 @@ public final class ShooterCommands {
   public static void setShooterTarget(Drive drive, Turret turret, Hood hood, Flywheel flywheel, boolean hoodEnabled, boolean enableCalculator) {
     Pose2d pose = drive.getPose();
     ChassisSpeeds fieldSpeeds = drive.getFieldRelativeChassisSpeeds();
-    Translation3d target3d = getShooterTarget3d();
+    Translation3d target3d = getShooterTarget3d(drive);
 
     // Phase delay: predict pose forward so shot is for when ball actually leaves
     double dt = ShooterConstants.kPhaseDelaySec;
@@ -200,10 +229,13 @@ public final class ShooterCommands {
     // We provide the turret "current angle" to the calculator in the turret's internal frame
     // so shortest-path selection respects kMinAngleRad/kMaxAngleRad.
     double targetAimOffsetDegAdditive = SmartDashboard.getNumber(kTargetAimOffsetDegKey, kDefaultTargetAimOffsetDeg);
-    lastTurretAngleFromShot = Rotation2d.fromRadians(
-          ShooterCalculator.calculateAzimuthAngle(
-                estimatedPose, shot.getTarget(), turret.getPosition().getRadians())
-            .in(Radians)).plus(Rotation2d.fromDegrees(ShooterConstants.kTargetAimOffsetDeg + targetAimOffsetDegAdditive));
+    lastTurretAngleFromShotByDrive.put(
+        drive,
+        Rotation2d.fromRadians(
+                ShooterCalculator.calculateAzimuthAngle(
+                        estimatedPose, shot.getTarget(), turret.getPosition().getRadians())
+                    .in(Radians))
+            .plus(Rotation2d.fromDegrees(ShooterConstants.kTargetAimOffsetDeg + targetAimOffsetDegAdditive)));
     Logger.recordOutput(kTargetAimOffsetDegKey, ShooterConstants.kTargetAimOffsetDeg + targetAimOffsetDegAdditive);
   } // End setShooterTarget
 }

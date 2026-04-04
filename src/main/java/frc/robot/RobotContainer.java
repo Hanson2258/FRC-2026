@@ -59,6 +59,8 @@ import frc.robot.subsystems.shooter.hood.*;
 import frc.robot.subsystems.shooter.flywheel.*;
 import frc.robot.subsystems.hang.*;
 
+import frc.robot.simulation.SecondSimRobotOutputs;
+
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -154,6 +156,11 @@ public class RobotContainer {
 	// Shooter Simulation and Visualizer (only non-null in SIM)
 	private final ShooterSim shooterSim;
 	private final ShooterSimVisualizer shooterSimVisualizer;
+
+	// Second Sim Robot
+	/** Full duplicate sim robot (driver-only OI); null unless SIM and {@link Constants.SimulationDrive#kSecondSimRobotEnabled}. */
+	private secondSimRobot secondSimRobot = null;
+
 
 	/** The container for the robot. Contains subsystems, OI devices, and commands. */
 	public RobotContainer() {
@@ -257,6 +264,11 @@ public class RobotContainer {
 											&& (shooterSim == null || shooterSim.canIntake()),
 							intakeFuelCallback);
 				}
+				
+				// Second Sim Robot
+				if (Constants.SimulationDrive.kSecondSimRobotEnabled) {
+					secondSimRobot = buildSecondSimRobot();
+				}
 				break;
 
 			// Replayed Robot, disable IO implementations
@@ -351,7 +363,27 @@ public class RobotContainer {
     // Configure button bindings
     configureDriverBindings();
     configureOperatorBindings(true); // False to disable operator controls
-  }
+
+
+		// Second Sim Robot Setup
+		if (secondSimRobot != null) {
+			secondSimRobot.shooter = new Shooter(secondSimRobot.drive, secondSimRobot.agitator, secondSimRobot.transfer, secondSimRobot.turret, secondSimRobot.hood, secondSimRobot.flywheel, isHoodEnabled);
+			secondSimRobot.shootWhenReady = new ShootWhenReadyCommand(secondSimRobot.agitator, secondSimRobot.transfer, secondSimRobot.shooter, secondSimRobot.drive::getPose);
+			secondSimRobot.shooter.setShootCommandScheduledSupplier(secondSimRobot.shootWhenReady::isScheduled);
+			secondSimRobot.shooter.setManualOverrideSupplier(() -> operatorManualOverride);
+			secondSimRobot.shooter.setIsRedAllianceSupplier(() -> Constants.SimulationDrive.kSecondSimRobotRedAlliance);
+			ShooterCommands.registerTargetAllianceSupplier(secondSimRobot.drive, () -> Constants.SimulationDrive.kSecondSimRobotRedAlliance);
+			secondSimRobot.shooter.setShooterCommandLogPrefix(SecondSimRobotOutputs.path("ShooterCommand"));
+			secondSimRobot.safeRetractExtenderCommand =
+					SafeRetractExtenderCommand.create(
+							secondSimRobot.shootWhenReady, secondSimRobot.flywheel, secondSimRobot.extender, secondSimRobot.turret, b -> secondSimRobot.driverTurretOverride = b);
+			secondSimRobot.turret.setManualOverrideSupplier(() -> operatorManualOverride || secondSimRobot.driverTurretOverride);
+			secondSimRobot.turret.setDrive(secondSimRobot.drive);
+			secondSimRobot.turret.setAimAtTargetSupplier(() -> secondSimRobot.shootWhenReady.isScheduled());
+
+			configureSecondSimDriverBindings();
+		}
+  } // End RobotContainer Constructor
 
 	/// -----------------------------------------------------------------------------------------------------------------
 	/// ------------------------------------------------ Controller Input -----------------------------------------------
@@ -705,6 +737,17 @@ public class RobotContainer {
 		if (transfer != null) transfer.setIdleState();
 		if (flywheel != null) flywheel.setState(Flywheel.State.IDLE);
 		if (hang != null) 		hang.setIdleState();
+
+		// Second Sim Robot
+		if (secondSimRobot != null) {
+			CommandScheduler.getInstance().cancel(secondSimRobot.shootWhenReady);
+			if (secondSimRobot.intake != null)	 secondSimRobot.intake.setIdleState();
+			if (secondSimRobot.extender != null) secondSimRobot.extender.setIdleState();
+			if (secondSimRobot.agitator != null) secondSimRobot.agitator.setIdleState();
+			if (secondSimRobot.transfer != null) secondSimRobot.transfer.setIdleState();
+			if (secondSimRobot.flywheel != null) secondSimRobot.flywheel.setState(Flywheel.State.IDLE);
+			if (secondSimRobot.hang != null) 		 secondSimRobot.hang.setIdleState();
+		}
 	} // End idleBallHandling
 
 	/**
@@ -747,6 +790,10 @@ public class RobotContainer {
 		if (Constants.currentMode != Constants.Mode.SIM) return;
 
 		driveSimulation.setSimulationWorldPose(new Pose2d(3, 3, new Rotation2d()));
+		
+		if (secondSimRobot != null) {
+			secondSimRobot.driveSimulation.setSimulationWorldPose(new Pose2d(13.5, 5.0, new Rotation2d(Math.PI)));
+		}
 		SimulatedArena.getInstance().resetFieldForAuto();
 	} // End resetSimulationField
 
@@ -879,11 +926,29 @@ public class RobotContainer {
 					extenderExtendedForCollision ? Constants.Dimensions.kExtensionPastBumpersMeters : 0.0);
 		}
 
+		if (secondSimRobot != null) {
+			boolean extenderExtendedForCollisionSim2 = secondSimRobot.extender.getState() == Extender.State.EXTENDED;
+			if (extenderExtendedForCollisionSim2 != secondSimRobot.driveSimCollisionExtenderExtended) {
+				secondSimRobot.driveSimCollisionExtenderExtended = extenderExtendedForCollisionSim2;
+				applyRearGapToDriveCollision(
+						secondSimRobot.driveSimulation,
+						extenderExtendedForCollisionSim2 ? Constants.Dimensions.kExtensionPastBumpersMeters : 0.0);
+			}
+		}
+
 		SimulatedArena.getInstance().simulationPeriodic();
 
 		// Robot pose for visualization
 		Pose2d robotPose = driveSimulation.getSimulatedDriveTrainPose();
 		Logger.recordOutput("FieldSimulation/RobotPosition", robotPose);
+		
+		if (secondSimRobot != null) {
+			Pose2d robotPoseSim2 = secondSimRobot.driveSimulation.getSimulatedDriveTrainPose();
+			Logger.recordOutput(SecondSimRobotOutputs.path("FieldSimulation/RobotPosition"), robotPoseSim2);
+			Logger.recordOutput(SecondSimRobotOutputs.path("TeleopDrive/IsFacingHub"), secondSimRobot.isFacingHub);
+			Logger.recordOutput(SecondSimRobotOutputs.path("TeleopDrive/IsRobotCentric"), secondSimRobot.isRobotCentric);
+			field.getObject("robotPoseSim2").setPose(robotPoseSim2);
+		}
 
 		// Robot-relative component poses for visualization
 		Pose3d turretComponentPose 	 = new Pose3d(-0.095, -0.17, 0.31, new Rotation3d(0, 0, turret.getRobotFramePosition().getRadians() - Math.toRadians(90)));
@@ -891,12 +956,22 @@ public class RobotContainer {
 		Pose3d hangComponentPose 		 = new Pose3d(-0.29635, 0.055, 0.215 + hang.getPositionMeters(), new Rotation3d(0, 0, 0)); // Placeholder pose for Hang; update when Hang sim is implemented
 		Logger.recordOutput("ComponentPoses/Final", new Pose3d[] {turretComponentPose, extenderComponentPose, hangComponentPose});
 
+		if (secondSimRobot != null) {
+			Pose3d turretComponentPoseSim2 = 	 new Pose3d(-0.095, -0.17, 0.31, new Rotation3d(0, 0, secondSimRobot.turret.getRobotFramePosition().getRadians() - Math.toRadians(90)));
+			Pose3d extenderComponentPoseSim2 = new Pose3d(0.275, 0, 0.195, new Rotation3d(0, secondSimRobot.extender.getPositionRad() - Math.toRadians(90), 0));
+			Pose3d hangComponentPoseSim2 = 	 	 new Pose3d(-0.29635, 0.055, 0.215 + secondSimRobot.hang.getPositionMeters(), new Rotation3d(0, 0, 0));
+			Logger.recordOutput(SecondSimRobotOutputs.path("ComponentPoses/Final"), new Pose3d[] {turretComponentPoseSim2, extenderComponentPoseSim2, hangComponentPoseSim2});
+		}
+
 		// Update field view
 		field.setRobotPose(robotPose);
 
 		// Shooter sim: launch fuel only when Shooter is ready and shoot command is active
 		if (shooterSim != null) {
 			shooterSim.update(shooter, shooter::isShootCommandActive, turret, hood, flywheel);
+		}
+		if (secondSimRobot != null && secondSimRobot.shooterSim != null) {
+			secondSimRobot.shooterSim.update(secondSimRobot.shooter, secondSimRobot.shooter::isShootCommandActive, secondSimRobot.turret, secondSimRobot.hood, secondSimRobot.flywheel);
 		}
 		if (shooterSimVisualizer != null) {
 			double hoodAngleRad = isHoodEnabled ? hood.getAngleRad() : HoodConstants.kDisabledAngleRad;
@@ -910,6 +985,18 @@ public class RobotContainer {
 					edu.wpi.first.units.Units.Radians.of(turret.getRobotFramePosition().getRadians()),
 					edu.wpi.first.units.Units.Radians.of(hoodAngleRad));
 		}
+		if (secondSimRobot != null && secondSimRobot.shooterSimVisualizer != null) {
+			double hoodAngleRadSim2 = isHoodEnabled ? secondSimRobot.hood.getAngleRad() : HoodConstants.kDisabledAngleRad;
+			double flywheelSurfaceMpsSim2 = secondSimRobot.flywheel.getTargetVelocityRadPerSec() * FlywheelConstants.kFlywheelRadiusMeters;
+			double ballExitVelMpsSim2 = flywheelSurfaceMpsSim2 * ShooterConstants.kFlywheelSurfaceDivider;
+			secondSimRobot.shooterSimVisualizer.updateFuel(
+					edu.wpi.first.units.Units.MetersPerSecond.of(ballExitVelMpsSim2),
+					edu.wpi.first.units.Units.Radians.of(hoodAngleRadSim2),
+					edu.wpi.first.units.Units.Radians.of(secondSimRobot.turret.getRobotFramePosition().getRadians()));
+			secondSimRobot.shooterSimVisualizer.update3dPose(
+					edu.wpi.first.units.Units.Radians.of(secondSimRobot.turret.getRobotFramePosition().getRadians()),
+					edu.wpi.first.units.Units.Radians.of(hoodAngleRadSim2));
+		}
 
 		// Fuel sim (robot-ball collision)
 		if (fuelSimEnabled) {
@@ -920,9 +1007,267 @@ public class RobotContainer {
 		if (shooterSim != null) {
 			Logger.recordOutput("FuelSim/BallsInRobot", shooterSim.getFuelStored());
 		}
+		if (secondSimRobot != null && secondSimRobot.shooterSim != null) {
+			Logger.recordOutput(SecondSimRobotOutputs.path("FuelSim/BallsInRobot"), secondSimRobot.shooterSim.getFuelStored());
+		}
 		if (fuelSimEnabled) {
 			Logger.recordOutput("FuelSim/BlueHubScore", FuelSim.Hub.BLUE_HUB.getScore());
 			Logger.recordOutput("FuelSim/RedHubScore", FuelSim.Hub.RED_HUB.getScore());
 		}
 	} // End updateSimulation
+
+
+	/** Optional second Maple sim + FuelSim robot; built only in SIM when {@link Constants.SimulationDrive#kSecondSimRobotEnabled}. */
+	private static final class secondSimRobot {
+		SwerveDriveSimulation driveSimulation;
+		Drive drive;
+		Intake intake;
+		Extender extender;
+		Agitator agitator;
+		Transfer transfer;
+		Turret turret;
+		Hood hood;
+		Flywheel flywheel;
+		Hang hang;
+		CommandXboxController driverController;
+		ProfiledPIDController faceTargetController;
+		TeleopDrive teleopDrive;
+		ShooterSim shooterSim;
+		ShooterSimVisualizer shooterSimVisualizer;
+		Shooter shooter;
+		ShootWhenReadyCommand shootWhenReady;
+		Command safeRetractExtenderCommand;
+		boolean driveSimCollisionExtenderExtended;
+		boolean isFacingHub;
+		boolean isRobotCentric;
+		boolean driverTurretOverride;
+	} // End secondSimRobot
+
+	private secondSimRobot buildSecondSimRobot() {
+		secondSimRobot secondSimRobot = new secondSimRobot();
+		secondSimRobot.driverController = new CommandXboxController(Constants.SimulationDrive.kSecondSimDriverControllerPort);
+		secondSimRobot.driveSimulation =
+				new SwerveDriveSimulation(Drive.mapleSimConfig, new Pose2d(13.5, 5.0, new Rotation2d(Math.PI)));
+		applyRearGapToDriveCollision(secondSimRobot.driveSimulation, 0.0);
+		SimulatedArena.getInstance().addDriveTrainSimulation(secondSimRobot.driveSimulation);
+
+		secondSimRobot.drive =
+				new Drive(
+						new GyroIOSim(secondSimRobot.driveSimulation.getGyroSimulation()),
+						new ModuleIOSimMapleDirect(
+								TunerConstants.FrontLeft, secondSimRobot.driveSimulation.getModules()[0], 0),
+						new ModuleIOSimMapleDirect(
+								TunerConstants.FrontRight, secondSimRobot.driveSimulation.getModules()[1], 1),
+						new ModuleIOSimMapleDirect(
+								TunerConstants.BackLeft, secondSimRobot.driveSimulation.getModules()[2], 2),
+						new ModuleIOSimMapleDirect(
+								TunerConstants.BackRight, secondSimRobot.driveSimulation.getModules()[3], 3),
+						secondSimRobot.driveSimulation::setSimulationWorldPose,
+						false,
+						Drive.Telemetry.secondSim(),
+						secondSimRobot.driveSimulation::getSimulatedDriveTrainPose);
+
+		secondSimRobot.intake = new Intake(new IntakeIOSim(), SecondSimRobotOutputs.path("Subsystems/Intake"));
+		secondSimRobot.extender = new Extender(new ExtenderIOSim(), SecondSimRobotOutputs.path("Subsystems/Extender"));
+		secondSimRobot.agitator = new Agitator(new AgitatorIOSim(), SecondSimRobotOutputs.path("Subsystems/Agitator"));
+		secondSimRobot.transfer = new Transfer(new TransferIOSim(), SecondSimRobotOutputs.path("Subsystems/Shooter/Transfer"));
+		secondSimRobot.turret = new Turret(new TurretIOSim(), SecondSimRobotOutputs.path("Subsystems/Shooter/Turret"));
+		secondSimRobot.hood = new Hood(new HoodIOSim(), SecondSimRobotOutputs.path("Subsystems/Shooter/Hood"));
+		secondSimRobot.flywheel = 
+				new Flywheel(
+						new FlywheelIOSim(),
+						SecondSimRobotOutputs.path("Subsystems/Shooter/Flywheel"),
+						SecondSimRobotOutputs.smartDashboardPrefix("Flywheel"));
+		secondSimRobot.hang =
+				new Hang(new HangIOSim(), SecondSimRobotOutputs.path("Subsystems/Hang"));
+
+		secondSimRobot.intake.setIgnoreLimitsSupplier(() -> false);
+		secondSimRobot.extender.setIgnoreLimitsSupplier(() -> false);
+		secondSimRobot.agitator.setIgnoreLimitsSupplier(() -> false);
+		secondSimRobot.transfer.setIgnoreLimitsSupplier(() -> false);
+		secondSimRobot.hood.setIgnoreLimitsSupplier(() -> false);
+		secondSimRobot.flywheel.setIgnoreLimitsSupplier(() -> false);
+		secondSimRobot.hang.setIgnoreLimitsSupplier(() -> false);
+
+		int fuelRobotIndexSim2 = 0;
+		double robotWidthMetersSim2 = 0.0;
+		double robotLengthMetersSim2 = 0.0;
+		if (fuelSimEnabled) {
+			robotWidthMetersSim2 = Constants.Dimensions.FULL_WIDTH.in(Meters);
+			robotLengthMetersSim2 = Constants.Dimensions.FULL_LENGTH.in(Meters);
+			double bumperHeightMetersSim2 = Constants.Dimensions.BUMPER_HEIGHT.in(Meters);
+			fuelRobotIndexSim2 =
+					fuelSim.addRegisteredRobot(
+							robotWidthMetersSim2,
+							robotLengthMetersSim2,
+							bumperHeightMetersSim2,
+							secondSimRobot.drive::getPose,
+							secondSimRobot.drive::getFieldRelativeChassisSpeeds);
+		}
+
+		if (shooterSimEnabled) {
+			secondSimRobot.shooterSimVisualizer =
+					new ShooterSimVisualizer(
+							() -> {
+								Pose2d simPoseSim2 = secondSimRobot.driveSimulation.getSimulatedDriveTrainPose();
+								return new Pose3d(
+										simPoseSim2.getX(),
+										simPoseSim2.getY(),
+										0,
+										new Rotation3d(0, 0, simPoseSim2.getRotation().getRadians()));
+							},
+							secondSimRobot.drive::getFieldRelativeChassisSpeeds,
+							SecondSimRobotOutputs.path("ShooterVisualizer"));
+			secondSimRobot.shooterSim =
+					new ShooterSim(
+							fuelSim,
+							fuelSimEnabled ? fuelRobotIndexSim2 : 0,
+							fuelSimEnabled && shooterSimEnabled,
+							secondSimRobot.shooterSimVisualizer);
+		} else {
+			secondSimRobot.shooterSim = null;
+			secondSimRobot.shooterSimVisualizer = null;
+		}
+
+		if (fuelSimEnabled) {
+			double intakeExtendMetersSim2 = 10.5 * 0.0254;
+			double intakeInsetMetersSim2 = 2.0 * 0.0254;
+			Runnable intakeFuelCallbackSim2 = secondSimRobot.shooterSim != null ? secondSimRobot.shooterSim::intakeFuel : () -> {};
+			fuelSim.registerIntake(
+					fuelRobotIndexSim2,
+					robotLengthMetersSim2 / 2,
+					robotLengthMetersSim2 / 2 + intakeExtendMetersSim2,
+					-robotWidthMetersSim2 / 2 + intakeInsetMetersSim2,
+					robotWidthMetersSim2 / 2 - intakeInsetMetersSim2,
+					() -> secondSimRobot.extender.getState() == Extender.State.EXTENDED
+							&& (secondSimRobot.shooterSim == null || secondSimRobot.shooterSim.canIntake())
+							&& secondSimRobot.intake.getState() == Intake.State.INTAKING,
+					intakeFuelCallbackSim2);
+		}
+
+		secondSimRobot.faceTargetController = new ProfiledPIDController(DriveCommands.getAngleKp(), 0.0, DriveCommands.getAngleKd(),
+				new TrapezoidProfile.Constraints(DriveCommands.getAngleMaxVelocity(), DriveCommands.getAngleMaxAcceleration()));
+		secondSimRobot.faceTargetController.enableContinuousInput(-Math.PI, Math.PI);
+
+		secondSimRobot.teleopDrive =
+				new TeleopDrive(
+						secondSimRobot.drive,
+						secondSimRobot.driverController,
+						() -> secondSimRobot.isRobotCentric,
+						() -> secondSimRobot.isFacingHub,
+						secondSimRobot.faceTargetController,
+						() -> Constants.SimulationDrive.kSecondSimRobotRedAlliance,
+						SecondSimRobotOutputs.path("TeleopDrive"),
+						true);
+		secondSimRobot.teleopDrive.setManualOverrideSupplier(() -> false);
+
+		return secondSimRobot;
+	} // End buildSecondSimRobot
+
+	private void configureSecondSimDriverBindings() {
+		Drive driveSim2 = secondSimRobot.drive;
+		Intake intakeSim2 = secondSimRobot.intake;
+		Extender extenderSim2 = secondSimRobot.extender;
+		CommandXboxController driverControllerSim2 = secondSimRobot.driverController;
+		TeleopDrive teleopDriveSim2 = secondSimRobot.teleopDrive;
+		Command safeRetractExtenderCommandSim2 = secondSimRobot.safeRetractExtenderCommand;
+		Hang hangSim2 = secondSimRobot.hang;
+		ShootWhenReadyCommand shootWhenReadyCommandSim2 = secondSimRobot.shootWhenReady;
+		Flywheel flywheelSim2 = secondSimRobot.flywheel;
+		ProfiledPIDController faceTargetControllerSim2 = secondSimRobot.faceTargetController;
+		SwerveDriveSimulation driveSimulationSim2 = secondSimRobot.driveSimulation;
+
+		driveSim2.setDefaultCommand(teleopDriveSim2);
+
+		driverControllerSim2.leftTrigger().onTrue(Commands.runOnce(() -> {
+			switch (extenderSim2.getState()) {
+				case EXTENDED -> extenderSim2.setPartialState();
+				case PARTIAL -> extenderSim2.setExtendedState();
+				case RETRACTED -> extenderSim2.setExtendedState();
+				case MANUAL -> extenderSim2.setExtendedState();
+				case IDLE -> extenderSim2.setExtendedState();
+				default -> throw new IllegalArgumentException("Unexpected value: " + extenderSim2.getState());
+			}
+
+			if (extenderSim2.getState() == Extender.State.RETRACTED || extenderSim2.getState() == Extender.State.PARTIAL) {
+				intakeSim2.setIdleState();
+			}
+		}, extenderSim2));
+
+		driverControllerSim2.povDown().onTrue(safeRetractExtenderCommandSim2);
+
+		driverControllerSim2.leftBumper().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> intakeSim2.setIdleState(), intakeSim2),
+				Commands.runOnce(() -> intakeSim2.setReversingState(), intakeSim2),
+				() -> intakeSim2.getState() == Intake.State.REVERSING));
+		driverControllerSim2.rightBumper().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> intakeSim2.setIdleState(), intakeSim2),
+				Commands.runOnce(() -> intakeSim2.setIntakingState(), intakeSim2),
+				() -> intakeSim2.getState() == Intake.State.INTAKING));
+
+		driverControllerSim2.y().onTrue(Commands.runOnce(() -> {
+			secondSimRobot.isFacingHub = !secondSimRobot.isFacingHub;
+			if (secondSimRobot.isFacingHub) {
+				faceTargetControllerSim2.reset(driveSim2.getRotation().getRadians());
+			}
+		}, driveSim2));
+
+		if (hangSim2 != null) {
+			driverControllerSim2.b().onTrue(
+				new ConditionalCommand(
+					Commands.runOnce(() -> hangSim2.setLevel1State(), hangSim2),
+					new ConditionalCommand(
+						Commands.runOnce(() -> hangSim2.setIdleState(), hangSim2),
+						Commands.runOnce(() -> hangSim2.setLevel1State(), hangSim2),
+						() -> hangSim2.getState() == Hang.State.LEVEL_1),
+					() -> hangHoldModeEnabled));
+			driverControllerSim2.b().onFalse(
+				new ConditionalCommand(
+					Commands.runOnce(() -> hangSim2.setIdleState(), hangSim2),
+					new InstantCommand(),
+					() -> hangHoldModeEnabled));
+			driverControllerSim2.x().onTrue(
+				new ConditionalCommand(
+					Commands.runOnce(() -> hangHoldModeEnabled = true),
+					Commands.runOnce(
+						() -> {
+							if (hangSim2.getState() == Hang.State.STORED) {
+								hangSim2.setIdleState();
+							} else {
+								hangSim2.setStoredState();
+							}
+						},
+						hangSim2),
+					() -> isHangDriverEndgamePeriod()));
+			driverControllerSim2.x().whileTrue(
+				new ConditionalCommand(
+					Commands.startEnd(
+						() -> hangSim2.setHangingState(),
+						() -> hangSim2.setIdleState(),
+						hangSim2),
+					new InstantCommand(),
+					() -> isHangDriverEndgamePeriod()));
+		}
+
+		driverControllerSim2.a().onTrue(Commands.runOnce(() -> {
+			if (shootWhenReadyCommandSim2.isScheduled()) {
+				CommandScheduler.getInstance().cancel(shootWhenReadyCommandSim2);
+				if (flywheelSim2 != null) flywheelSim2.setState(Flywheel.State.IDLE);
+			} else {
+				if (flywheelSim2 != null && flywheelSim2.getState() == Flywheel.State.IDLE) {
+					flywheelSim2.setState(Flywheel.State.CHARGING);
+				}
+				CommandScheduler.getInstance().schedule(shootWhenReadyCommandSim2);
+			}
+		}));
+
+		final Runnable resetGyroSim2 = () -> driveSim2.setPose(driveSimulationSim2.getSimulatedDriveTrainPose());
+		driverControllerSim2.start().onTrue(
+			new ConditionalCommand(
+				Commands.runOnce(() -> secondSimRobot.isRobotCentric = !secondSimRobot.isRobotCentric, driveSim2),
+				Commands.runOnce(resetGyroSim2, driveSim2).ignoringDisable(true),
+				() -> true));
+	} // End configureSecondSimDriverBindings
 }

@@ -37,6 +37,12 @@ public class Shooter extends SubsystemBase {
   /** When true, ShooterCommands.setShooterTarget will not apply calculator to Hood/Flywheel (Manual Override). */
   private BooleanSupplier manualOverrideSupplier = () -> false;
 
+  /** Hub/zone logic; default DriverStation alliance. Second sim: constant from {@link frc.robot.Constants.SimulationDrive}. */
+  private BooleanSupplier isRedAllianceSupplier = AllianceUtil::isRedAlliance;
+
+  /** Logger path prefix for ready-state outputs; primary {@code ShooterCommand}, second sim under {@link frc.robot.simulation.SecondSimRobotOutputs}. */
+  private String shooterCommandLogPrefix = "ShooterCommand";
+
   /** Will automatically select the shooting target (Hub, left/right passing zones) when true, when false it will target the hub */
   public boolean autoSelectShootingTarget = true;
 
@@ -71,6 +77,21 @@ public class Shooter extends SubsystemBase {
     manualOverrideSupplier = supplier != null ? supplier : () -> false;
   } // End setManualOverrideSupplier
 
+  public void setIsRedAllianceSupplier(BooleanSupplier supplier) {
+    isRedAllianceSupplier = supplier != null ? supplier : AllianceUtil::isRedAlliance;
+  } // End setIsRedAllianceSupplier
+
+  /** Hub, alliance zone, and auto passing-spot side; DriverStation on primary, {@link frc.robot.Constants.SimulationDrive} on second sim. */
+  public boolean isOnRedAllianceSide() {
+    return isRedAllianceSupplier.getAsBoolean();
+  } // End isOnRedAllianceSide
+
+  /** e.g. {@code SecondSimRobotOutputs.path("ShooterCommand")} for the second sim robot. */
+  public void setShooterCommandLogPrefix(String prefix) {
+    shooterCommandLogPrefix =
+        (prefix != null && !prefix.isEmpty()) ? prefix : "ShooterCommand";
+  } // End setShooterCommandLogPrefix
+
   /** Set by ShootWhenReadyCommand in initialize/end so active is true whenever the command is running. */
   public void setShootCommandActive(boolean active) {
     shootCommandActive = active;
@@ -93,17 +114,23 @@ public class Shooter extends SubsystemBase {
       flywheelOffTargetGraceTimerSec += dtSec;
     }
 
-    Logger.recordOutput("ShooterCommand/Target", ShooterCommands.getShooterTargetName());
-    Logger.recordOutput("ShooterCommand/ShootWhenReadyCommandActive", shootCommandScheduledSupplier.getAsBoolean() || shootCommandActive);
-    Logger.recordOutput("ShooterCommand/Ready/IsReadyToShoot", isReadyToShoot());
-    Logger.recordOutput("ShooterCommand/Ready/AllianceZoneOk", !ShooterCommands.isShooterTargetHub() || AllianceUtil.isInAllianceZone(drive.getPose().getX()));
-    Logger.recordOutput("ShooterCommand/Ready/HubMinDistanceOk", hubAutoshootDistanceOk());
-    Logger.recordOutput("ShooterCommand/Ready/TurretTargetInRange", turret.isTargetInRange());
-    Logger.recordOutput("ShooterCommand/Ready/TurretAtTarget", turret.atTarget());
-    Logger.recordOutput("ShooterCommand/Ready/HoodAtTarget", !hoodEnabled || hood.atTarget());
-    Logger.recordOutput("ShooterCommand/Ready/FlywheelAtTarget", flywheel.atTargetVelocity());
-    Logger.recordOutput("ShooterCommand/Ready/FlywheelAtTargetWithinGracePeriod", !(flywheelOffTargetGraceTimerSec >= ShooterConstants.kFlywheelOffTargetGraceSec));
-    Logger.recordOutput("ShooterCommand/Ready/FlywheelNotIdle", flywheel.getState() != State.IDLE);
+    String log = shooterCommandLogPrefix;
+    Logger.recordOutput(log + "/Target", ShooterCommands.getShooterTargetName());
+    Logger.recordOutput(log + "/ShootWhenReadyCommandActive", shootCommandScheduledSupplier.getAsBoolean() || shootCommandActive);
+    Logger.recordOutput(log + "/Ready/IsReadyToShoot", isReadyToShoot());
+    Logger.recordOutput(
+        log + "/Ready/AllianceZoneOk",
+        !ShooterCommands.isShooterTargetHub()
+            || AllianceUtil.isInAllianceZone(drive.getPose().getX(), isRedAllianceSupplier.getAsBoolean()));
+    Logger.recordOutput(log + "/Ready/HubMinDistanceOk", hubAutoshootDistanceOk());
+    Logger.recordOutput(log + "/Ready/TurretTargetInRange", turret.isTargetInRange());
+    Logger.recordOutput(log + "/Ready/TurretAtTarget", turret.atTarget());
+    Logger.recordOutput(log + "/Ready/HoodAtTarget", !hoodEnabled || hood.atTarget());
+    Logger.recordOutput(log + "/Ready/FlywheelAtTarget", flywheel.atTargetVelocity());
+    Logger.recordOutput(
+        log + "/Ready/FlywheelAtTargetWithinGracePeriod",
+        !(flywheelOffTargetGraceTimerSec >= ShooterConstants.kFlywheelOffTargetGraceSec));
+    Logger.recordOutput(log + "/Ready/FlywheelNotIdle", flywheel.getState() != State.IDLE);
 
     ShooterCommands.setShooterTarget(drive, turret, hood, flywheel, hoodEnabled, !manualOverrideSupplier.getAsBoolean());
   } // End periodic
@@ -116,7 +143,7 @@ public class Shooter extends SubsystemBase {
    */
   public boolean isReadyToShoot() {
     if (ShooterCommands.isShooterTargetHub()) {
-      if (!AllianceUtil.isInAllianceZone(drive.getPose().getX())) {
+      if (!AllianceUtil.isInAllianceZone(drive.getPose().getX(), isRedAllianceSupplier.getAsBoolean())) {
         return false;
       }
       if (!hubAutoshootDistanceOk()) {
@@ -137,7 +164,9 @@ public class Shooter extends SubsystemBase {
       return true;
     }
     Translation2d hubCenter =
-        AllianceUtil.isRedAlliance() ? FieldConstants.RED_HUB_CENTER : FieldConstants.BLUE_HUB_CENTER;
+        isRedAllianceSupplier.getAsBoolean()
+            ? FieldConstants.RED_HUB_CENTER
+            : FieldConstants.BLUE_HUB_CENTER;
     return drive.getPose().getTranslation().getDistance(hubCenter) >= ShooterConstants.kMinHubAutoshootDistanceM;
   } // End hubAutoshootDistanceOk
 }

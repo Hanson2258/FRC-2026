@@ -20,6 +20,7 @@ import com.ctre.phoenix6.controls.TorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -97,6 +98,31 @@ public class ModuleIOSim implements ModuleIO {
       SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants,
       SwerveModuleSimulation simulation,
       int moduleIndex) {
+    this(constants, simulation, moduleIndex, TunerConstants.kCANBus, 0);
+  } // End ModuleIOSim Constructor
+
+  /**
+   * @param canBus CAN bus / hoot namespace for Phoenix sim.
+   */
+  public ModuleIOSim(
+      SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants,
+      SwerveModuleSimulation simulation,
+      int moduleIndex,
+      CANBus canBus) {
+    this(constants, simulation, moduleIndex, canBus, 0);
+  } // End ModuleIOSim Constructor
+
+  /**
+   * @param canBus CAN bus / hoot namespace for Phoenix sim.
+   * @param deviceIdOffset Offset applied to all module device IDs (drive, steer, and encoder)
+   *     to prevent aliasing between two simulated robots.
+   */
+  public ModuleIOSim(
+      SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants,
+      SwerveModuleSimulation simulation,
+      int moduleIndex,
+      CANBus canBus,
+      int deviceIdOffset) {
     if (moduleIndex < 0 || moduleIndex > 3) {
       throw new IllegalArgumentException("moduleIndex must be 0..3, got " + moduleIndex);
     }
@@ -105,9 +131,13 @@ public class ModuleIOSim implements ModuleIO {
     this.simulation = simulation;
     ensureDriveSpeedMultipliersInitialized();
 
-    driveTalon = new TalonFX(this.constants.DriveMotorId, TunerConstants.kCANBus);
-    turnTalon = new TalonFX(this.constants.SteerMotorId, TunerConstants.kCANBus);
-    cancoder = new CANcoder(this.constants.EncoderId, TunerConstants.kCANBus);
+    int driveMotorId = this.constants.DriveMotorId + deviceIdOffset;
+    int steerMotorId = this.constants.SteerMotorId + deviceIdOffset;
+    int encoderId = this.constants.EncoderId + deviceIdOffset;
+
+    driveTalon = new TalonFX(driveMotorId, canBus);
+    turnTalon = new TalonFX(steerMotorId, canBus);
+    cancoder = new CANcoder(encoderId, canBus);
 
     // Configure drive motor
     var driveConfig = this.constants.DriveMotorInitialConfigs;
@@ -132,7 +162,7 @@ public class ModuleIOSim implements ModuleIO {
     // chassis shake / curved drift. Softer kD and kS=0 here stabilizes azimuth without changing real-robot tuning.
     turnConfig.Slot0.withKD(0.5).withKS(0);
 
-    turnConfig.Feedback.FeedbackRemoteSensorID = this.constants.EncoderId;
+    turnConfig.Feedback.FeedbackRemoteSensorID = encoderId;
     turnConfig.Feedback.FeedbackSensorSource =
         switch (this.constants.FeedbackSource) {
           case RemoteCANcoder -> FeedbackSensorSourceValue.RemoteCANcoder;

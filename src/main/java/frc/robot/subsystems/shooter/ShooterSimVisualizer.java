@@ -29,6 +29,7 @@ public class ShooterSimVisualizer {
   private Translation3d[] trajectory = new Translation3d[50];
   private Supplier<Pose3d> poseSupplier;
   private Supplier<ChassisSpeeds> fieldSpeedsSupplier;
+  private final String logRoot;
 
   private final ArrayList<GhostProjectile> ghostFuels = new ArrayList<>();
 
@@ -45,8 +46,15 @@ public class ShooterSimVisualizer {
   }
 
   public ShooterSimVisualizer(Supplier<Pose3d> poseSupplier, Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
+    this(poseSupplier, fieldSpeedsSupplier, "ShooterVisualizer");
+  } // End ShooterSimVisualizer Constructor
+
+  /** @param logRoot AdvantageKit prefix (e.g. second sim: {@code SecondSimRobotOutputs.path("ShooterVisualizer")}). */
+  public ShooterSimVisualizer(
+      Supplier<Pose3d> poseSupplier, Supplier<ChassisSpeeds> fieldSpeedsSupplier, String logRoot) {
     this.poseSupplier = poseSupplier;
     this.fieldSpeedsSupplier = fieldSpeedsSupplier;
+    this.logRoot = (logRoot != null && !logRoot.isEmpty()) ? logRoot : "ShooterVisualizer";
   } // End ShooterSimVisualizer Constructor
 
   private Translation3d launchVel(LinearVelocity vel, Angle elevationAngle, Angle shotYawFieldFrame) {
@@ -85,7 +93,7 @@ public class ShooterSimVisualizer {
       trajectory[i] = new Translation3d(x, y, z);
     }
 
-    Logger.recordOutput("ShooterVisualizer/Trajectory", trajectory);
+    Logger.recordOutput(logRoot + "/Trajectory", trajectory);
     updateGhostFuel();
   } // End updateFuel
 
@@ -124,18 +132,18 @@ public class ShooterSimVisualizer {
       double z = g.launchPos.getZ() + g.vel.getZ() * t - 0.5 * 9.81 * t * t;
       poses[i] = new Pose3d(x, y, z, Rotation3d.kZero);
     }
-    Logger.recordOutput("ShooterVisualizer/GhostFuel", poses);
+    Logger.recordOutput(logRoot + "/GhostFuel", poses);
   } // End updateGhostFuel
 
   public void update3dPose(Angle azimuthAngle, Angle hoodAngle) {
     Pose3d turretPose = new Pose3d(0, 0, 0, new Rotation3d(0, 0, azimuthAngle.in(Radians)));
-    Logger.recordOutput("ShooterVisualizer/TurretPose", turretPose);
+    Logger.recordOutput(logRoot + "/TurretPose", turretPose);
     Pose3d hoodPose = new Pose3d(0.1, 0, 0, new Rotation3d(0, hoodAngle.in(Radians), 0));
     hoodPose = hoodPose.rotateAround(new Translation3d(), new Rotation3d(0, 0, azimuthAngle.in(Radians)));
     hoodPose =
         new Pose3d(
             hoodPose.getTranslation().plus(ShooterConstants.robotToTurret.getTranslation()),
             hoodPose.getRotation());
-    Logger.recordOutput("ShooterVisualizer/HoodPose", hoodPose);
+    Logger.recordOutput(logRoot + "/HoodPose", hoodPose);
   } // End update3dPose
 }

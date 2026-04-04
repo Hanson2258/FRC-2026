@@ -26,7 +26,7 @@ import frc.robot.subsystems.drive.Drive;
 import frc.robot.util.Zones;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
-import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 /** Default drive command. */
 public class TeleopDrive extends Command {
@@ -40,7 +40,12 @@ public class TeleopDrive extends Command {
   private final DoubleSupplier omegaSupplier;
   private int flipFactor = 1;
 
-  @AutoLogOutput
+  /** Field X/Y flip: true means red-side convention (same as DriverStation red). */
+  private final BooleanSupplier fieldFlipTreatAsRedAlliance;
+
+  /** AdvantageKit path prefix (e.g. second sim: {@link frc.robot.simulation.SecondSimRobotOutputs#path}). */
+  private final String telemetryRoot;
+
   private final Trigger inTrenchZoneTrigger;
 
   /// Disabled (Bump Zone is not used)
@@ -55,24 +60,72 @@ public class TeleopDrive extends Command {
   /** When true, set DriveMode to MANUAL_OVERRIDE (Manual Override). */
   private BooleanSupplier manualOverrideSupplier = () -> false;
 
-  @AutoLogOutput
   private DriveMode currentDriveMode = DriveMode.NORMAL;
 
-  @AutoLogOutput(key = "TeleopDrive/TargetFieldRelativeSpeeds")
   private ChassisSpeeds desiredFieldSpeeds = new ChassisSpeeds();
 
-  /** Creates a new TeleopDrive. */
+  /** Primary robot: DriverStation alliance controls field flip; logs under {@code TeleopDrive/…}. */
   public TeleopDrive(
       Drive drive,
       CommandXboxController controller,
       BooleanSupplier isRobotCentricSupplier,
       BooleanSupplier isFacingHubSupplier,
       ProfiledPIDController faceTargetController) {
+    this(
+        drive,
+        controller,
+        isRobotCentricSupplier,
+        isFacingHubSupplier,
+        faceTargetController,
+        null,
+        null,
+        true);
+  } // End TeleopDrive Constructor
+
+  /**
+   * @param fieldFlipTreatAsRedAlliance when non-null, used instead of DriverStation for joystick field flip (second sim).
+   * @param telemetryRoot when non-null, log keys are {@code telemetryRoot + "/…"} (e.g. second sim:
+   *     {@code SecondSimRobotOutputs.path("TeleopDrive")}).
+   */
+  public TeleopDrive(
+      Drive drive,
+      CommandXboxController controller,
+      BooleanSupplier isRobotCentricSupplier,
+      BooleanSupplier isFacingHubSupplier,
+      ProfiledPIDController faceTargetController,
+      BooleanSupplier fieldFlipTreatAsRedAlliance,
+      String telemetryRoot) {
+    this(
+        drive,
+        controller,
+        isRobotCentricSupplier,
+        isFacingHubSupplier,
+        faceTargetController,
+        fieldFlipTreatAsRedAlliance,
+        telemetryRoot,
+        true);
+  } // End TeleopDrive Constructor
+
+  /**
+   * @param trenchAssistEnabled when false, trench lock PID never engages (e.g. if debugging drive coupling).
+   */
+  public TeleopDrive(
+      Drive drive,
+      CommandXboxController controller,
+      BooleanSupplier isRobotCentricSupplier,
+      BooleanSupplier isFacingHubSupplier,
+      ProfiledPIDController faceTargetController,
+      BooleanSupplier fieldFlipTreatAsRedAlliance,
+      String telemetryRoot,
+      boolean trenchAssistEnabled) {
     this.drive = drive;
     this.controller = controller;
     this.isRobotCentricSupplier = isRobotCentricSupplier;
     this.isFacingHubSupplier = isFacingHubSupplier;
     this.faceTargetController = faceTargetController;
+    this.fieldFlipTreatAsRedAlliance =
+        fieldFlipTreatAsRedAlliance != null ? fieldFlipTreatAsRedAlliance : TeleopDrive::driverStationIsRedAlliance;
+    this.telemetryRoot = telemetryRoot != null ? telemetryRoot : "TeleopDrive";
     this.xSupplier = () -> -controller.getLeftY() * flipFactor;
     this.ySupplier = () -> -controller.getLeftX() * flipFactor;
     this.omegaSupplier = () -> -controller.getRightX();
@@ -81,23 +134,36 @@ public class TeleopDrive extends Command {
     rotationController.setTolerance(SwerveConstants.ROTATION_TOLERANCE_RAD);
     rotationController.enableContinuousInput(-Math.PI, Math.PI);
 
-    inTrenchZoneTrigger = Zones.TRENCH_ZONES
-        .willContain(drive::getPose, drive::getFieldRelativeChassisSpeeds, Seconds.of(SwerveConstants.TRENCH_ALIGN_TIME_S))
-        .debounce(0.1);
+    inTrenchZoneTrigger =
+        trenchAssistEnabled
+            ? Zones.TRENCH_ZONES
+                .willContain(
+                    drive::getPose,
+                    drive::getFieldRelativeChassisSpeeds,
+                    Seconds.of(SwerveConstants.TRENCH_ALIGN_TIME_S))
+                .debounce(0.1)
+            : new Trigger(() -> false);
 
     /// Disabled (Bump Zone is not used)
     // inBumpZoneTrigger = Zones.BUMP_ZONES
     //     .willContain(drive::getPose, drive::getFieldRelativeChassisSpeeds, Seconds.of(SwerveConstants.BUMP_ALIGN_TIME_S))
     //     .debounce(0.1);
 
-    inTrenchZoneTrigger.onTrue(Commands.runOnce(() -> currentDriveMode = DriveMode.TRENCH_LOCK));
-    /// Disabled (Bump Zone is not used)
-    // inBumpZoneTrigger.onTrue(Commands.runOnce(() -> currentDriveMode = DriveMode.BUMP_LOCK));
-    // inTrenchZoneTrigger.or(inBumpZoneTrigger).onFalse(Commands.runOnce(() -> currentDriveMode = DriveMode.NORMAL));
-    inTrenchZoneTrigger.onFalse(Commands.runOnce(() -> currentDriveMode = DriveMode.NORMAL));
+    if (trenchAssistEnabled) {
+      inTrenchZoneTrigger.onTrue(Commands.runOnce(() -> currentDriveMode = DriveMode.TRENCH_LOCK));
+      /// Disabled (Bump Zone is not used)
+      // inBumpZoneTrigger.onTrue(Commands.runOnce(() -> currentDriveMode = DriveMode.BUMP_LOCK));
+      // inTrenchZoneTrigger.or(inBumpZoneTrigger).onFalse(Commands.runOnce(() -> currentDriveMode = DriveMode.NORMAL));
+      inTrenchZoneTrigger.onFalse(Commands.runOnce(() -> currentDriveMode = DriveMode.NORMAL));
+    }
 
     addRequirements(drive);
   } // End TeleopDrive Constructor
+
+  private static boolean driverStationIsRedAlliance() {
+    return DriverStation.getAlliance().isPresent()
+        && DriverStation.getAlliance().get() == DriverStation.Alliance.Red;
+  } // End driverStationIsRedAlliance
 
   private static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
     double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), ControllerConstants.CONTROLLER_DEADBAND);
@@ -139,11 +205,7 @@ public class TeleopDrive extends Command {
 
   @Override
   public void initialize() {
-    flipFactor =
-        DriverStation.getAlliance().isPresent()
-                && DriverStation.getAlliance().get() == DriverStation.Alliance.Red
-            ? -1
-            : 1;
+    flipFactor = fieldFlipTreatAsRedAlliance.getAsBoolean() ? -1 : 1;
     trenchYController.reset();
     rotationController.reset();
   } // End initialize
@@ -218,6 +280,10 @@ public class TeleopDrive extends Command {
             rotSpeedToDiagonal);
         break;
     }
+
+    Logger.recordOutput(telemetryRoot + "/inTrenchZoneTrigger", inTrenchZoneTrigger.getAsBoolean());
+    Logger.recordOutput(telemetryRoot + "/currentDriveMode", currentDriveMode.toString());
+    Logger.recordOutput(telemetryRoot + "/TargetFieldRelativeSpeeds", desiredFieldSpeeds);
   } // End execute
 
   @Override

@@ -24,13 +24,19 @@ public class Extender extends SubsystemBase {
 
   private final ExtenderIO extenderIO;
   private final ExtenderIO.ExtenderIOInputs extenderInputs = new ExtenderIO.ExtenderIOInputs();
+  private final String logRoot;
 
   private State state = State.RETRACTED;
   private double targetPositionRad = kUpExtenderRad;
   private BooleanSupplier ignoreLimitsSupplier = () -> false;
 
   public Extender(ExtenderIO io) {
+    this(io, "Subsystems/Extender");
+  } // End Extender Constructor
+
+  public Extender(ExtenderIO io, String logRoot) {
     extenderIO = io;
+    this.logRoot = logRoot;
 
     SmartDashboard.putNumber("Extender/kP", kP);
     SmartDashboard.putNumber("Extender/kI", kI);
@@ -41,14 +47,14 @@ public class Extender extends SubsystemBase {
   @Override
   public void periodic() {
     extenderIO.updateInputs(extenderInputs);
-    Logger.recordOutput("Subsystems/Extender/Inputs/MotorConnected", extenderInputs.motorConnected);
-    Logger.recordOutput("Subsystems/Extender/Inputs/PositionDeg", Units.radiansToDegrees(extenderInputs.positionRads));
-    Logger.recordOutput("Subsystems/Extender/Inputs/VelocityDegPerSec", Units.radiansToDegrees(extenderInputs.velocityRadsPerSec));
-    Logger.recordOutput("Subsystems/Extender/Inputs/AppliedVolts", extenderInputs.appliedVolts);
-    Logger.recordOutput("Subsystems/Extender/Inputs/SupplyCurrentAmps", extenderInputs.supplyCurrentAmps);
-    Logger.recordOutput("Subsystems/Extender/TargetPositionDeg", Units.radiansToDegrees(targetPositionRad));
-    Logger.recordOutput("Subsystems/Extender/AtTargetPosition", atTargetPosition());
-    Logger.recordOutput("Subsystems/Extender/State", state.name());
+    Logger.recordOutput(logRoot + "/Inputs/MotorConnected", extenderInputs.motorConnected);
+    Logger.recordOutput(logRoot + "/Inputs/PositionDeg", Units.radiansToDegrees(extenderInputs.positionRads));
+    Logger.recordOutput(logRoot + "/Inputs/VelocityDegPerSec", Units.radiansToDegrees(extenderInputs.velocityRadsPerSec));
+    Logger.recordOutput(logRoot + "/Inputs/AppliedVolts", extenderInputs.appliedVolts);
+    Logger.recordOutput(logRoot + "/Inputs/SupplyCurrentAmps", extenderInputs.supplyCurrentAmps);
+    Logger.recordOutput(logRoot + "/TargetPositionDeg", Units.radiansToDegrees(targetPositionRad));
+    Logger.recordOutput(logRoot + "/AtTargetPosition", atTargetPosition());
+    Logger.recordOutput(logRoot + "/State", state.name());
 
     if (DriverStation.isDisabled()) {
       extenderIO.stop();

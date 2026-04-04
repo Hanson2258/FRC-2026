@@ -84,6 +84,22 @@ public final class Constants {
     /** Per-module closed-loop drive velocity scale; four wheels get four distinct values in range. */
     public static final double kDriveSpeedMultiplierMin = 0.97;
     public static final double kDriveSpeedMultiplierMax = 1.0;
+
+    /**
+     * When true (SIM only), spawns a full duplicate robot with Maple + FuelSim + driver OI on {@link
+     * #kSecondSimDriverControllerPort}. The second drivetrain uses {@link
+     * frc.robot.subsystems.drive.ModuleIOSimMapleDirect} (no Phoenix TalonFX in sim) because Phoenix desktop sim
+     * merges all CAN buses: a second {@link frc.robot.subsystems.drive.ModuleIOSim} with the same CAN IDs would alias to
+     * the first robot’s sim devices and couple both robots. There is no Photon vision on robot B; {@link
+     * frc.robot.subsystems.drive.Drive#getPose()} tracks {@code SwerveDriveSimulation#getSimulatedDriveTrainPose()}.
+     */
+    public static final boolean kSecondSimRobotEnabled = true;
+
+    /** If true, second sim robot uses red-alliance flip and shooter zone logic; if false, blue. */
+    public static final boolean kSecondSimRobotRedAlliance = true;
+
+    /** USB port for second sim driver gamepad (mirrors port 0 bindings only). */
+    public static final int kSecondSimDriverControllerPort = 3;
   }
 
   /** Runtime mode. */

@@ -28,6 +28,7 @@ public class ShooterSim {
   private static final double SHOOT_INTERVAL_SEC = 0.25;
 
   private final FuelSim fuelSim;
+  private final int fuelRobotIndex;
   private final boolean launchSpawnsInFuelSim;
   /** When fuel sim is off, logs a flying ghost ball; may be null. */
   private final ShooterSimVisualizer ghostFuelVisualizer;
@@ -36,7 +37,17 @@ public class ShooterSim {
 
   public ShooterSim(
       FuelSim fuelSim, boolean launchSpawnsInFuelSim, ShooterSimVisualizer ghostFuelVisualizer) {
+    this(fuelSim, 0, launchSpawnsInFuelSim, ghostFuelVisualizer);
+  } // End ShooterSim Constructor
+
+  /** @param fuelRobotIndex {@link FuelSim} robot index (0 primary, 1 second sim). */
+  public ShooterSim(
+      FuelSim fuelSim,
+      int fuelRobotIndex,
+      boolean launchSpawnsInFuelSim,
+      ShooterSimVisualizer ghostFuelVisualizer) {
     this.fuelSim = fuelSim;
+    this.fuelRobotIndex = fuelRobotIndex;
     this.launchSpawnsInFuelSim = launchSpawnsInFuelSim;
     this.ghostFuelVisualizer = ghostFuelVisualizer;
     shootTimer.start();
@@ -74,6 +85,7 @@ public class ShooterSim {
       fuelStored--;
       double elevationRad = Math.PI / 2 - hoodAngleRad;
       fuelSim.launchFuel(
+          fuelRobotIndex,
           MetersPerSecond.of(ballExitVelMps),
           Radians.of(elevationRad),
           Radians.of(turretYawRad),
