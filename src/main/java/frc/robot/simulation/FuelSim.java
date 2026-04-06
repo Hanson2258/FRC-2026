@@ -499,6 +499,9 @@ public class FuelSim {
      */
     protected final ArrayList<RegisteredFuelRobot> registeredRobots = new ArrayList<>();
 
+    /** Callbacks to reset sim shooter stored fuel when {@link #resetFuel()} runs (one per registered robot). */
+    private final ArrayList<Runnable> shooterFuelResets = new ArrayList<>();
+
     protected ArrayList<SimIntake> intakes = new ArrayList<>();
 
     private static final class RegisteredFuelRobot {
@@ -563,8 +566,27 @@ public class FuelSim {
     }
 
     /**
+     * Registers a callback invoked after {@link #clearFuel()} and {@link #spawnStartingFuel()} in {@link #resetFuel()}
+     * (e.g. reset sim shooter stored fuel count).
+     */
+    public void registerShooterFuelReset(Runnable resetStoredFuel) {
+        shooterFuelResets.add(resetStoredFuel);
+    } // End registerShooterFuelReset
+
+    /**
+     * Clears field fuel, spawns the starting layout, and runs all {@link #registerShooterFuelReset(Runnable)} callbacks.
+     */
+    public void resetFuel() {
+        clearFuel();
+        spawnStartingFuel();
+        for (Runnable r : shooterFuelResets) {
+            r.run();
+        }
+    } // End resetFuel
+
+    /**
      * Sets whether to spawn only blue-side fuel. When true, only fuel with x <= field center (blue
-     * / left side) is spawned on the next {@link #spawnStartingFuel()} (or when Reset Fuel is pressed).
+     * / left side) is spawned on the next {@link #spawnStartingFuel()} (or {@link #resetFuel()}).
      * Does not affect existing fuel.
      */
     public void setShowHalfFuel(boolean showHalfFuel) {

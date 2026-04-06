@@ -945,12 +945,8 @@ public class RobotContainer {
     fuelSim.spawnStartingFuel();
 
     fuelSim.start();
-		SmartDashboard.putData(Commands.runOnce(() -> {
-						fuelSim.clearFuel();
-						fuelSim.spawnStartingFuel();
-				})
-				.withName("Reset Fuel")
-				.ignoringDisable(true));
+		SmartDashboard.putData(
+				Commands.runOnce(() -> fuelSim.resetFuel()).withName("Reset Fuel").ignoringDisable(true));
   } // End configureFuelSim
 
 	/**

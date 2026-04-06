@@ -26,6 +26,7 @@ import frc.robot.subsystems.shooter.turret.Turret;
 public class ShooterSim {
 
   private static final int CAPACITY = 30;
+  private static final int kInitialFuelStored = 8;
   private static final double SHOOT_INTERVAL_SEC = 0.25;
 
   private final FuelSim fuelSim;
@@ -33,7 +34,7 @@ public class ShooterSim {
   private final boolean launchSpawnsInFuelSim;
   /** Optional; used when {@link #launchSpawnsInFuelSim} is false; may be {@code null}. */
   private final ShooterSimVisualizer ghostFuelVisualizer;
-  private int fuelStored = 8;
+  private int fuelStored = kInitialFuelStored;
   private final Timer shootTimer = new Timer();
 
   /** @param fuelRobotIndex {@link FuelSim} registered-robot index for {@link FuelSim#launchFuel} */
@@ -47,7 +48,15 @@ public class ShooterSim {
     this.launchSpawnsInFuelSim = launchSpawnsInFuelSim;
     this.ghostFuelVisualizer = ghostFuelVisualizer;
     shootTimer.start();
+    if (launchSpawnsInFuelSim) {
+      fuelSim.registerShooterFuelReset(this::resetFuelStored);
+    }
   } // End ShooterSim Constructor
+
+  /** Sets {@link #fuelStored} to the initial sim count (used when {@link FuelSim#resetFuel()} runs). */
+  public void resetFuelStored() {
+    fuelStored = kInitialFuelStored;
+  } // End resetFuelStored
 
   /** @return {@link #fuelStored} when {@link #launchSpawnsInFuelSim}, otherwise {@link #CAPACITY} */
   public int getFuelStored() {
