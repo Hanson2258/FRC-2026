@@ -86,7 +86,7 @@ public class RobotContainer {
 	private boolean fuelSimEnabled 		= true;
 
 	// Second Sim Robot Toggle
-	private static final boolean kSecondSimRobotEnabled 		= false;
+	private static final boolean kSecondSimRobotEnabled 		= true;
 	private static final boolean kSecondSimRobotRedAlliance = true;
 
 	// Subsystems
@@ -1062,7 +1062,9 @@ public class RobotContainer {
 		if (shooterSimVisualizer != null) {
 			double hoodAngleRad = isHoodEnabled ? hood.getAngleRad() : HoodConstants.kDisabledAngleRad;
 			double flywheelSurfaceMps = flywheel.getTargetVelocityRadPerSec() * FlywheelConstants.kFlywheelRadiusMeters;
-			double ballExitVelMps = flywheelSurfaceMps * ShooterConstants.kFlywheelSurfaceDivider;
+			double ballExitVelMps = flywheelSurfaceMps
+					* ShooterConstants.kFlywheelSurfaceDivider
+					* ShooterConstants.kSimFlywheelToFuelExitVelocityEfficiency;
 			shooterSimVisualizer.updateFuel(
 					edu.wpi.first.units.Units.MetersPerSecond.of(ballExitVelMps),
 					edu.wpi.first.units.Units.Radians.of(hoodAngleRad),
@@ -1074,7 +1076,9 @@ public class RobotContainer {
 		if (secondSimRobot != null && secondSimRobot.shooterSimVisualizer != null) {
 			double hoodAngleRadSim2 = isHoodEnabled ? secondSimRobot.hood.getAngleRad() : HoodConstants.kDisabledAngleRad;
 			double flywheelSurfaceMpsSim2 = secondSimRobot.flywheel.getTargetVelocityRadPerSec() * FlywheelConstants.kFlywheelRadiusMeters;
-			double ballExitVelMpsSim2 = flywheelSurfaceMpsSim2 * ShooterConstants.kFlywheelSurfaceDivider;
+			double ballExitVelMpsSim2 = flywheelSurfaceMpsSim2
+					* ShooterConstants.kFlywheelSurfaceDivider
+					* ShooterConstants.kSimFlywheelToFuelExitVelocityEfficiency;
 			secondSimRobot.shooterSimVisualizer.updateFuel(
 					edu.wpi.first.units.Units.MetersPerSecond.of(ballExitVelMpsSim2),
 					edu.wpi.first.units.Units.Radians.of(hoodAngleRadSim2),

@@ -75,7 +75,9 @@ public class ShooterSim {
     double turretYawRad = turret.getRobotFramePosition().getRadians();
     double hoodAngleRad = hood.getAngleRad();
     double flywheelSurfaceMps = flywheel.getTargetVelocityRadPerSec() * FlywheelConstants.kFlywheelRadiusMeters;
-    double ballExitVelMps = flywheelSurfaceMps * ShooterConstants.kFlywheelSurfaceDivider;
+    double ballExitVelMps = flywheelSurfaceMps 
+        * ShooterConstants.kFlywheelSurfaceDivider
+        * ShooterConstants.kSimFlywheelToFuelExitVelocityEfficiency;
 
     if (launchSpawnsInFuelSim) {
       if (fuelStored == 0) return;

@@ -212,7 +212,7 @@ public final class ShooterCommands {
     double exitVelocityMultiplierAdditive =
         SmartDashboard.getNumber(kExitVelocityMultiplierAdditiveKey, kDefaultExitVelocityMultiplierAdditive);
     double flywheelSurfaceSpeedMps = exitVelMps / ShooterConstants.kFlywheelSurfaceDivider
-            * (ShooterConstants.kExitVelocityCompensationMultiplier() + exitVelocityMultiplierAdditive);
+            * (ShooterConstants.kExitVelocityCompensationMultiplier + exitVelocityMultiplierAdditive);
     double flywheelRadPerSec = ShooterCalculator.linearToAngularVelocity(
             MetersPerSecond.of(flywheelSurfaceSpeedMps), Meters.of(FlywheelConstants.kFlywheelRadiusMeters)).in(RadiansPerSecond);
     Logger.recordOutput(logRoot + "Shooter/CalculatorVelocityRpm", Units.radiansPerSecondToRotationsPerMinute(flywheelRadPerSec));
