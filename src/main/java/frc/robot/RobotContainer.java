@@ -942,7 +942,6 @@ public class RobotContainer {
   /** Configures FuelSim for robot-ball collision in simulation. */
   private void configureFuelSim() {
     fuelSim.setShowHalfFuel(halfFuelOnly);
-		fuelSim.enableAirResistance();
     fuelSim.spawnStartingFuel();
 
     fuelSim.start();
