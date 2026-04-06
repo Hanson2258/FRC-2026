@@ -27,10 +27,10 @@ public class FuelSim {
     // Room temperature dry air density: https://en.wikipedia.org/wiki/Density_of_air#Dry_air
     protected static final double AIR_DENSITY = 1.2041; // kg/m^3
     /** Ball vs floor/walls/hub geometry — lower = less ping-pong on carpet. */
-    protected static final double FIELD_COR = 0.32;
-    protected static final double FUEL_COR = 0.28; // ball–ball; lower = piles settle faster
+    protected static final double FIELD_COR = 0.32; // coefficient of restitution with the field
+    protected static final double FUEL_COR = 0.15; // coefficient of restitution with another fuel
     protected static final double NET_COR = 0.2; // coefficient of restitution with the net
-    protected static final double ROBOT_COR = 0.08; // normal bounce off bumper (still fairly inelastic)
+    protected static final double ROBOT_COR = 0.08; // coefficient of restitution with a robot
     /**
      * Fraction of robot surface speed transferred along the collision normal. Previously 1.0, which
      * added full chassis m/s to the ball each hit (non-physical here because {@link Fuel#addImpulse}
@@ -45,7 +45,9 @@ public class FuelSim {
     protected static final double TRENCH_HEIGHT = 0.565;
     protected static final double TRENCH_BAR_HEIGHT = 0.102;
     protected static final double TRENCH_BAR_WIDTH = 0.152;
-    protected static final double FRICTION = 0.1; // proportion of horizontal vel to lose per sec while on ground
+    protected static final double FRICTION = 0.25; // horizontal vel loss per sec while on ground
+    protected static final double kTangentialWallDamping = 0.65;
+    protected static final double kHorizontalSleepSpeedMps = 0.08;
     protected static final double FUEL_MASS = 0.448 * 0.45392; // kgs
     protected static final double FUEL_CROSS_AREA = Math.PI * FUEL_RADIUS * FUEL_RADIUS;
     // Drag coefficient of smooth sphere: https://en.wikipedia.org/wiki/Drag_coefficient#/media/File:14ilf1l.svg
@@ -145,11 +147,17 @@ public class FuelSim {
                 vy += ay * dt;
                 vz += az * dt;
             }
-            if (Math.abs(vz) < 0.05 && pz <= FUEL_RADIUS + 0.03) {
-                vz = 0;
+            if (pz <= FUEL_RADIUS + 0.03) {
+                if (Math.abs(vz) < 0.05) {
+                    vz = 0;
+                }
                 double friction = 1 - FRICTION * dt;
                 vx *= friction;
                 vy *= friction;
+                if (Math.hypot(vx, vy) < kHorizontalSleepSpeedMps) {
+                    vx = 0;
+                    vy = 0;
+                }
             }
             handleFieldCollisions(subticks);
         }
@@ -199,17 +207,21 @@ public class FuelSim {
             if (px < FUEL_RADIUS && vx < 0) {
                 px += FUEL_RADIUS - px;
                 vx += -(1 + FIELD_COR) * vx;
+                vy *= kTangentialWallDamping;
             } else if (px > FIELD_LENGTH - FUEL_RADIUS && vx > 0) {
                 px += FIELD_LENGTH - FUEL_RADIUS - px;
                 vx += -(1 + FIELD_COR) * vx;
+                vy *= kTangentialWallDamping;
             }
 
             if (py < FUEL_RADIUS && vy < 0) {
                 py += FUEL_RADIUS - py;
                 vy += -(1 + FIELD_COR) * vy;
+                vx *= kTangentialWallDamping;
             } else if (py > FIELD_WIDTH - FUEL_RADIUS && vy > 0) {
                 py += FIELD_WIDTH - FUEL_RADIUS - py;
                 vy += -(1 + FIELD_COR) * vy;
+                vx *= kTangentialWallDamping;
             }
 
             // hubs
@@ -916,9 +928,11 @@ public class FuelSim {
         if (cx != 0) {
             fuel.px += cx;
             fuel.vx += -(1 + FIELD_COR) * fuel.vx;
+            fuel.vy *= kTangentialWallDamping;
         } else if (cy != 0) {
             fuel.py += cy;
             fuel.vy += -(1 + FIELD_COR) * fuel.vy;
+            fuel.vx *= kTangentialWallDamping;
         }
     }
 
