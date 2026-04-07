@@ -30,6 +30,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import static edu.wpi.first.units.Units.Meters;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -84,10 +85,6 @@ public class RobotContainer {
 	private boolean halfFuelOnly 			= true;
 	private boolean shooterSimEnabled	= true;
 	private boolean fuelSimEnabled 		= true;
-
-	// Second Sim Robot Toggle
-	private static final boolean kSecondSimRobotEnabled 		= true;
-	private static final boolean kSecondSimRobotRedAlliance = true;
 
 	// Subsystems
 	private final Drive drive;
@@ -155,8 +152,36 @@ public class RobotContainer {
 	/** USB port for second sim driver gamepad (mirrors port 0 bindings only). */
 	private static final int kSecondSimDriverControllerPort = 3;
 
-	/** Full duplicate sim robot (driver-only OI); null unless SIM and {@link #kSecondSimRobotEnabled}. */
+	/** Full duplicate sim robot (driver-only OI); null until enabled from the dashboard in SIM. */
 	private SecondSimRobot secondSimRobot = null;
+
+	private static final String kSecondSimRobotOptionDisable = "Disable";
+	private static final String kSecondSimRobotOptionBlue = "Blue Alliance";
+	private static final String kSecondSimRobotOptionRed = "Red Alliance";
+
+	private final SendableChooser<String> secondSimRobotModeChooser = new SendableChooser<>();
+
+	private volatile boolean secondSimRobotIsRedAlliance = false;
+
+	private boolean secondSimRobotDriveEnabledFromDashboard = false;
+
+	private SecondSimRobotDashboardMode secondSimRobotLastAppliedMode = SecondSimRobotDashboardMode.DISABLE;
+
+	private enum SecondSimRobotDashboardMode {
+		DISABLE,
+		BLUE,
+		RED;
+
+		static SecondSimRobotDashboardMode fromSelection(String selected) {
+			if (kSecondSimRobotOptionBlue.equals(selected)) {
+				return BLUE;
+			}
+			if (kSecondSimRobotOptionRed.equals(selected)) {
+				return RED;
+			}
+			return DISABLE;
+		}
+	} // End SecondSimRobotDashboardMode
 
 
 	/** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -266,10 +291,9 @@ public class RobotContainer {
 							intakeFuelCallback);
 				}
 				
-				// Second Sim Robot
-				if (kSecondSimRobotEnabled) {
-					secondSimRobot = buildSecondSimRobot();
-				}
+				secondSimRobotModeChooser.setDefaultOption(kSecondSimRobotOptionDisable, kSecondSimRobotOptionDisable);
+				secondSimRobotModeChooser.addOption(kSecondSimRobotOptionBlue, kSecondSimRobotOptionBlue);
+				secondSimRobotModeChooser.addOption(kSecondSimRobotOptionRed, kSecondSimRobotOptionRed);
 				break;
 
 			// Replayed Robot, disable IO implementations
@@ -336,6 +360,9 @@ public class RobotContainer {
 		/// -------------------------------------------------------------------------------------------
 		// Field view: Robot + Turret so you can see Turret direction in sim
 		SmartDashboard.putData("Field", field);
+		if (Constants.currentMode == Constants.Mode.SIM) {
+			SmartDashboard.putData("Second Sim Robot", secondSimRobotModeChooser);
+		}
 
 		// Register PathPlanner named commands
 		registerCommands();
@@ -364,29 +391,6 @@ public class RobotContainer {
     // Configure button bindings
     configureDriverBindings();
     configureOperatorBindings(true); // False to disable operator controls
-
-
-		// Second Sim Robot Setup
-		if (secondSimRobot != null) {
-			secondSimRobot.shooter = new Shooter(secondSimRobot.drive, secondSimRobot.agitator, secondSimRobot.transfer,
-					secondSimRobot.turret, secondSimRobot.hood, secondSimRobot.flywheel, isHoodEnabled, SecondSimRobotOutputs.LOG_ROOT_PREFIX);
-			secondSimRobot.shootWhenReady = new ShootWhenReadyCommand(secondSimRobot.agitator, secondSimRobot.transfer, secondSimRobot.shooter, secondSimRobot.drive::getPose);
-			
-			secondSimRobot.shooter.setShootCommandScheduledSupplier(secondSimRobot.shootWhenReady::isScheduled);
-			secondSimRobot.shooter.setManualOverrideSupplier(() -> operatorManualOverride);
-			secondSimRobot.shooter.setIsRedAllianceSupplier(() -> kSecondSimRobotRedAlliance);
-			ShooterCommands.registerTargetAllianceSupplier(secondSimRobot.drive, () -> kSecondSimRobotRedAlliance);
-			
-			secondSimRobot.safeRetractExtenderCommand =
-					SafeRetractExtenderCommand.create(
-							secondSimRobot.shootWhenReady, secondSimRobot.flywheel, secondSimRobot.extender, secondSimRobot.turret, b -> secondSimRobot.driverTurretOverride = b);
-			
-			secondSimRobot.turret.setManualOverrideSupplier(() -> operatorManualOverride || secondSimRobot.driverTurretOverride);
-			secondSimRobot.turret.setDrive(secondSimRobot.drive);
-			secondSimRobot.turret.setAimAtTargetSupplier(() -> secondSimRobot.shootWhenReady.isScheduled());
-
-			configureDriverBindings(createSecondSimDriverBindParams());
-		}
   } // End RobotContainer Constructor
 
 	/// -----------------------------------------------------------------------------------------------------------------
@@ -404,16 +408,17 @@ public class RobotContainer {
 		BooleanSupplier robotCentricGetter = bind.robotCentricGetter(); Consumer<Boolean> robotCentricSetter = bind.robotCentricSetter();
 		BooleanSupplier notDriverManualOverride = bind.notDriverManualOverride();
 		boolean bindPrimaryOnlyExtras = bind.bindPrimaryOnlyExtras();
+		BooleanSupplier driverTriggerGate = bind.driverTriggerGate();
 
 		drive.setDefaultCommand(teleopDrive);
 
 		// Intake toggle: right bumper = Intaking ↔ Idle, left bumper = Reversing ↔ Idle
-		driverController.leftBumper().onTrue(
+		driverController.leftBumper().and(driverTriggerGate).onTrue(
 			new ConditionalCommand(
 				Commands.runOnce(() -> intake.setIdleState(), intake),
 				Commands.runOnce(() -> intake.setReversingState(), intake),
 				() -> intake.getState() == Intake.State.REVERSING));
-		driverController.rightBumper().onTrue(
+		driverController.rightBumper().and(driverTriggerGate).onTrue(
 			new ConditionalCommand(
 				Commands.runOnce(() -> intake.setIdleState(), intake),
 				Commands.runOnce(() -> intake.setIntakingState(), intake),
@@ -421,7 +426,7 @@ public class RobotContainer {
 
 		// Cycle Extender, starts in Retracted, goes to Extended, and then cycles between Partial and Extended. 
 		// If in Manual, goes to Extended.
-		driverController.leftTrigger().onTrue(Commands.runOnce(() -> {
+		driverController.leftTrigger().and(driverTriggerGate).onTrue(Commands.runOnce(() -> {
 			switch (extender.getState()) {
 				case EXTENDED ->  extender.setPartialState();
 				case PARTIAL -> 	extender.setExtendedState();
@@ -438,10 +443,10 @@ public class RobotContainer {
 		}, extender));
 
 		// Set to Retracted, must turn off AutoShoot, and set Turret Target to 0
-		driverController.povDown().onTrue(safeRetractExtenderCommand);
+		driverController.povDown().and(driverTriggerGate).onTrue(safeRetractExtenderCommand);
 
 		// Toggle face-target mode when Y button is pressed
-		driverController.y().onTrue(Commands.runOnce(() -> {
+		driverController.y().and(driverTriggerGate).onTrue(Commands.runOnce(() -> {
 			boolean nextFacingHub = !facingHubGetter.getAsBoolean();
 			facingHubSetter.accept(nextFacingHub);
 			// Reset PID controller when enabling face-target mode
@@ -454,7 +459,7 @@ public class RobotContainer {
 		if (hang != null) {
 			// If hangHoldModeEnabled (set by X in endgame), press → Level 1 and release → Idle; 
 			// Else toggle Level 1 / Idle.
-			driverController.b().onTrue(
+			driverController.b().and(driverTriggerGate).onTrue(
 				new ConditionalCommand(
 					Commands.runOnce(() -> hang.setLevel1State(), hang),
 					new ConditionalCommand(
@@ -462,14 +467,14 @@ public class RobotContainer {
 						Commands.runOnce(() -> hang.setLevel1State(), hang),
 						() -> hang.getState() == Hang.State.LEVEL_1),
 					() -> hangHoldModeEnabled));
-			driverController.b().onFalse(
+			driverController.b().and(driverTriggerGate).onFalse(
 				new ConditionalCommand(
 					Commands.runOnce(() -> hang.setIdleState(), hang),
 					new InstantCommand(),
 					() -> hangHoldModeEnabled));
 			// Before Endgame, X toggles Stored / Idle. 
 			// Endgame:        X onTrue sets hangHoldModeEnabled (see B); Hanging state while held, Idle on release
-			driverController.x().onTrue(
+			driverController.x().and(driverTriggerGate).onTrue(
 				new ConditionalCommand(
 					Commands.runOnce(() -> hangHoldModeEnabled = true),
 					Commands.runOnce(() -> {
@@ -481,7 +486,7 @@ public class RobotContainer {
 						},
 						hang),
 					() -> isHangDriverEndgamePeriod()));
-			driverController.x().whileTrue(
+			driverController.x().and(driverTriggerGate).whileTrue(
 				new ConditionalCommand(
 					Commands.startEnd(
 						() -> hang.setHangingState(),
@@ -492,7 +497,7 @@ public class RobotContainer {
 		}
 
 		// Shoot toggle: on = schedule ShootWhenReadyCommand, set Flywheel to Charging if Idle; off = cancel (command end() sets Transfer and Agitator to Idle)
-		driverController.a().onTrue(Commands.runOnce(() -> {
+		driverController.a().and(driverTriggerGate).onTrue(Commands.runOnce(() -> {
 			if (shootWhenReadyCommand.isScheduled()) {
 				CommandScheduler.getInstance().cancel(shootWhenReadyCommand);
 				if (flywheel != null ) flywheel.setState(Flywheel.State.IDLE);
@@ -505,7 +510,7 @@ public class RobotContainer {
 		}));
 
 		// Reset Gyro / Odometry, or if Manual Override is true, Reset Gyro
-		driverController.start().onTrue(
+		driverController.start().and(driverTriggerGate).onTrue(
 			new ConditionalCommand(
 				Commands.runOnce(() -> robotCentricSetter.accept(!robotCentricGetter.getAsBoolean()), drive),
 				Commands.runOnce(resetGyro, drive).ignoringDisable(true),
@@ -702,7 +707,8 @@ public class RobotContainer {
 			BooleanSupplier facingHubGetter, Consumer<Boolean> facingHubSetter,
 			BooleanSupplier robotCentricGetter, Consumer<Boolean> robotCentricSetter,
 			BooleanSupplier notDriverManualOverride,
-			boolean bindPrimaryOnlyExtras) {
+			boolean bindPrimaryOnlyExtras,
+			BooleanSupplier driverTriggerGate) {
 	} // End DriverBindParams
 
   /** Configure Driver bindings for primary robot. */
@@ -726,7 +732,8 @@ public class RobotContainer {
 				() -> isFacingHub, enabled -> isFacingHub = enabled,
 				() -> isRobotCentric, enabled -> isRobotCentric = enabled,
 				() -> !driverManualOverride,
-				true);
+				true,
+				() -> true);
 	} // End createPrimaryDriverBindParams
 
 	/** Create Driver bindings for second sim robot. */
@@ -743,7 +750,8 @@ public class RobotContainer {
 				() -> sim2.isFacingHub, enabled -> sim2.isFacingHub = enabled,
 				() -> sim2.isRobotCentric, enabled -> sim2.isRobotCentric = enabled,
 				() -> true,
-				false);
+				false,
+				() -> secondSimRobotDriveEnabledFromDashboard);
 	} // End createSecondSimDriverBindParams
 
 	/// -----------------------------------------------------------------------------------------------------------------
@@ -1011,6 +1019,8 @@ public class RobotContainer {
 	public void updateSimulation() {
 		if (Constants.currentMode != Constants.Mode.SIM) return;
 
+		pollSecondSimRobotMode();
+
 		boolean extenderExtendedForCollision = extender.getState() == Extender.State.EXTENDED;
 		if (extenderExtendedForCollision != driveSimCollisionExtenderExtended) {
 			driveSimCollisionExtenderExtended = extenderExtendedForCollision;
@@ -1035,7 +1045,7 @@ public class RobotContainer {
 		Pose2d robotPose = driveSimulation.getSimulatedDriveTrainPose();
 		Logger.recordOutput("FieldSimulation/RobotPosition", robotPose);
 		
-		if (secondSimRobot != null) {
+		if (secondSimRobot != null && secondSimRobotDriveEnabledFromDashboard) {
 			Pose2d robotPoseSim2 = secondSimRobot.driveSimulation.getSimulatedDriveTrainPose();
 			Logger.recordOutput(SecondSimRobotOutputs.LOG_ROOT_PREFIX + "FieldSimulation/RobotPosition", robotPoseSim2);
 			Logger.recordOutput(SecondSimRobotOutputs.LOG_ROOT_PREFIX + "TeleopDrive/IsFacingHub", secondSimRobot.isFacingHub);
@@ -1044,7 +1054,7 @@ public class RobotContainer {
 		}
 
 		Logger.recordOutput("ComponentPoses/Final", buildComponentPoses(turret, extender, hang));
-		if (secondSimRobot != null) {
+		if (secondSimRobot != null && secondSimRobotDriveEnabledFromDashboard) {
 			Logger.recordOutput(
 					SecondSimRobotOutputs.LOG_ROOT_PREFIX + "ComponentPoses/Final",
 					buildComponentPoses(secondSimRobot.turret, secondSimRobot.extender, secondSimRobot.hang));
@@ -1098,7 +1108,7 @@ public class RobotContainer {
 		if (shooterSim != null) {
 			Logger.recordOutput("FuelSim/BallsInRobot", shooterSim.getFuelStored());
 		}
-		if (secondSimRobot != null && secondSimRobot.shooterSim != null) {
+		if (secondSimRobot != null && secondSimRobotDriveEnabledFromDashboard && secondSimRobot.shooterSim != null) {
 			Logger.recordOutput(SecondSimRobotOutputs.LOG_ROOT_PREFIX + "FuelSim/BallsInRobot", secondSimRobot.shooterSim.getFuelStored());
 		}
 		if (fuelSimEnabled) {
@@ -1108,7 +1118,7 @@ public class RobotContainer {
 	} // End updateSimulation
 
 	/// ------------------------------------------------ Second Sim Robot -----------------------------------------------
-	/** Optional second Maple sim + FuelSim robot; built only in SIM when {@link #kSecondSimRobotEnabled}. */
+	/** Optional second Maple sim + FuelSim robot; built lazily in SIM when the dashboard mode is not Disable. */
 	private static final class SecondSimRobot {
 		SwerveDriveSimulation driveSimulation; Drive drive;
 		Intake intake; Extender extender; Agitator agitator; Transfer transfer;
@@ -1203,10 +1213,64 @@ public class RobotContainer {
 
 		secondSimRobot.teleopDrive = new TeleopDrive(secondSimRobot.drive, secondSimRobot.driverController,
 				() -> secondSimRobot.isRobotCentric, () -> secondSimRobot.isFacingHub, secondSimRobot.faceTargetController,
-				() -> kSecondSimRobotRedAlliance,
+				() -> secondSimRobotIsRedAlliance,
 				SecondSimRobotOutputs.LOG_ROOT_PREFIX);
 		secondSimRobot.teleopDrive.setManualOverrideSupplier(() -> false);
 
 		return secondSimRobot;
 	} // End buildSecondSimRobot
+
+	private void finishSecondSimRobotSetup() {
+		SecondSimRobot secondSimRobot = this.secondSimRobot;
+		secondSimRobot.shooter = new Shooter(secondSimRobot.drive, secondSimRobot.agitator, secondSimRobot.transfer,
+				secondSimRobot.turret, secondSimRobot.hood, secondSimRobot.flywheel, isHoodEnabled, SecondSimRobotOutputs.LOG_ROOT_PREFIX);
+		secondSimRobot.shootWhenReady = new ShootWhenReadyCommand(secondSimRobot.agitator, secondSimRobot.transfer, secondSimRobot.shooter, secondSimRobot.drive::getPose);
+
+		secondSimRobot.shooter.setShootCommandScheduledSupplier(secondSimRobot.shootWhenReady::isScheduled);
+		secondSimRobot.shooter.setManualOverrideSupplier(() -> operatorManualOverride);
+		secondSimRobot.shooter.setIsRedAllianceSupplier(() -> secondSimRobotIsRedAlliance);
+		ShooterCommands.registerTargetAllianceSupplier(secondSimRobot.drive, () -> secondSimRobotIsRedAlliance);
+
+		secondSimRobot.safeRetractExtenderCommand =
+				SafeRetractExtenderCommand.create(
+						secondSimRobot.shootWhenReady, secondSimRobot.flywheel, secondSimRobot.extender, secondSimRobot.turret,
+						driverTurretOverrideEnabled -> secondSimRobot.driverTurretOverride = driverTurretOverrideEnabled);
+
+		secondSimRobot.turret.setManualOverrideSupplier(() -> operatorManualOverride || secondSimRobot.driverTurretOverride);
+		secondSimRobot.turret.setDrive(secondSimRobot.drive);
+		secondSimRobot.turret.setAimAtTargetSupplier(() -> secondSimRobot.shootWhenReady.isScheduled());
+
+		configureDriverBindings(createSecondSimDriverBindParams());
+	} // End finishSecondSimRobotSetup
+
+	private void pollSecondSimRobotMode() {
+		if (Constants.currentMode != Constants.Mode.SIM) {
+			return;
+		}
+
+		SecondSimRobotDashboardMode mode = SecondSimRobotDashboardMode.fromSelection(secondSimRobotModeChooser.getSelected());
+
+		if (mode == SecondSimRobotDashboardMode.DISABLE) {
+			secondSimRobotDriveEnabledFromDashboard = false;
+			secondSimRobotIsRedAlliance = false;
+			if (secondSimRobot != null && secondSimRobotLastAppliedMode != SecondSimRobotDashboardMode.DISABLE) {
+				CommandScheduler.getInstance().cancel(secondSimRobot.shootWhenReady);
+				secondSimRobot.drive.setDefaultCommand(Commands.run(secondSimRobot.drive::stop, secondSimRobot.drive));
+			}
+			secondSimRobotLastAppliedMode = mode;
+			return;
+		}
+
+		secondSimRobotDriveEnabledFromDashboard = true;
+		secondSimRobotIsRedAlliance = (mode == SecondSimRobotDashboardMode.RED);
+
+		if (secondSimRobot == null) {
+			secondSimRobot = buildSecondSimRobot();
+			finishSecondSimRobotSetup();
+		} else if (secondSimRobotLastAppliedMode == SecondSimRobotDashboardMode.DISABLE) {
+			secondSimRobot.drive.setDefaultCommand(secondSimRobot.teleopDrive);
+		}
+
+		secondSimRobotLastAppliedMode = mode;
+	} // End pollSecondSimRobotMode
 }

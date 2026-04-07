@@ -50,8 +50,8 @@ public final class ShooterCommands {
 
   /**
    * Optional per-{@link Drive} alliance for hub and passing-spot targets. Default when absent: {@link
-   * AllianceUtil#isRedAlliance()} (DriverStation). Second sim registers its {@link Drive} with a supplier matching
-   * {@link frc.robot.RobotContainer}'s {@code kSecondSimRobotRedAlliance}.
+   * AllianceUtil#isRedAlliance()} (DriverStation). The second sim robot registers its {@link Drive} with a supplier
+   * driven by the SIM dashboard chooser (Blue / Red Alliance).
    */
   private static final IdentityHashMap<Drive, BooleanSupplier> targetRedAllianceByDrive =
       new IdentityHashMap<>();
