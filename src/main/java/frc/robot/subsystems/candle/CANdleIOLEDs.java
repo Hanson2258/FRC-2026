@@ -2,6 +2,7 @@ package frc.robot.subsystems.candle;
 
 import com.ctre.phoenix6.configs.CANdleConfiguration;
 import com.ctre.phoenix6.controls.ColorFlowAnimation;
+import com.ctre.phoenix6.controls.EmptyAnimation;
 import com.ctre.phoenix6.controls.FireAnimation;
 import com.ctre.phoenix6.controls.LarsonAnimation;
 import com.ctre.phoenix6.controls.RainbowAnimation;
@@ -37,7 +38,7 @@ public class CANdleIOLEDs implements CANdleIO {
 
     CANdleConfiguration config = new CANdleConfiguration();
     config.LED.StripType = StripTypeValue.GRB;
-    config.LED.BrightnessScalar = kDefaultBrightness;
+    config.LED.BrightnessScalar = kFullBrightness;
     config.CANdleFeatures.StatusLedWhenActive = StatusLedWhenActiveValue.Disabled;
 
     candle.getConfigurator().apply(config);
@@ -53,6 +54,7 @@ public class CANdleIOLEDs implements CANdleIO {
       currentColor = targetColor;
 
       setLEDAnimation();
+      setLEDColor();
     }
 
     inputs.currentAnimationType = currentAnimationType;
@@ -69,7 +71,7 @@ public class CANdleIOLEDs implements CANdleIO {
     switch (currentAnimationType) {
       default:
       case None:
-        setLEDColor(currentColor);
+        candle.setControl(new EmptyAnimation(0));
         break;
       case ColorFlow:
         candle.setControl(
@@ -125,8 +127,8 @@ public class CANdleIOLEDs implements CANdleIO {
     }
   } // End setLEDAnimation
 
-  private void setLEDColor(RGBWColor color) {
-    candle.setControl(new SolidColor(startIndex, endIndex).withColor(color));
+  private void setLEDColor() {
+    candle.setControl(new SolidColor(startIndex, endIndex).withColor(currentColor));
   } // End setLEDColor
 
   @Override
@@ -136,8 +138,6 @@ public class CANdleIOLEDs implements CANdleIO {
 
     currentAnimationType = AnimationType.None;
     currentColor = targetColor;
-
-    setLEDColor(new RGBWColor(0, 0, 0, 0));
   } // End clear
 
   @Override

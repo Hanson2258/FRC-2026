@@ -78,15 +78,15 @@ public class RobotContainer {
 	private boolean isCompetition = true;
 
 	// Subsystems Toggle
-	private boolean isDriveEnabled 		= false;
-	private boolean isVisionEnabled 	= false;
-	private boolean isIntakeEnabled 	= false;
-	private boolean isExtenderEnabled = false;
-	private boolean isAgitatorEnabled = false;
-	private boolean isTransferEnabled = false;
-	private boolean isTurretEnabled 	= false;
+	private boolean isDriveEnabled 		= true;
+	private boolean isVisionEnabled 	= true;
+	private boolean isIntakeEnabled 	= true;
+	private boolean isExtenderEnabled = true;
+	private boolean isAgitatorEnabled = true;
+	private boolean isTransferEnabled = true;
+	private boolean isTurretEnabled 	= true;
 	private boolean isHoodEnabled 		= false;
-	private boolean isFlywheelEnabled = false;
+	private boolean isFlywheelEnabled = true;
 	private boolean isCandleEnabled 	= true;
 	private boolean isHangEnabled 		= false;
 
