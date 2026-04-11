@@ -997,6 +997,20 @@
                   "period": 0.06,
                   "data_type": "int"
                 }
+              },
+              {
+                "title": "StartLEDIndex",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/LED/CANdle/Inputs/StartLEDIndex",
+                  "period": 0.06,
+                  "data_type": "int",
+                  "show_submit_button": false
+                }
               }
             ]
           },
@@ -1555,6 +1569,75 @@
                   "period": 0.06,
                   "data_type": "double",
                   "show_submit_button": true
+                }
+              }
+            ]
+          },
+          {
+            "title": "CANdle (LEDs)",
+            "x": 0.0,
+            "y": 760.0,
+            "width": 285.0,
+            "height": 380.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "State",
+                "x": 475.0,
+                "y": 760.0,
+                "width": 285.0,
+                "height": 95.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/LED/CANdle/State",
+                  "period": 0.06,
+                  "data_type": "string",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "CurrentColorHex",
+                "x": 570.0,
+                "y": 760.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/LED/CANdle/Inputs/CurrentColorHex",
+                  "period": 0.06,
+                  "data_type": "string",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "CurrentAnimationType",
+                "x": 475.0,
+                "y": 760.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/LED/CANdle/Inputs/CurrentAnimationType",
+                  "period": 0.06,
+                  "data_type": "string",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "EndLEDIndex",
+                "x": 570.0,
+                "y": 760.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/LED/CANdle/Inputs/EndLEDIndex",
+                  "period": 0.06,
+                  "data_type": "int",
+                  "show_submit_button": false
                 }
               }
             ]
@@ -2303,6 +2386,75 @@
                   "period": 0.06,
                   "data_type": "double",
                   "show_submit_button": true
+                }
+              }
+            ]
+          },
+          {
+            "title": "CANdle (LEDs)",
+            "x": 855.0,
+            "y": 760.0,
+            "width": 285.0,
+            "height": 380.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "State",
+                "x": 475.0,
+                "y": 760.0,
+                "width": 285.0,
+                "height": 95.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/LED/CANdle/State",
+                  "period": 0.06,
+                  "data_type": "string",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "CurrentColorHex",
+                "x": 570.0,
+                "y": 760.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/LED/CANdle/Inputs/CurrentColorHex",
+                  "period": 0.06,
+                  "data_type": "string",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "CurrentAnimationType",
+                "x": 475.0,
+                "y": 760.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/LED/CANdle/Inputs/CurrentAnimationType",
+                  "period": 0.06,
+                  "data_type": "string",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "EndLEDIndex",
+                "x": 570.0,
+                "y": 760.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Subsystems/LED/CANdle/Inputs/EndLEDIndex",
+                  "period": 0.06,
+                  "data_type": "int",
+                  "show_submit_button": false
                 }
               }
             ]
