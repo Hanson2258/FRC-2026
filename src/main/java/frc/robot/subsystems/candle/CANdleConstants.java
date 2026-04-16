@@ -29,7 +29,7 @@ public class CANdleConstants {
   public static final RGBWColor kManualOverrideColor = new RGBWColor(255, 0, 0, 255);
 
   /** Strobe animation: manual override is on (Driver or operator) */
-  public static final AnimationType kManualOverrideAnimation = AnimationType.Strobe;
+  public static final AnimationType kManualOverrideAnimation = AnimationType.SingleFade;
   /** Rainbow animation: robot is disabled */
   public static final AnimationType kDisabledAnimation = AnimationType.Rainbow;
 
