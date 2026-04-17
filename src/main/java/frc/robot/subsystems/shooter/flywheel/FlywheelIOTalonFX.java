@@ -11,10 +11,16 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.StatusCode;
+
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.generated.TunerConstants;
+
+import com.ctre.phoenix6.controls.TorqueCurrentFOC;
+
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 
 /** Flywheel IO using Talon FX with onboard velocity control. */
 public class FlywheelIOTalonFX implements FlywheelIO {
@@ -23,7 +29,12 @@ public class FlywheelIOTalonFX implements FlywheelIO {
       Units.rotationsPerMinuteToRadiansPerSecond(kVelocityRampRateRpmPerSec);
 
   private final TalonFX motor;
+  private final TorqueCurrentFOC torqueRequest = new TorqueCurrentFOC(0.0);
   private final VelocityVoltage velocityVoltageRequest = new VelocityVoltage(0.0);
+
+  private final PIDController velocityPID = new PIDController(kP, kI, kD);
+  private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(kS, kV);
+
   private final SlewRateLimiter velocityRamp = new SlewRateLimiter(kVelocityRampRateRadPerSecSq);
 
   private double lastP = kP;
@@ -67,6 +78,14 @@ public class FlywheelIOTalonFX implements FlywheelIO {
       lastS = s;
 
       var slot0 = new Slot0Configs().withKP(p).withKI(i).withKD(d).withKV(v).withKS(s);
+
+      velocityPID.setP(p);
+      velocityPID.setI(i);
+      velocityPID.setD(d);
+
+      feedforward.setKs(s);
+      feedforward.setKv(v);
+
       tryUntilOk(5, () -> motor.getConfigurator().apply(slot0, 0.25));
     }
 
@@ -84,10 +103,33 @@ public class FlywheelIOTalonFX implements FlywheelIO {
 
   @Override
   public void setTargetVelocity(double targetVelocityRadPerSec) {
-    double rampedRadPerSec = velocityRamp.calculate(targetVelocityRadPerSec);
-    double motorRps = (rampedRadPerSec / (2.0 * Math.PI)) * kGearRatio;
-    motor.setControl(velocityVoltageRequest.withVelocity(motorRps));
+    boolean atSpeed = Math.abs(motor.getVelocity().getValueAsDouble() - targetVelocityRadPerSec) <= kAtTargetVelocityToleranceRadPerSec;
+    if (atSpeed) {
+      setVelocityControl(targetVelocityRadPerSec);
+    } else {
+      setTorqueControl(targetVelocityRadPerSec);
+    }
+
   } // End setTargetVelocity
+
+  private void setVelocityControl(double targetVelocityRadPerSec) {
+    motor.setControl(velocityVoltageRequest.withVelocity(calculateTargetRps(targetVelocityRadPerSec)));
+  }
+
+  private void setTorqueControl(double targetVelocityRadPerSec) {
+    double targetRps = calculateTargetRps(targetVelocityRadPerSec);
+    double currentRps = motor.getVelocity().getValueAsDouble();
+
+    double torqueCommand = feedforward.calculate(targetRps) + velocityPID.calculate(currentRps, targetRps);
+    
+    motor.setControl(torqueRequest.withOutput(torqueCommand));
+  }
+
+  private double calculateTargetRps(double targetVelocityRadPerSec) {
+    double rampedRadPerSec = velocityRamp.calculate(targetVelocityRadPerSec);
+    double targetRps = (rampedRadPerSec / (2.0 * Math.PI)) * kGearRatio;
+    return targetRps;
+  }
 
   @Override
   public void stop() {
