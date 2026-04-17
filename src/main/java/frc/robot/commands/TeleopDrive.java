@@ -23,6 +23,8 @@ import frc.robot.Constants.ControllerConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.FieldConstants;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.extender.Extender;
+import frc.robot.subsystems.extender.Extender.State;
 import frc.robot.util.Zones;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -31,6 +33,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 /** Default drive command. */
 public class TeleopDrive extends Command {
   private final Drive drive;
+  private final Extender extender;
   private final CommandXboxController controller;
   private final BooleanSupplier isRobotCentricSupplier;
   private final BooleanSupplier isFacingHubSupplier;
@@ -64,12 +67,14 @@ public class TeleopDrive extends Command {
   /** Creates a new TeleopDrive. */
   public TeleopDrive(
       Drive drive,
+      Extender extender,
       CommandXboxController controller,
       BooleanSupplier isRobotCentricSupplier,
       BooleanSupplier isFacingHubSupplier,
       ProfiledPIDController faceTargetController) {
     this.drive = drive;
     this.controller = controller;
+    this.extender = extender;
     this.isRobotCentricSupplier = isRobotCentricSupplier;
     this.isFacingHubSupplier = isFacingHubSupplier;
     this.faceTargetController = faceTargetController;
@@ -200,6 +205,10 @@ public class TeleopDrive extends Command {
         double rotSpeedToStraight = rotationController.calculate(drive.getRotation().getRadians());
         if (rotationController.atSetpoint()) {
           rotSpeedToStraight = 0;
+        }
+        if (extender.getState() != State.EXTENDED)
+        {
+          extender.setExtendedState();
         }
         drive.driveFieldCentric(
             linearVelocity.getX(),
