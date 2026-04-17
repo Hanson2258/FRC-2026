@@ -307,7 +307,7 @@ public class RobotContainer {
 		new TrapezoidProfile.Constraints(DriveCommands.getAngleMaxVelocity(), DriveCommands.getAngleMaxAcceleration()));
 		faceTargetController.enableContinuousInput(-Math.PI, Math.PI);
 
-		teleopDrive = new TeleopDrive(drive, driverController, () -> isRobotCentric, () -> isFacingHub, faceTargetController);
+		teleopDrive = new TeleopDrive(drive, extender, hood, hang, driverController, () -> isRobotCentric, () -> isFacingHub, faceTargetController);
 		teleopDrive.setManualOverrideSupplier(() -> driverManualOverride);
 
 		/// -------------------------------------------------------------------------------------------

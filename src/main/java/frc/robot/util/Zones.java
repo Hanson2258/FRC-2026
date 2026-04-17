@@ -141,7 +141,7 @@ public class Zones {
 
     private static final double ROBOT_HALF_LENGTH_M = Dimensions.FULL_LENGTH.in(Meters) / 2.0;
 
-    private static final PredictiveXBaseZone BLUE_BOTTOM_TRENCH = new PredictiveXBaseZone(
+    public static final PredictiveXBaseZone BLUE_BOTTOM_TRENCH = new PredictiveXBaseZone(
             FieldConstants.TRENCH_BUMP_X_M
                     - FieldConstants.TRENCH_BUMP_LENGTH_M / 2.0
                     - ROBOT_HALF_LENGTH_M,
@@ -150,9 +150,9 @@ public class Zones {
                     + ROBOT_HALF_LENGTH_M,
             0,
             FieldConstants.TRENCH_WIDTH_M);
-    private static final PredictiveXBaseZone BLUE_TOP_TRENCH = BLUE_BOTTOM_TRENCH.mirroredY();
-    private static final PredictiveXBaseZone RED_BOTTOM_TRENCH = BLUE_BOTTOM_TRENCH.mirroredX();
-    private static final PredictiveXBaseZone RED_TOP_TRENCH = BLUE_TOP_TRENCH.mirroredX();
+    public static final PredictiveXBaseZone BLUE_TOP_TRENCH = BLUE_BOTTOM_TRENCH.mirroredY();
+    public static final PredictiveXBaseZone RED_BOTTOM_TRENCH = BLUE_BOTTOM_TRENCH.mirroredX();
+    public static final PredictiveXBaseZone RED_TOP_TRENCH = BLUE_TOP_TRENCH.mirroredX();
 
     public static final PredictiveXZoneCollection TRENCH_ZONES =
             new PredictiveXZoneCollection(BLUE_BOTTOM_TRENCH, BLUE_TOP_TRENCH, RED_BOTTOM_TRENCH, RED_TOP_TRENCH);

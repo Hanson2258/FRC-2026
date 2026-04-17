@@ -22,10 +22,17 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.ControllerConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.FieldConstants;
+import frc.robot.Robot;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.extender.Extender;
 import frc.robot.subsystems.extender.Extender.State;
+import frc.robot.subsystems.hang.Hang;
+import frc.robot.subsystems.hang.HangConstants;
+import frc.robot.subsystems.shooter.hood.Hood;
+import frc.robot.subsystems.shooter.hood.HoodConstants;
 import frc.robot.util.Zones;
+import frc.robot.util.Zones.Zone;
+
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -34,6 +41,8 @@ import org.littletonrobotics.junction.AutoLogOutput;
 public class TeleopDrive extends Command {
   private final Drive drive;
   private final Extender extender;
+  private final Hood hood;
+  private final Hang hang;
   private final CommandXboxController controller;
   private final BooleanSupplier isRobotCentricSupplier;
   private final BooleanSupplier isFacingHubSupplier;
@@ -68,6 +77,8 @@ public class TeleopDrive extends Command {
   public TeleopDrive(
       Drive drive,
       Extender extender,
+      Hood hood,
+      Hang hang,
       CommandXboxController controller,
       BooleanSupplier isRobotCentricSupplier,
       BooleanSupplier isFacingHubSupplier,
@@ -75,6 +86,8 @@ public class TeleopDrive extends Command {
     this.drive = drive;
     this.controller = controller;
     this.extender = extender;
+    this.hood = hood;
+    this.hang = hang;
     this.isRobotCentricSupplier = isRobotCentricSupplier;
     this.isFacingHubSupplier = isFacingHubSupplier;
     this.faceTargetController = faceTargetController;
@@ -90,12 +103,26 @@ public class TeleopDrive extends Command {
         .willContain(drive::getPose, drive::getFieldRelativeChassisSpeeds, Seconds.of(SwerveConstants.TRENCH_ALIGN_TIME_S))
         .debounce(0.1);
 
+    
+
     /// Disabled (Bump Zone is not used)
     // inBumpZoneTrigger = Zones.BUMP_ZONES
     //     .willContain(drive::getPose, drive::getFieldRelativeChassisSpeeds, Seconds.of(SwerveConstants.BUMP_ALIGN_TIME_S))
     //     .debounce(0.1);
 
-    inTrenchZoneTrigger.onTrue(Commands.runOnce(() -> currentDriveMode = DriveMode.TRENCH_LOCK));
+    inTrenchZoneTrigger.onTrue(Commands.runOnce(() -> 
+    { if (
+      // If extender is out, if hood is raised, or if hang is out, go to invalid
+      extender.getState() == State.PARTIAL 
+      || hood.getAngleRad() >= HoodConstants.kMinAngleRad 
+      || hang.getPositionMeters() > HangConstants.kStoredPositionMeters ) 
+      {
+        currentDriveMode = DriveMode.INVALID_TRENCH;
+      } else {
+        currentDriveMode = DriveMode.TRENCH_LOCK;
+      }
+  }));
+    
     /// Disabled (Bump Zone is not used)
     // inBumpZoneTrigger.onTrue(Commands.runOnce(() -> currentDriveMode = DriveMode.BUMP_LOCK));
     // inTrenchZoneTrigger.or(inBumpZoneTrigger).onFalse(Commands.runOnce(() -> currentDriveMode = DriveMode.NORMAL));
@@ -206,10 +233,6 @@ public class TeleopDrive extends Command {
         if (rotationController.atSetpoint()) {
           rotSpeedToStraight = 0;
         }
-        if (extender.getState() != State.EXTENDED)
-        {
-          extender.setExtendedState();
-        }
         drive.driveFieldCentric(
             linearVelocity.getX(),
             yVel,
@@ -226,6 +249,19 @@ public class TeleopDrive extends Command {
             linearVelocity.getY(),
             rotSpeedToDiagonal);
         break;
+
+      case INVALID_TRENCH:
+        int xVelocity = Zones.determineSideOfTrench(drive.getPose());
+        
+        double rotate = isFacingHubSupplier.getAsBoolean()
+            ? DriveCommands.computeOmegaToFaceHub(drive, faceTargetController)
+            : maxRotSpeedRadPerS * omega;
+
+        drive.driveFieldCentric(
+            xVelocity,
+            linearVelocity.getY(),
+            rotate);
+        break;
     }
   } // End execute
 
@@ -241,6 +277,9 @@ public class TeleopDrive extends Command {
     NORMAL,
     TRENCH_LOCK,
     BUMP_LOCK,
-    MANUAL_OVERRIDE
+    MANUAL_OVERRIDE,
+    INVALID_TRENCH
   } // End DriveMode
+
+
 }
