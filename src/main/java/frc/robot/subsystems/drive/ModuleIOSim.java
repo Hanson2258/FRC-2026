@@ -39,17 +39,22 @@ import frc.robot.Constants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.util.PhoenixUtil;
 import java.util.Arrays;
+import java.util.Random;
 
 import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
+import org.littletonrobotics.junction.Logger;
 
 /**
- * Physics sim implementation of module IO using MapleSim. The sim models are
- * configured using a set
- * of module constants from Phoenix. MapleSim wraps the actual TalonFX
- * controllers, so commands go
+ * Physics sim implementation of module IO using MapleSim. The sim models are configured using a set
+ * of module constants from Phoenix. MapleSim wraps the actual TalonFX controllers, so commands go
  * through the same code path as real hardware.
  */
 public class ModuleIOSim implements ModuleIO {
+  private static final Object driveMultiplierLock = new Object();
+  private static final double[] driveSpeedMultipliers = {1.0, 1.0, 1.0, 1.0};
+  private static boolean driveSpeedMultipliersInitialized = false;
+  private static final Random driveMultiplierRandom = new Random();
+
   private final int moduleIndex;
 
   private final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants;
@@ -92,10 +97,7 @@ public class ModuleIOSim implements ModuleIO {
     this(constants, simulation, moduleIndex, TunerConstants.kCANBus, 0);
   } // End ModuleIOSim Constructor
 
-  /**
-   * @param canBus identifier passed to {@link TalonFX} and {@link CANcoder}
-   *               constructors
-   */
+  /** @param canBus identifier passed to {@link TalonFX} and {@link CANcoder} constructors */
   public ModuleIOSim(
       SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants,
       SwerveModuleSimulation simulation,
@@ -105,10 +107,8 @@ public class ModuleIOSim implements ModuleIO {
   } // End ModuleIOSim Constructor
 
   /**
-   * @param canBus         identifier passed to {@link TalonFX} and
-   *                       {@link CANcoder} constructors
-   * @param deviceIdOffset added to {@code DriveMotorId}, {@code SteerMotorId},
-   *                       and {@code EncoderId} from {@code constants}
+   * @param canBus identifier passed to {@link TalonFX} and {@link CANcoder} constructors
+   * @param deviceIdOffset added to {@code DriveMotorId}, {@code SteerMotorId}, and {@code EncoderId} from {@code constants}
    */
   public ModuleIOSim(
       SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants,
@@ -122,7 +122,7 @@ public class ModuleIOSim implements ModuleIO {
     this.moduleIndex = moduleIndex;
     this.constants = PhoenixUtil.regulateModuleConstantForSimulation(constants);
     this.simulation = simulation;
-    SimDriveSpeedMultipliers.ensureInitialized(SimDriveSpeedMultipliers.TALON_MAPLE_SIM);
+    ensureDriveSpeedMultipliersInitialized();
 
     int driveMotorId = this.constants.DriveMotorId + deviceIdOffset;
     int steerMotorId = this.constants.SteerMotorId + deviceIdOffset;
@@ -140,9 +140,10 @@ public class ModuleIOSim implements ModuleIO {
     driveConfig.TorqueCurrent.PeakReverseTorqueCurrent = -this.constants.SlipCurrent;
     driveConfig.CurrentLimits.StatorCurrentLimit = this.constants.SlipCurrent;
     driveConfig.CurrentLimits.StatorCurrentLimitEnable = true;
-    driveConfig.MotorOutput.Inverted = this.constants.DriveMotorInverted
-        ? InvertedValue.Clockwise_Positive
-        : InvertedValue.CounterClockwise_Positive;
+    driveConfig.MotorOutput.Inverted =
+        this.constants.DriveMotorInverted
+            ? InvertedValue.Clockwise_Positive
+            : InvertedValue.CounterClockwise_Positive;
     tryUntilOk(5, () -> driveTalon.getConfigurator().apply(driveConfig, 0.25));
     tryUntilOk(5, () -> driveTalon.setPosition(0.0, 0.25));
 
@@ -152,33 +153,37 @@ public class ModuleIOSim implements ModuleIO {
     turnConfig.Slot0 = this.constants.SteerMotorGains;
     // Sim-only: regulated steer gains use high kD; with Maple+Talon sim that hunts and shows up as
     // chassis shake / curved drift. Softer kD and kS=0 here stabilizes azimuth without changing real-robot tuning.
-    turnConfig.Slot0.withKD(Constants.SimulationDrive.kSteerTalonSimKd).withKS(Constants.SimulationDrive.kSteerTalonSimKs);
+    turnConfig.Slot0.withKD(0.5).withKS(0);
 
     turnConfig.Feedback.FeedbackRemoteSensorID = encoderId;
-    turnConfig.Feedback.FeedbackSensorSource = switch (this.constants.FeedbackSource) {
-      case RemoteCANcoder -> FeedbackSensorSourceValue.RemoteCANcoder;
-      case FusedCANcoder -> FeedbackSensorSourceValue.FusedCANcoder;
-      case SyncCANcoder -> FeedbackSensorSourceValue.SyncCANcoder;
-      default -> throw new RuntimeException(
-          "You have selected a turn feedback source that is not supported by the default implementation of ModuleIOSim. Please check the AdvantageKit documentation for more information on alternative configurations: https://docs.advantagekit.org/getting-started/template-projects/talonfx-swerve-template#custom-module-implementations");
-    };
+    turnConfig.Feedback.FeedbackSensorSource =
+        switch (this.constants.FeedbackSource) {
+          case RemoteCANcoder -> FeedbackSensorSourceValue.RemoteCANcoder;
+          case FusedCANcoder -> FeedbackSensorSourceValue.FusedCANcoder;
+          case SyncCANcoder -> FeedbackSensorSourceValue.SyncCANcoder;
+          default -> throw new RuntimeException(
+              "You have selected a turn feedback source that is not supported by the default implementation of ModuleIOSim. Please check the AdvantageKit documentation for more information on alternative configurations: https://docs.advantagekit.org/getting-started/template-projects/talonfx-swerve-template#custom-module-implementations");
+        };
     turnConfig.Feedback.RotorToSensorRatio = this.constants.SteerMotorGearRatio;
     turnConfig.MotionMagic.MotionMagicCruiseVelocity = 100.0 / this.constants.SteerMotorGearRatio;
-    turnConfig.MotionMagic.MotionMagicAcceleration = turnConfig.MotionMagic.MotionMagicCruiseVelocity / 0.100;
+    turnConfig.MotionMagic.MotionMagicAcceleration =
+        turnConfig.MotionMagic.MotionMagicCruiseVelocity / 0.100;
     turnConfig.MotionMagic.MotionMagicExpo_kV = 0.12 * this.constants.SteerMotorGearRatio;
     turnConfig.MotionMagic.MotionMagicExpo_kA = 0.1;
     turnConfig.ClosedLoopGeneral.ContinuousWrap = true;
-    turnConfig.MotorOutput.Inverted = this.constants.SteerMotorInverted
-        ? InvertedValue.Clockwise_Positive
-        : InvertedValue.CounterClockwise_Positive;
+    turnConfig.MotorOutput.Inverted =
+        this.constants.SteerMotorInverted
+            ? InvertedValue.Clockwise_Positive
+            : InvertedValue.CounterClockwise_Positive;
     tryUntilOk(5, () -> turnTalon.getConfigurator().apply(turnConfig, 0.25));
 
     // Configure CANCoder
     CANcoderConfiguration cancoderConfig = this.constants.EncoderInitialConfigs;
     cancoderConfig.MagnetSensor.MagnetOffset = this.constants.EncoderOffset;
-    cancoderConfig.MagnetSensor.SensorDirection = this.constants.EncoderInverted
-        ? SensorDirectionValue.Clockwise_Positive
-        : SensorDirectionValue.CounterClockwise_Positive;
+    cancoderConfig.MagnetSensor.SensorDirection =
+        this.constants.EncoderInverted
+            ? SensorDirectionValue.Clockwise_Positive
+            : SensorDirectionValue.CounterClockwise_Positive;
     cancoder.getConfigurator().apply(cancoderConfig);
 
     // Create drive status signals
@@ -223,10 +228,8 @@ public class ModuleIOSim implements ModuleIO {
 
     // Update drive inputs
     inputs.driveConnected = true;
-    inputs.drivePositionRad = Units.rotationsToRadians(drivePosition.getValueAsDouble())
-        / constants.DriveMotorGearRatio;
-    inputs.driveVelocityRadPerSec = Units.rotationsToRadians(driveVelocity.getValueAsDouble())
-        / constants.DriveMotorGearRatio;
+    inputs.drivePositionRad = Units.rotationsToRadians(drivePosition.getValueAsDouble()) / constants.DriveMotorGearRatio;
+    inputs.driveVelocityRadPerSec = Units.rotationsToRadians(driveVelocity.getValueAsDouble()) / constants.DriveMotorGearRatio;
     inputs.driveAppliedVolts = driveAppliedVolts.getValueAsDouble();
     inputs.driveCurrentAmps = driveCurrent.getValueAsDouble();
 
@@ -241,9 +244,10 @@ public class ModuleIOSim implements ModuleIO {
 
     // Update odometry inputs from MapleSim (high-frequency cached positions)
     inputs.odometryTimestamps = PhoenixUtil.getSimulationOdometryTimeStamps();
-    inputs.odometryDrivePositionsRad = Arrays.stream(simulation.getCachedDriveWheelFinalPositions())
-        .mapToDouble(angle -> angle.in(Radians))
-        .toArray();
+    inputs.odometryDrivePositionsRad =
+        Arrays.stream(simulation.getCachedDriveWheelFinalPositions())
+            .mapToDouble(angle -> angle.in(Radians))
+            .toArray();
     inputs.odometryTurnPositions = simulation.getCachedSteerAbsolutePositions();
   }
 
@@ -267,10 +271,9 @@ public class ModuleIOSim implements ModuleIO {
 
   @Override
   public void setDriveVelocity(double velocityRadPerSec) {
-    double velocityRotPerSec = SimDriveVelocitySetpoint.motorRotationsPerSecFromWheelRadPerSec(
-        velocityRadPerSec,
-        SimDriveSpeedMultipliers.get(SimDriveSpeedMultipliers.TALON_MAPLE_SIM, moduleIndex),
-        constants.DriveMotorGearRatio);
+    double scaledRadPerSec = velocityRadPerSec * driveSpeedMultipliers[moduleIndex];
+    double velocityRotPerSec =
+        Units.radiansToRotations(scaledRadPerSec) * constants.DriveMotorGearRatio;
     driveTalon.setControl(
         switch (constants.DriveMotorClosedLoopOutput) {
           case Voltage -> velocityVoltageRequest.withVelocity(velocityRotPerSec);
@@ -278,13 +281,49 @@ public class ModuleIOSim implements ModuleIO {
         });
   } // End setDriveVelocity
 
+  private static void ensureDriveSpeedMultipliersInitialized() {
+    synchronized (driveMultiplierLock) {
+      if (!driveSpeedMultipliersInitialized) {
+        resampleDistinctDriveSpeedMultipliers();
+        driveSpeedMultipliersInitialized = true;
+        Logger.recordOutput("Subsystems/Drive/Sim/DriveSpeedMultipliers", driveSpeedMultipliers);
+      }
+    }
+  } // End ensureDriveSpeedMultipliersInitialized
+
+  /**
+   * Fills {@link #driveSpeedMultipliers} with four distinct values in
+   * [{@link Constants.SimulationDrive#kDriveSpeedMultiplierMin},
+   * {@link Constants.SimulationDrive#kDriveSpeedMultiplierMax}].
+   */
+  private static void resampleDistinctDriveSpeedMultipliers() {
+    final double lo = Constants.SimulationDrive.kDriveSpeedMultiplierMin;
+    final double hi = Constants.SimulationDrive.kDriveSpeedMultiplierMax;
+    final double span = hi - lo;
+    double[] next = new double[4];
+    outer:
+    while (true) {
+      for (int i = 0; i < 4; i++) {
+        next[i] = lo + driveMultiplierRandom.nextDouble() * span;
+      }
+      for (int i = 0; i < 4; i++) {
+        for (int j = i + 1; j < 4; j++) {
+          if (Math.abs(next[i] - next[j]) < 1e-9) {
+            continue outer;
+          }
+        }
+      }
+      break;
+    }
+    System.arraycopy(next, 0, driveSpeedMultipliers, 0, 4);
+  } // End resampleDistinctDriveSpeedMultipliers
+
   @Override
   public void setTurnPosition(Rotation2d rotation) {
     turnTalon.setControl(
         switch (constants.SteerMotorClosedLoopOutput) {
           case Voltage -> positionVoltageRequest.withPosition(rotation.getRotations());
-          case TorqueCurrentFOC ->
-            positionTorqueCurrentRequest.withPosition(rotation.getRotations());
+          case TorqueCurrentFOC -> positionTorqueCurrentRequest.withPosition(rotation.getRotations());
         });
   }
 }
