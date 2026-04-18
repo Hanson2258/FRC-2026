@@ -574,11 +574,14 @@ public class FuelSim {
     } // End registerShooterFuelReset
 
     /**
-     * Clears field fuel, spawns the starting layout, and runs all {@link #registerShooterFuelReset(Runnable)} callbacks.
+     * Clears field fuel, spawns the starting layout, zeros both hub scores, and runs all
+     * {@link #registerShooterFuelReset(Runnable)} callbacks (which reset per-robot stored fuel counts).
      */
     public void resetFuel() {
         clearFuel();
         spawnStartingFuel();
+        Hub.BLUE_HUB.resetScore();
+        Hub.RED_HUB.resetScore();
         for (Runnable r : shooterFuelResets) {
             r.run();
         }
