@@ -7,16 +7,19 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.util.HubShiftUtil;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.simulation.DriverStationSim;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.util.HubShiftUtil;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -27,6 +30,13 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
   private Command autonomousCommand;
   private RobotContainer robotContainer;
+
+  // SIM-only match countdown (see startSimMatchClock, simulationPeriodic).
+  private boolean simMatchClockRunning = false;
+  private double simMatchDurationSec = 0.0;
+  private double simMatchStartTimestamp = 0.0;
+  /** When true, hitting 0 on the sim clock disables the robot (end-of-auto behavior). */
+  private boolean simDisableRobotWhenCountdownEnds = false;
 
   public Robot() {
     // Record metadata
@@ -92,8 +102,6 @@ public class Robot extends LoggedRobot {
     // Update field view with robot pose (real robot odometry; sim updates in simulationPeriodic)
     robotContainer.updateFieldPose();
 
-    // Publish match time and shift (shooting) info for dashboard widgets
-    Logger.recordOutput("Dashboard/MatchTime", DriverStation.getMatchTime());
     HubShiftUtil.ShiftInfo shiftInfo = HubShiftUtil.getOfficialShiftInfo();
     Logger.recordOutput("Dashboard/ShiftTimeRemaining", shiftInfo.remainingTime());
     Logger.recordOutput("Dashboard/ShootingActive", shiftInfo.active());
@@ -108,7 +116,12 @@ public class Robot extends LoggedRobot {
   /** This function is called once when the robot is disabled. */
   @Override
   public void disabledInit() {
-		robotContainer.resetSimulationField();
+    if (Constants.currentMode == Constants.Mode.SIM) {
+      simMatchClockRunning = false;
+      simDisableRobotWhenCountdownEnds = false;
+      DriverStationSim.setMatchTime(-1);
+      DriverStationSim.notifyNewData();
+    }
     robotContainer.idleAllSubsystems();
 	}
 
@@ -119,12 +132,18 @@ public class Robot extends LoggedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
+    if (Constants.currentMode == Constants.Mode.SIM) {
+      startSimMatchClock(20.0, true);
+    }
+
     autonomousCommand = robotContainer.getAutonomousCommand();
 
     // schedule the autonomous command (example)
     if (autonomousCommand != null) {
       CommandScheduler.getInstance().schedule(autonomousCommand);
     }
+
+    HubShiftUtil.initialize();
   }
 
   /** This function is called periodically during autonomous. */
@@ -134,6 +153,10 @@ public class Robot extends LoggedRobot {
   /** This function is called once when teleop is enabled. */
   @Override
   public void teleopInit() {
+    if (Constants.currentMode == Constants.Mode.SIM) {
+      startSimMatchClock(140.0, false);
+    }
+
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
@@ -161,11 +184,47 @@ public class Robot extends LoggedRobot {
 
   /** This function is called once when the robot is first started up. */
   @Override
-  public void simulationInit() {}
+  public void simulationInit() {
+    if (Constants.currentMode == Constants.Mode.SIM) {
+      DriverStationSim.setFmsAttached(true);
+      DriverStationSim.setDsAttached(true);
+      DriverStationSim.setMatchType(DriverStation.MatchType.Practice);
+      DriverStationSim.setMatchTime(-1);
+    }
+  }
 
   /** This function is called periodically whilst in simulation. */
   @Override
   public void simulationPeriodic() {
     robotContainer.updateSimulation();
+    if (simMatchClockRunning) {
+      double elapsed = Timer.getTimestamp() - simMatchStartTimestamp;
+      double remaining = Math.max(0.0, simMatchDurationSec - elapsed);
+      DriverStationSim.setMatchTime(remaining);
+      // notifyNewData() is required: HAL_GetMatchTime reads a cache only refreshed here.
+      DriverStationSim.notifyNewData();
+      if (simDisableRobotWhenCountdownEnds && elapsed >= simMatchDurationSec) {
+        simMatchClockRunning = false;
+        simDisableRobotWhenCountdownEnds = false;
+        CommandScheduler.getInstance().cancelAll();
+        robotContainer.idleAllSubsystems();
+        if (DriverStation.isAutonomousEnabled()) DriverStationSim.setAutonomous(false);
+        DriverStationSim.setEnabled(false);
+        DriverStationSim.notifyNewData();
+      }
+    }
+  }
+
+  /**
+   * Starts the sim-only match countdown; remaining time is pushed in {@link #simulationPeriodic}. If
+   * {@code disableWhenCountdownEnds}, the robot is disabled when time reaches zero (sim end of auto).
+   */
+  private void startSimMatchClock(double durationSec, boolean disableWhenCountdownEnds) {
+    simMatchDurationSec = durationSec;
+    simMatchStartTimestamp = Timer.getTimestamp();
+    simMatchClockRunning = true;
+    simDisableRobotWhenCountdownEnds = disableWhenCountdownEnds;
+    DriverStationSim.setMatchTime(durationSec);
+    DriverStationSim.notifyNewData();
   }
 }
