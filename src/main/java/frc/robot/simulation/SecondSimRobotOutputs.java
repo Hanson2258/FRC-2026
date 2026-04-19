@@ -15,6 +15,14 @@ public final class SecondSimRobotOutputs {
    */
   public static final String LOG_ROOT_PREFIX = ROOT + "/";
 
+  /**
+   * Logger key for second sim robot pose on the field (under {@link #LOG_ROOT_PREFIX}), e.g. {@code …/RobotPosition-Blue}
+   * or {@code …/RobotPosition-Red} for AdvantageScope / RealOutputs.
+   */
+  public static String fieldSimulationRobotPositionKey(boolean redAlliance) {
+    return LOG_ROOT_PREFIX + "FieldSimulation/RobotPosition-" + (redAlliance ? "Red" : "Blue");
+  } // End fieldSimulationRobotPositionKey
+
   private SecondSimRobotOutputs() {} // End SecondSimRobotOutputs Constructor
 
   /**
