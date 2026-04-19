@@ -135,7 +135,7 @@ public final class SimStartingPoseFullFieldSim {
 		if (!simMode || choosers == null) {
 			return;
 		}
-		if (!SmartDashboard.getBoolean("SimStartingPoses/ResetToDefaults", false)) {
+		if (!SmartDashboard.getBoolean("SimStartingPose/ResetToDefaults", false)) {
 			return;
 		}
 		SmartDashboard.putBoolean("SimFullFieldExtraRobots/Enabled", false);
@@ -145,7 +145,7 @@ public final class SimStartingPoseFullFieldSim {
 			previousSelectedStem[role] = ROLE_DEFAULT_STEM[role];
 		}
 		duplicateSwapSeeded = true;
-		SmartDashboard.putBoolean("SimStartingPoses/ResetToDefaults", false);
+		SmartDashboard.putBoolean("SimStartingPose/ResetToDefaults", false);
 	} // End pollResetToDefaults
 
 	/** Apply button: teleports every enabled robot (primary, second-sim, extras) to its currently selected stem. */
@@ -158,11 +158,11 @@ public final class SimStartingPoseFullFieldSim {
 		if (!simMode || choosers == null) {
 			return;
 		}
-		if (!SmartDashboard.getBoolean("SimStartingPoses/Apply", false)) {
+		if (!SmartDashboard.getBoolean("SimStartingPose/Apply", false)) {
 			return;
 		}
 		applyStartingPosesFromChoosers(secondSimEnabled, secondSimRedAlliance, primaryPose, secondPose);
-		SmartDashboard.putBoolean("SimStartingPoses/Apply", false);
+		SmartDashboard.putBoolean("SimStartingPose/Apply", false);
 	} // End pollApplyButton
 
 	/**
