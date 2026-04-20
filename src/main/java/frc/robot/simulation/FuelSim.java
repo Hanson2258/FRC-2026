@@ -17,6 +17,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import org.dyn4j.geometry.Vector2;
@@ -500,6 +501,21 @@ public class FuelSim {
     protected final ArrayList<RegisteredFuelRobot> registeredRobots = new ArrayList<>();
     /** Count of fuel currently carried by each registered robot (index-aligned with {@link #registeredRobots}). */
     private final ArrayList<Integer> carriedFuelCounts = new ArrayList<>();
+    /**
+     * Back-to-front row count for carried-fuel visualization per registered robot (same indices as
+     * {@link #registeredRobots}).
+     */
+    private final ArrayList<Integer> carriedFuelRowsBackToFrontByRobot = new ArrayList<>();
+    /**
+     * Robot-frame grid step (m) between carried-fuel sample positions per robot (same indices as
+     * {@link #registeredRobots}).
+     */
+    private final ArrayList<Double> carriedFuelSpacingRobotMetersByRobot = new ArrayList<>();
+    /**
+     * Max carried-fuel count per registered robot (same indices as {@link #registeredRobots}); intakes stop
+     * vacuuming at this count.
+     */
+    private final ArrayList<Integer> carriedFuelMaxCarriedByRobot = new ArrayList<>();
 
     /** Callbacks to reset sim shooter stored fuel when {@link #resetFuel()} runs (one per registered robot). */
     private final ArrayList<Runnable> shooterFuelResets = new ArrayList<>();
@@ -509,14 +525,33 @@ public class FuelSim {
     private static final double kCarriedFuelBackXRobotMeters = -0.10;
     /** Robot-frame Y center for carried-fuel visualization stack. */
     private static final double kCarriedFuelCenterYRobotMeters = 0.00;
-    /** Robot-frame spacing between carried-fuel visuals (diameter => no gap). */
+    /** Robot-frame spacing between carried-fuel visuals for primary and second-sim (ball diameter, no gap). */
     private static final double kCarriedFuelSpacingRobotMeters = FUEL_RADIUS * 2.0;
     /** Base Z height used to render carried fuel as "inside" the robot. */
     private static final double kCarriedFuelBaseHeightMeters = 0.15;
-    /** Number of back-to-front slots per column before advancing to next column. */
-    private static final int kCarriedFuelRowsBackToFront = 3;
+    /** Default back-to-front slots per column for carried-fuel visualization (primary / second sim). */
+    public static final int kCarriedFuelRowsBackToFrontDefault = 3;
+    /** Back-to-front slots for full-field sim extra robots (wider stack in robot X). */
+    public static final int kCarriedFuelRowsBackToFrontSimExtra = 4;
+    /** Max carried fuel for primary and second-sim (matches {@link frc.robot.subsystems.shooter.ShooterSim} capacity). */
+    private static final int kCarriedFuelMaxCarriedDefault = 30;
+    /** Max carried fuel for full-field sim extra robots. */
+    public static final int kCarriedFuelMaxCarriedSimExtra = 80;
     /** Number of left-to-right columns per Z layer before stacking upward. */
     private static final int kCarriedFuelColumnsPerLayer = 4;
+
+    /** Spacing step for carried-fuel visuals on full-field extras (tighter stack in robot frame). */
+    private static double carriedFuelSpacingRobotMetersForVisualizationRows(int carriedFuelRowsBackToFront) {
+        return carriedFuelRowsBackToFront == kCarriedFuelRowsBackToFrontSimExtra
+                ? FUEL_RADIUS
+                : kCarriedFuelSpacingRobotMeters;
+    } // End carriedFuelSpacingRobotMetersForVisualizationRows
+
+    private static int carriedFuelMaxCarriedForVisualizationRows(int carriedFuelRowsBackToFront) {
+        return carriedFuelRowsBackToFront == kCarriedFuelRowsBackToFrontSimExtra
+                ? kCarriedFuelMaxCarriedSimExtra
+                : kCarriedFuelMaxCarriedDefault;
+    } // End carriedFuelMaxCarriedForVisualizationRows
 
     private static final class RegisteredFuelRobot {
         final double robotWidth;
@@ -604,9 +639,7 @@ public class FuelSim {
 
     /** Clears carried-fuel counts for all registered robots. */
     private void clearCarriedFuel() {
-        for (int i = 0; i < carriedFuelCounts.size(); i++) {
-            carriedFuelCounts.set(i, 0);
-        }
+        Collections.fill(carriedFuelCounts, 0);
     } // End clearCarriedFuel
 
     /**
@@ -719,16 +752,18 @@ public class FuelSim {
             double headingRad = robotPose.getRotation().getRadians();
             double cos = Math.cos(headingRad);
             double sin = Math.sin(headingRad);
-            int slotsPerLayer = kCarriedFuelRowsBackToFront * kCarriedFuelColumnsPerLayer;
+            int rowsBackToFront = carriedFuelRowsBackToFrontByRobot.get(robotIndex);
+            double spacingMeters = carriedFuelSpacingRobotMetersByRobot.get(robotIndex);
+            int slotsPerLayer = rowsBackToFront * kCarriedFuelColumnsPerLayer;
             for (int fuelIndex = 0; fuelIndex < carried; fuelIndex++) {
                 int layer = fuelIndex / slotsPerLayer;
                 int indexWithinLayer = fuelIndex % slotsPerLayer;
-                int col = kCarriedFuelColumnsPerLayer - 1 - (indexWithinLayer / kCarriedFuelRowsBackToFront);
-                int row = indexWithinLayer % kCarriedFuelRowsBackToFront;
-                double localX = kCarriedFuelBackXRobotMeters + row * kCarriedFuelSpacingRobotMeters;
+                int col = kCarriedFuelColumnsPerLayer - 1 - (indexWithinLayer / rowsBackToFront);
+                int row = indexWithinLayer % rowsBackToFront;
+                double localX = kCarriedFuelBackXRobotMeters + row * spacingMeters;
                 double localY = kCarriedFuelCenterYRobotMeters
-                        + (col - (kCarriedFuelColumnsPerLayer - 1) * 0.5) * kCarriedFuelSpacingRobotMeters;
-                double localZ = kCarriedFuelBaseHeightMeters + layer * kCarriedFuelSpacingRobotMeters;
+                        + (col - (kCarriedFuelColumnsPerLayer - 1) * 0.5) * spacingMeters;
+                double localZ = kCarriedFuelBaseHeightMeters + layer * spacingMeters;
                 double fieldX = robotPose.getX() + localX * cos - localY * sin;
                 double fieldY = robotPose.getY() + localX * sin + localY * cos;
                 positions[writeIdx++] = new Translation3d(fieldX, fieldY, localZ);
@@ -809,10 +844,18 @@ public class FuelSim {
             SwerveDriveSimulation mapleDriveSimulation) {
         registeredRobots.clear();
         carriedFuelCounts.clear();
+        carriedFuelRowsBackToFrontByRobot.clear();
+        carriedFuelSpacingRobotMetersByRobot.clear();
+        carriedFuelMaxCarriedByRobot.clear();
         intakes.clear();
-        registeredRobots.add(new RegisteredFuelRobot(
-                width, length, bumperHeight, poseSupplier, fieldSpeedsSupplier, mapleDriveSimulation));
-        carriedFuelCounts.add(0);
+        addRegisteredRobot(
+                width,
+                length,
+                bumperHeight,
+                poseSupplier,
+                fieldSpeedsSupplier,
+                mapleDriveSimulation,
+                kCarriedFuelRowsBackToFrontDefault);
     }
 
     /**
@@ -824,7 +867,14 @@ public class FuelSim {
             double bumperHeight,
             Supplier<Pose2d> poseSupplier,
             Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
-        return addRegisteredRobot(width, length, bumperHeight, poseSupplier, fieldSpeedsSupplier, null);
+        return addRegisteredRobot(
+                width,
+                length,
+                bumperHeight,
+                poseSupplier,
+                fieldSpeedsSupplier,
+                null,
+                kCarriedFuelRowsBackToFrontDefault);
     }
 
     /**
@@ -838,9 +888,37 @@ public class FuelSim {
             Supplier<Pose2d> poseSupplier,
             Supplier<ChassisSpeeds> fieldSpeedsSupplier,
             SwerveDriveSimulation mapleDriveSimulation) {
+        return addRegisteredRobot(
+                width,
+                length,
+                bumperHeight,
+                poseSupplier,
+                fieldSpeedsSupplier,
+                mapleDriveSimulation,
+                kCarriedFuelRowsBackToFrontDefault);
+    }
+
+    /**
+     * Adds a registered robot with a chosen carried-fuel visualization row count (back-to-front slots per column).
+     *
+     * @param carriedFuelRowsBackToFront values outside {@code [1, 8]} are clamped
+     * @return index of the new robot in {@link #registeredRobots}
+     */
+    public int addRegisteredRobot(
+            double width,
+            double length,
+            double bumperHeight,
+            Supplier<Pose2d> poseSupplier,
+            Supplier<ChassisSpeeds> fieldSpeedsSupplier,
+            SwerveDriveSimulation mapleDriveSimulation,
+            int carriedFuelRowsBackToFront) {
         registeredRobots.add(new RegisteredFuelRobot(
                 width, length, bumperHeight, poseSupplier, fieldSpeedsSupplier, mapleDriveSimulation));
         carriedFuelCounts.add(0);
+        int clampedRows = Math.max(1, Math.min(8, carriedFuelRowsBackToFront));
+        carriedFuelRowsBackToFrontByRobot.add(clampedRows);
+        carriedFuelSpacingRobotMetersByRobot.add(carriedFuelSpacingRobotMetersForVisualizationRows(clampedRows));
+        carriedFuelMaxCarriedByRobot.add(carriedFuelMaxCarriedForVisualizationRows(clampedRows));
         return registeredRobots.size() - 1;
     }
 
@@ -903,7 +981,8 @@ public class FuelSim {
                 bumperHeight.in(Meters),
                 poseSupplier,
                 fieldSpeedsSupplier,
-                mapleDriveSimulation);
+                mapleDriveSimulation,
+                kCarriedFuelRowsBackToFrontDefault);
     }
 
     /**
@@ -1368,8 +1447,23 @@ public class FuelSim {
         if (robotIndex < 0 || robotIndex >= carriedFuelCounts.size()) {
             return;
         }
-        carriedFuelCounts.set(robotIndex, carriedFuelCounts.get(robotIndex) + 1);
+        int current = carriedFuelCounts.get(robotIndex);
+        if (current >= getCarriedFuelMaxForRobotIndex(robotIndex)) {
+            return;
+        }
+        carriedFuelCounts.set(robotIndex, current + 1);
     } // End addCarriedFuel
+
+    /**
+     * @param robotIndex registered robot index
+     * @return max carried fuel for that robot (default slot capacity or sim-extra capacity)
+     */
+    public int getCarriedFuelMaxForRobotIndex(int robotIndex) {
+        if (robotIndex < 0 || robotIndex >= carriedFuelMaxCarriedByRobot.size()) {
+            return kCarriedFuelMaxCarriedDefault;
+        }
+        return carriedFuelMaxCarriedByRobot.get(robotIndex);
+    } // End getCarriedFuelMaxForRobotIndex
 
     /**
      * Sets carried-fuel count for one robot index (used to sync visualized carried fuel with subsystem storage state).
@@ -1378,8 +1472,22 @@ public class FuelSim {
         if (robotIndex < 0 || robotIndex >= carriedFuelCounts.size()) {
             return;
         }
-        carriedFuelCounts.set(robotIndex, Math.max(0, carriedFuelCount));
+        int maxCarried = getCarriedFuelMaxForRobotIndex(robotIndex);
+        carriedFuelCounts.set(robotIndex, Math.max(0, Math.min(carriedFuelCount, maxCarried)));
     } // End setCarriedFuelCount
+
+    /**
+     * Reads how many fuel units are stored on the robot after intakes removed them from the field.
+     *
+     * @param robotIndex index of the registered robot whose intake increments this count
+     * @return carried count, or zero when the index is out of range
+     */
+    public int getCarriedFuelCount(int robotIndex) {
+        if (robotIndex < 0 || robotIndex >= carriedFuelCounts.size()) {
+            return 0;
+        }
+        return carriedFuelCounts.get(robotIndex);
+    } // End getCarriedFuelCount
 
     protected static void fuelCollideRectangle(Fuel fuel, Translation3d start, Translation3d end) {
         if (fuel.pz > end.getZ() + FUEL_RADIUS || fuel.pz < start.getZ() - FUEL_RADIUS) return;

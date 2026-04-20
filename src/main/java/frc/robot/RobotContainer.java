@@ -1004,24 +1004,51 @@ public class RobotContainer {
   } // End configureFuelSim
 
 	/**
-	 * Register a robot for collision with fuel.
+	 * Register a robot for collision with fuel using the default carried-fuel row layout for additional slots.
 	 *
+	 * @param driveForFuel drive used for field-relative chassis speeds supplied to {@link FuelSim}
+	 * @param additionalRobotSlot when true, registers as an extra slot with default carried-fuel rows
 	 * @param mapleDriveSimulation Maple dyn4j chassis for that robot; FuelSim applies opposing impulses when fuel is
 	 *     depenetrated (must be the same instance used for pose/speed suppliers’ sim)
 	 */
 	private int registerFuelSimRobotBody(Drive driveForFuel, boolean additionalRobotSlot, SwerveDriveSimulation mapleDriveSimulation) {
+		return registerFuelSimRobotBody(
+				driveForFuel,
+				additionalRobotSlot,
+				mapleDriveSimulation,
+				FuelSim.kCarriedFuelRowsBackToFrontDefault);
+	} // End registerFuelSimRobotBody
+
+	/**
+	 * Register a robot for collision with fuel. When {@code additionalRobotSlot} is true, {@code
+	 * carriedFuelRowsBackToFront} is forwarded to {@link FuelSim} to configure carried-fuel stack row order for that
+	 * slot.
+	 *
+	 * @param driveForFuel drive used for field-relative chassis speeds supplied to {@link FuelSim}
+	 * @param additionalRobotSlot when true, registers as an extra slot with the given carried-fuel row layout
+	 * @param mapleDriveSimulation Maple dyn4j chassis for that robot; FuelSim applies opposing impulses when fuel is
+	 *     depenetrated (must be the same instance used for pose/speed suppliers’ sim)
+	 * @param carriedFuelRowsBackToFront row-order value for additional slots; ignored when {@code additionalRobotSlot}
+	 *     is false
+	 */
+	private int registerFuelSimRobotBody(
+			Drive driveForFuel,
+			boolean additionalRobotSlot,
+			SwerveDriveSimulation mapleDriveSimulation,
+			int carriedFuelRowsBackToFront) {
 		double robotWidthMeters = Constants.Dimensions.FULL_WIDTH.in(Meters);
 		double robotLengthMeters = Constants.Dimensions.FULL_LENGTH.in(Meters);
 		double bumperHeightMeters = Constants.Dimensions.BUMPER_HEIGHT.in(Meters);
 
-		// Register a robot for collision with fuel
 		if (additionalRobotSlot) {
 			return fuelSim.addRegisteredRobot(
 					robotWidthMeters,
 					robotLengthMeters,
 					bumperHeightMeters,
 					mapleDriveSimulation::getSimulatedDriveTrainPose,
-					driveForFuel::getFieldRelativeChassisSpeeds, mapleDriveSimulation);
+					driveForFuel::getFieldRelativeChassisSpeeds,
+					mapleDriveSimulation,
+					carriedFuelRowsBackToFront);
 		}
 		fuelSim.registerRobot(
 				robotWidthMeters,
@@ -1032,13 +1059,17 @@ public class RobotContainer {
 		return 0;
 	} // End registerFuelSimRobotBody
 
-	/** Register an intake for the fuel robot. */
-	private void registerFuelSimIntake(
-			int fuelRobotIndex, Intake intakeForFuel, BooleanSupplier ableToIntake, Runnable intakeCallback) {
+	/**
+	 * Registers the standard robot-frame front intake box on {@link FuelSim} for the given registered robot index.
+	 *
+	 * @param fuelRobotIndex registered robot index on {@link FuelSim} for this intake region
+	 * @param ableToIntake when false, fuel in the box is not vacuumed this tick
+	 * @param intakeCallback runs once each time a fuel is removed by this intake
+	 */
+	private void registerFuelSimFrontIntakeBox(
+			int fuelRobotIndex, BooleanSupplier ableToIntake, Runnable intakeCallback) {
 		double robotWidthMeters = Constants.Dimensions.FULL_WIDTH.in(Meters);
 		double robotLengthMeters = Constants.Dimensions.FULL_LENGTH.in(Meters);
-
-		// Register intakes for the robot
 		// Intake: 10.5" beyond front of frame (+X), full width minus 2" on each side
 		double intakeExtendMeters = 10.5 * 0.0254;
 		double intakeInsetMeters = 2.0 * 0.0254;
@@ -1048,9 +1079,38 @@ public class RobotContainer {
 				robotLengthMeters / 2 + intakeExtendMeters,
 				-robotWidthMeters / 2 + intakeInsetMeters,
 				robotWidthMeters / 2 - intakeInsetMeters,
+				ableToIntake,
+				intakeCallback);
+	} // End registerFuelSimFrontIntakeBox
+
+	/**
+	 * Registers the front intake box for a sim drive that uses a real {@link Intake} subsystem predicate.
+	 *
+	 * @param fuelRobotIndex registered robot index on {@link FuelSim}
+	 * @param intakeForFuel intake subsystem whose state is combined with {@code ableToIntake}
+	 * @param ableToIntake extra gate; both this and intaking state must be true to vacuum
+	 * @param intakeCallback runs once each time a fuel is removed by this intake
+	 */
+	private void registerFuelSimIntake(
+			int fuelRobotIndex, Intake intakeForFuel, BooleanSupplier ableToIntake, Runnable intakeCallback) {
+		registerFuelSimFrontIntakeBox(
+				fuelRobotIndex,
 				() -> ableToIntake.getAsBoolean() && intakeForFuel.getState() == Intake.State.INTAKING,
 				intakeCallback);
 	} // End registerFuelSimIntake
+
+	/**
+	 * Registers a front intake box that vacuums field fuel while carried count stays below
+	 * {@link FuelSim#getCarriedFuelMaxForRobotIndex(int)} for {@code fuelRobotIndex}; intake callback is a no-op.
+	 *
+	 * @param fuelRobotIndex registered robot index on {@link FuelSim}
+	 */
+	private void registerFuelSimExtraRobotIntake(int fuelRobotIndex) {
+		registerFuelSimFrontIntakeBox(
+				fuelRobotIndex,
+				() -> fuelSim.getCarriedFuelCount(fuelRobotIndex) < fuelSim.getCarriedFuelMaxForRobotIndex(fuelRobotIndex),
+				() -> {});
+	} // End registerFuelSimExtraRobotIntake
 
 	/** Robot-relative component poses for AdvantageScope Simulation. */
 	private static Pose3d[] buildComponentPoses(Turret turret, Extender extender, Hang hang) {
@@ -1211,7 +1271,9 @@ public class RobotContainer {
 				simSecondRobotSession.isRedAlliance(),
 				DriverStation.isTeleopEnabled(),
 				primaryPose,
-				secondSimPose);
+				secondSimPose,
+				fuelSimEnabled ? fuelSim : null,
+				fuelSimEnabled);
 	} // End updateFullFieldExtraRobotBehaviors
 
 	/// ------------------------------------------------ Second Sim Robot -----------------------------------------------
@@ -1337,7 +1399,13 @@ public class RobotContainer {
 				fullFieldExtraRobot.driveSimulation::getSimulatedDriveTrainPose);
 		fullFieldExtraRobot.drive.setDefaultCommand(Commands.run(fullFieldExtraRobot.drive::stop, fullFieldExtraRobot.drive));
 		if (fuelSimEnabled) {
-			registerFuelSimRobotBody(fullFieldExtraRobot.drive, true, fullFieldExtraRobot.driveSimulation);
+			int fuelIdx = registerFuelSimRobotBody(
+					fullFieldExtraRobot.drive,
+					true,
+					fullFieldExtraRobot.driveSimulation,
+					FuelSim.kCarriedFuelRowsBackToFrontSimExtra);
+			fullFieldExtraRobot.fuelRobotIndex = fuelIdx;
+			registerFuelSimExtraRobotIntake(fuelIdx);
 		}
 		if (poolIdx >= 0 && poolIdx < extraRobotsByPool.length) {
 			extraRobotsByPool[poolIdx] = fullFieldExtraRobot;
