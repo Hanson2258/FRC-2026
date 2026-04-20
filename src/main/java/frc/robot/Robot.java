@@ -7,6 +7,8 @@
 
 package frc.robot;
 
+import java.awt.GraphicsEnvironment;
+
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -19,6 +21,9 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.simulation.SimMatchTimeCache;
+import frc.robot.simulation.TeamSignDisplayUtil;
+import frc.robot.simulation.TeamSignSimWindow;
 import frc.robot.util.HubShiftUtil;
 
 /**
@@ -121,6 +126,8 @@ public class Robot extends LoggedRobot {
       simDisableRobotWhenCountdownEnds = false;
       DriverStationSim.setMatchTime(-1);
       DriverStationSim.notifyNewData();
+      SimMatchTimeCache.setRemainingSec(-1.0);
+      TeamSignDisplayUtil.clearLatchedAutoHubScores();
     }
     robotContainer.idleAllSubsystems();
 	}
@@ -153,16 +160,17 @@ public class Robot extends LoggedRobot {
   /** This function is called once when teleop is enabled. */
   @Override
   public void teleopInit() {
-    if (Constants.currentMode == Constants.Mode.SIM) {
-      startSimMatchClock(140.0, false);
-    }
-
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
     // this line or comment it out.
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
+    }
+
+    if (Constants.currentMode == Constants.Mode.SIM) {
+      startSimMatchClock(140.0, false);
+      TeamSignDisplayUtil.latchAutoHubScoresFromFuelSim();
     }
     HubShiftUtil.initialize();
   }
@@ -190,6 +198,11 @@ public class Robot extends LoggedRobot {
       DriverStationSim.setDsAttached(true);
       DriverStationSim.setMatchType(DriverStation.MatchType.Practice);
       DriverStationSim.setMatchTime(-1);
+      SimMatchTimeCache.setRemainingSec(-1.0);
+      // Desktop team-sign window: skip headless (e.g. some CI) where Swing would fail or hang.
+      if (!GraphicsEnvironment.isHeadless()) {
+        TeamSignSimWindow.open(() -> TeamSignDisplayUtil.formatLineForSimulatedMatch(0));
+      }
     }
   }
 
@@ -200,6 +213,7 @@ public class Robot extends LoggedRobot {
     if (simMatchClockRunning) {
       double elapsed = Timer.getTimestamp() - simMatchStartTimestamp;
       double remaining = Math.max(0.0, simMatchDurationSec - elapsed);
+      SimMatchTimeCache.setRemainingSec(remaining);
       DriverStationSim.setMatchTime(remaining);
       // notifyNewData() is required: HAL_GetMatchTime reads a cache only refreshed here.
       DriverStationSim.notifyNewData();
@@ -224,6 +238,7 @@ public class Robot extends LoggedRobot {
     simMatchStartTimestamp = Timer.getTimestamp();
     simMatchClockRunning = true;
     simDisableRobotWhenCountdownEnds = disableWhenCountdownEnds;
+    SimMatchTimeCache.setRemainingSec(durationSec);
     DriverStationSim.setMatchTime(durationSec);
     DriverStationSim.notifyNewData();
   }
