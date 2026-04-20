@@ -214,7 +214,7 @@ public class Robot extends LoggedRobot {
       double elapsed = Timer.getTimestamp() - simMatchStartTimestamp;
       double remaining = Math.max(0.0, simMatchDurationSec - elapsed);
       SimMatchTimeCache.setRemainingSec(remaining);
-      DriverStationSim.setMatchTime(remaining);
+      DriverStationSim.setMatchTime(quantizeForFieldClockDisplay(remaining));
       // notifyNewData() is required: HAL_GetMatchTime reads a cache only refreshed here.
       DriverStationSim.notifyNewData();
       if (simDisableRobotWhenCountdownEnds && elapsed >= simMatchDurationSec) {
@@ -239,7 +239,16 @@ public class Robot extends LoggedRobot {
     simMatchClockRunning = true;
     simDisableRobotWhenCountdownEnds = disableWhenCountdownEnds;
     SimMatchTimeCache.setRemainingSec(durationSec);
-    DriverStationSim.setMatchTime(durationSec);
+    DriverStationSim.setMatchTime(quantizeForFieldClockDisplay(durationSec));
     DriverStationSim.notifyNewData();
+  }
+
+  /**
+   * Quantizes continuous remaining seconds into field-clock display seconds.
+   *
+   * <p>This prevents an early displayed {@code 0:00} during the final running second.
+   */
+  private static double quantizeForFieldClockDisplay(double remainingSec) {
+    return Math.ceil(Math.max(0.0, remainingSec) - 1.0e-6);
   }
 }
