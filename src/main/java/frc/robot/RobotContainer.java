@@ -87,7 +87,7 @@ public class RobotContainer {
 	private boolean isHangEnabled 		= true;
 
 	// Simulation Toggle
-	private boolean halfFuelOnly 			= true;
+	private boolean halfFuelOnly 			= false;
 	private boolean shooterSimEnabled	= true;
 	private boolean fuelSimEnabled 		= true;
 
