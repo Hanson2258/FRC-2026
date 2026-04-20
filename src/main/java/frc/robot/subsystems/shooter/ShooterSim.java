@@ -49,6 +49,7 @@ public class ShooterSim {
     this.ghostFuelVisualizer = ghostFuelVisualizer;
     shootTimer.start();
     if (launchSpawnsInFuelSim) {
+      fuelSim.setCarriedFuelCount(fuelRobotIndex, fuelStored);
       fuelSim.registerShooterFuelReset(this::resetFuelStored);
     }
   } // End ShooterSim Constructor
@@ -56,6 +57,9 @@ public class ShooterSim {
   /** Sets {@link #fuelStored} to the initial sim count (used when {@link FuelSim#resetFuel()} runs). */
   public void resetFuelStored() {
     fuelStored = kInitialFuelStored;
+    if (launchSpawnsInFuelSim) {
+      fuelSim.setCarriedFuelCount(fuelRobotIndex, fuelStored);
+    }
   } // End resetFuelStored
 
   /** @return {@link #fuelStored} when {@link #launchSpawnsInFuelSim}, otherwise {@link #CAPACITY} */
