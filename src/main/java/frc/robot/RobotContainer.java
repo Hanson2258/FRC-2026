@@ -36,6 +36,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.*;
 import frc.robot.generated.TunerConstants;
 import frc.robot.simulation.FuelSim;
+import frc.robot.simulation.HubLightSimDisplay;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.vision.*;
 import static frc.robot.subsystems.vision.VisionConstants.*;
@@ -1093,6 +1094,9 @@ public class RobotContainer {
 		}
 
 		SimulatedArena.getInstance().simulationPeriodic();
+
+		// Hub Light Simulation
+		HubLightSimDisplay.update();
 
 		// Robot pose for visualization
 		Pose2d robotPose = driveSimulation.getSimulatedDriveTrainPose();
