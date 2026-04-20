@@ -1,5 +1,6 @@
 package frc.robot.subsystems.shooter.hood;
 
+import static frc.robot.subsystems.shooter.flywheel.FlywheelConstants.kIdleVelocityRadPerSec;
 import static frc.robot.subsystems.shooter.hood.HoodConstants.*;
 
 import edu.wpi.first.math.MathUtil;
@@ -16,8 +17,8 @@ public class Hood extends SubsystemBase {
   /** Hood state: Idle, Tracking (approaching target), At_Target, or Manual. */
   public enum State {
     IDLE,
-    TRACKING,
-    AT_TARGET,
+    POSITIONING,
+    AT_POSITION,
     MANUAL
   } // End State enum
 
@@ -55,7 +56,17 @@ public class Hood extends SubsystemBase {
       return;
     }
 
-    state = ignoreLimitsSupplier.getAsBoolean() ? State.MANUAL : (atTarget() ? State.AT_TARGET : State.TRACKING);
+    if (!atTarget() && state == State.AT_POSITION) {
+      state = State.POSITIONING;
+    }
+
+    if (atTarget() && state == State.POSITIONING) {
+      state = State.AT_POSITION;
+    }
+
+    hoodIO.setTargetPosition(state == State.IDLE ? kDisabledAngleRad : getTargetAngleRad());
+
+    state = ignoreLimitsSupplier.getAsBoolean() ? State.MANUAL : (atTarget() ? State.AT_POSITION : State.POSITIONING);
 
     // Set the Hood target position based on the current state.
     double targetPositionRad = getSetpointRad();
@@ -67,6 +78,10 @@ public class Hood extends SubsystemBase {
     return state;
   } // End getState
 
+  /** Set the Hood state. */
+  public void setState(State newState) {
+    state = newState;
+  } // End setState
 
   /** Get the current Hood angle. */
   public double getAngleRad() {
