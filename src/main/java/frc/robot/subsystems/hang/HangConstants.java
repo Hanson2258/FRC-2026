@@ -9,7 +9,7 @@ public final class HangConstants {
   private HangConstants() {}
 
   /** CAN ID of the Hang motor (NEO 550 on SPARK MAX). */
-  public static final int kMotorId = 9;
+  public static final int kMotorId = 58;
 
   /** Idle behavior when output is zero (coast or brake). */
   public static final SparkBaseConfig.IdleMode kIdleMode = SparkBaseConfig.IdleMode.kBrake;
