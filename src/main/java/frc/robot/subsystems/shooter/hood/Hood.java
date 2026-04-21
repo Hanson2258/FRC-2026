@@ -1,10 +1,8 @@
 package frc.robot.subsystems.shooter.hood;
 
-import static frc.robot.subsystems.shooter.flywheel.FlywheelConstants.kIdleVelocityRadPerSec;
 import static frc.robot.subsystems.shooter.hood.HoodConstants.*;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -18,8 +16,8 @@ public class Hood extends SubsystemBase {
   /** Hood state: Idle, Tracking (approaching target), At_Target, or Manual. */
   public enum State {
     IDLE,
-    POSITIONING,
-    AT_POSITION,
+    TRACKING,
+    AT_TARGET,
     MANUAL
   } // End State enum
 
@@ -65,35 +63,33 @@ public class Hood extends SubsystemBase {
     }
 
     if (targetAngleRad != lastTargetAngleRad) {
-      setState(State.POSITIONING);
+      setState(State.TRACKING);
     }
 
     lastTargetAngleRad = targetAngleRad;
 
-    if (!atTarget() && state == State.AT_POSITION) {
-      state = State.POSITIONING;
+    if (!atTarget() && state == State.AT_TARGET) {
+      state = State.TRACKING;
+    }
+    else if (atTarget() && state == State.TRACKING) {
+      state = State.AT_TARGET;
     }
 
-    if (atTarget() && state == State.POSITIONING) {
-      state = State.AT_POSITION;
-    }
-
-    state = ignoreLimitsSupplier.getAsBoolean() ? State.MANUAL : (atTarget() ? State.AT_POSITION : State.POSITIONING);
+    state = ignoreLimitsSupplier.getAsBoolean() ? State.MANUAL : (atTarget() ? State.AT_TARGET : State.TRACKING);
 
     // Set the Hood target position based on the current state.
-    double targetPositionRad = getSetpointRad();
     hoodIO.setTargetPosition(state == State.IDLE ? kDisabledAngleRad : getTargetAngleRad());
   } // End periodic
-
-  /** Get current state. */
-  public State getState() {
-    return state;
-  } // End getState
 
   /** Set the Hood state. */
   public void setState(State newState) {
     state = newState;
   } // End setState
+
+  /** Get current state. */
+  public State getState() {
+    return state;
+  } // End getState
 
   /** Get the current Hood angle. */
   public double getAngleRad() {
@@ -131,9 +127,9 @@ public class Hood extends SubsystemBase {
     ignoreLimitsSupplier = supplier != null ? supplier : () -> false;
   } // End setIgnoreLimitsSupplier
 
-  /** Step the target position in Turret frame. */
+  /** Step the target angle in radians. */
   public void stepPositionRad(double stepPositionRad) {
-    setTargetAngleRad(getTargetAngleRad() + stepPositionRad);
     state = State.MANUAL;
+    setTargetAngleRad(getTargetAngleRad() + stepPositionRad);
   } // End stepPositionRad
 }

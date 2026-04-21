@@ -93,7 +93,7 @@ public class RobotContainer {
 	// Simulation Toggle
 	private boolean halfFuelOnly 			= false;
 	private boolean shooterSimEnabled	= true;
-	private boolean fuelSimEnabled 		= true;
+	private boolean fuelSimEnabled 		= false;
 
 	// Subsystems
 	private final Drive drive;
@@ -212,7 +212,7 @@ public class RobotContainer {
 				agitator = isAgitatorEnabled ? new Agitator(new AgitatorIOSparkMax()) : new Agitator(new AgitatorIO() {});
 				transfer = isTransferEnabled ? new Transfer(new TransferIOSparkMax()) : new Transfer(new TransferIO() {});
 				turret   = isTurretEnabled 	 ? new Turret(new TurretIOSparkMax()) 	  : new Turret(new TurretIO() {});
-				hood     = isHoodEnabled  	 ? new Hood(new HoodIOSparkMax()) 		  	: new Hood(new HoodIO() {});
+				hood     = isHoodEnabled  	 ? new Hood(new HoodIOAxon()) 		  			: new Hood(new HoodIO() {});
 				flywheel = isFlywheelEnabled ? new Flywheel(new FlywheelIOTalonFX())  : new Flywheel(new FlywheelIO() {});
 				hang 	 	 = isHangEnabled		 ? new Hang(new HangIOSparkMax())  				: new Hang(new HangIO() {});
 				shooterSim = null;

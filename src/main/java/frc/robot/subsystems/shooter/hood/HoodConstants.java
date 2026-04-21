@@ -12,6 +12,12 @@ public final class HoodConstants { // XXX: Add correct values
   /** CAN ID of the Hood motor (NEO 550 on SPARK MAX or Kraken on Talon FX). */
   public static final int kMotorId = 55;
 
+  /** PWM ID of the Hood servo. */
+  public static final int kServoId = 0;
+
+  /** Analog input ID of the Hood encoder. */
+  public static final int kEncoderId = 1;
+
   /** Idle behavior when output is zero (coast or brake). SPARK MAX only. */
   public static final SparkBaseConfig.IdleMode kIdleMode = SparkBaseConfig.IdleMode.kBrake;
 
@@ -44,8 +50,6 @@ public final class HoodConstants { // XXX: Add correct values
 
   /** Minimum Hood angle. */
   public static final double kMinAngleRad = Units.degreesToRadians(25.0);
-
-  public static final double kStepAngleRads = Units.degreesToRadians(2.0);
   
   /** Maximum Hood angle. */
   public static final double kMaxAngleRad = Units.degreesToRadians(10.0);
@@ -58,4 +62,7 @@ public final class HoodConstants { // XXX: Add correct values
 
   /** Sim only: max Hood setpoint slew rate. */
   public static final double kSimMaxSlewRadPerSec = Units.degreesToRadians(60.0);
+
+  /** Delta Rad per step. */
+  public static final double kStepAngleRads = Units.degreesToRadians(2.0);
 }
