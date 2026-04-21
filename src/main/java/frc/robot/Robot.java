@@ -202,7 +202,12 @@ public class Robot extends LoggedRobot {
       SimMatchTimeCache.setRemainingSec(-1.0);
       // Desktop team-sign window: skip headless (e.g. some CI) where Swing would fail or hang.
       if (!GraphicsEnvironment.isHeadless()) {
-        TeamSignSimWindow.open(() -> TeamSignDisplayUtil.formatLineForSimulatedMatch(0));
+        TeamSignSimWindow.open(
+            TeamSignSimWindow.Role.BLUE_RP_FIELD,
+            () -> TeamSignDisplayUtil.formatLineForSimulatedMatchBlue(0));
+        TeamSignSimWindow.open(
+            TeamSignSimWindow.Role.RED_RP_FIELD,
+            () -> TeamSignDisplayUtil.formatLineForSimulatedMatchRed(0));
       }
     }
   }

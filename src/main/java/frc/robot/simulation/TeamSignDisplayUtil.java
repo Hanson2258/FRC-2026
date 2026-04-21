@@ -4,7 +4,9 @@ import frc.robot.util.HubShiftUtil;
 
 /**
  * Physics-sim-only team-sign text: uses {@link FuelSim} hub scores and {@link HubShiftUtil} shift
- * timing. Fuel numerator is the blue hub score (this is a blue-match display).
+ * timing. Use {@link #formatLineForSimulatedMatchBlue(int)} or {@link #formatLineForSimulatedMatchRed(int)}
+ * so the RP fuel field matches the alliance display (blue hub score vs red hub score). Shift R/B
+ * letters are field-centric and identical on both lines.
  * {@link frc.robot.Robot} gates latch/window calls to {@code Constants.Mode.SIM} only; this class
  * does not re-check mode.
  */
@@ -68,18 +70,27 @@ public final class TeamSignDisplayUtil {
 	} // End getLatchedAutoOutcome
 
 	/**
-	 * One formatted line for the sim team-sign UI: shift segment + remaining shift seconds, blue hub
-	 * fuel RP progress, {@code autoTowerPoints}, and match clock from {@link SimMatchTimeCache}.
+	 * Same as {@link #formatLineForSimulatedMatchBlue(int)} — blue hub score in the RP fuel field.
 	 */
 	public static String formatLineForSimulatedMatch(int autoTowerPoints) {
-		HubShiftUtil.ShiftInfo shift = HubShiftUtil.getOfficialShiftInfo();
-		return formatTeamSignLine(
-				latchedOutcome,
-				shift,
-				FuelSim.Hub.BLUE_HUB.getScore(),
-				autoTowerPoints,
-				SimMatchTimeCache.getRemainingSec());
+		return formatLineForSimulatedMatchBlue(autoTowerPoints);
 	} // End formatLineForSimulatedMatch
+
+	/** RP fuel field uses {@link FuelSim.Hub#BLUE_HUB} score. */
+	public static String formatLineForSimulatedMatchBlue(int autoTowerPoints) {
+		return formatLineForSimulatedMatchInternal(false, autoTowerPoints);
+	} // End formatLineForSimulatedMatchBlue
+
+	/** RP fuel field uses {@link FuelSim.Hub#RED_HUB} score. */
+	public static String formatLineForSimulatedMatchRed(int autoTowerPoints) {
+		return formatLineForSimulatedMatchInternal(true, autoTowerPoints);
+	} // End formatLineForSimulatedMatchRed
+
+	private static String formatLineForSimulatedMatchInternal(boolean redHubRpField, int autoTowerPoints) {
+		HubShiftUtil.ShiftInfo shift = HubShiftUtil.getOfficialShiftInfo();
+		int fuel = redHubRpField ? FuelSim.Hub.RED_HUB.getScore() : FuelSim.Hub.BLUE_HUB.getScore();
+		return formatTeamSignLine(latchedOutcome, shift, fuel, autoTowerPoints, SimMatchTimeCache.getRemainingSec());
+	} // End formatLineForSimulatedMatchInternal
 
 	/**
 	 * {@code current/threshold} fuel field. Shows {@value #kEnergizedFuelRpThreshold} until Energized,
@@ -96,7 +107,7 @@ public final class TeamSignDisplayUtil {
 	 *
 	 * @param autoOutcome latched auto outcome (controls R/B alternation)
 	 * @param shiftInfo current shift segment and remaining time in that segment
-	 * @param fuelScoredForDisplay blue hub fuel count shown in the RP field
+	 * @param fuelScoredForDisplay hub fuel count shown in the RP field (blue or red per caller)
 	 * @param autoTowerPoints auto tower points shown as the standalone integer field
 	 * @param matchTimeSec remaining match seconds (negative/NaN renders as {@code --:--})
 	 */
