@@ -119,6 +119,16 @@ public final class SimFullFieldExtraBehaviourSim {
 	private static final double kTwoPathCycleFollowMaxLinearMetersPerSec = 3.0;
 	/** Omega clamp during spline follow (rad/s). */
 	private static final double kTwoPathCycleFollowMaxOmegaRadPerSec = 5;
+	/** Consider follow leg stalled when field speed stays below this while still far from target sample. */
+	private static final double kTwoPathCycleFollowStuckSpeedMps = 0.08;
+	/** Consecutive low-speed follow ticks required before forcing re-pathfind (1.06 s @ 20 ms loop). */
+	private static final int kTwoPathCycleFollowStuckTicks = 53;
+	/** Min per-tick distance improvement to count as progress while following an authored sample. */
+	private static final double kTwoPathCycleFollowProgressEpsilonMeters = 0.5;
+	/** Consecutive no-progress ticks while near another robot before forcing re-pathfind (1.06 s @ 20 ms loop). */
+	private static final int kTwoPathCycleFollowNoProgressTicks = 53;
+	/** Treat another robot as "in contact range" when centers are within this distance. */
+	private static final double kTwoPathCycleFollowRobotContactRangeMeters = 1.0;
 	/** Minimum sim ticks between hub launch attempts (20 ms loop, so ~50/value launches per second). */
 	private static final int kTwoPathCycleScoreLaunchIntervalTicks = 5;
 	/** Max |heading error| (rad) before a hub launch is allowed. */
@@ -241,9 +251,19 @@ public final class SimFullFieldExtraBehaviourSim {
 		SCORE_HUB
 	}
 
+	/** Result of one authored-path follow tick. */
+	private enum TwoPathCycleFollowStatus {
+		IN_PROGRESS,
+		COMPLETED,
+		STUCK
+	}
+
 	private final Map<Integer, ExtraSimTwoPathCyclePhase> twoPathCyclePhaseByRole = new HashMap<>();
 	private final Map<Integer, List<Translation2d>> twoPathCycleFollowPointsByRole = new HashMap<>();
 	private final Map<Integer, Integer> twoPathCycleFollowIndexByRole = new HashMap<>();
+	private final Map<Integer, Integer> twoPathCycleFollowStuckTicksByRole = new HashMap<>();
+	private final Map<Integer, Double> twoPathCycleFollowLastDistanceByRole = new HashMap<>();
+	private final Map<Integer, Integer> twoPathCycleFollowNoProgressTicksByRole = new HashMap<>();
 	private final Map<Integer, LocalADStarAK> twoPathCyclePathfinderByRole = new HashMap<>();
 	private final Map<Integer, PathPlannerPath> twoPathCyclePathByRole = new HashMap<>();
 	private final Map<Integer, Pose2d> twoPathCycleLastGoalByRole = new HashMap<>();
@@ -814,10 +834,14 @@ public final class SimFullFieldExtraBehaviourSim {
 						role, extraRobot, pathOne, pathOne, pathTwo, ExtraSimTwoPathCyclePhase.FOLLOW_PATHONE);
 				break;
 			case FOLLOW_PATHONE:
-				if (advanceTwoPathCycleFollow(extraRobot, role)) {
+				TwoPathCycleFollowStatus followPathOneStatus = advanceTwoPathCycleFollow(extraRobot, role);
+				if (followPathOneStatus == TwoPathCycleFollowStatus.COMPLETED) {
 					clearTwoPathCycleNav(role);
 					twoPathCyclePathfindLegStartTickByRole.remove(role);
 					twoPathCyclePhaseByRole.put(role, ExtraSimTwoPathCyclePhase.PATHFIND_TO_PATHTWO);
+				} else if (followPathOneStatus == TwoPathCycleFollowStatus.STUCK) {
+					extraRobot.drive.stop();
+					twoPathCycleBeginPathfindFromCloserHolonomicStart(role, extraRobot, pathOne, pathTwo);
 				}
 				break;
 			case PATHFIND_TO_PATHTWO:
@@ -825,13 +849,17 @@ public final class SimFullFieldExtraBehaviourSim {
 						role, extraRobot, pathTwo, pathOne, pathTwo, ExtraSimTwoPathCyclePhase.FOLLOW_PATHTWO);
 				break;
 			case FOLLOW_PATHTWO:
-				if (advanceTwoPathCycleFollow(extraRobot, role)) {
+				TwoPathCycleFollowStatus followPathTwoStatus = advanceTwoPathCycleFollow(extraRobot, role);
+				if (followPathTwoStatus == TwoPathCycleFollowStatus.COMPLETED) {
 					if (scoreHubGate) {
 						enterTwoPathCycleScoreHubFromTravel(role, extraRobot);
 					} else {
 						extraRobot.drive.stop();
 						twoPathCycleBeginPathfindFromCloserHolonomicStart(role, extraRobot, pathOne, pathTwo);
 					}
+				} else if (followPathTwoStatus == TwoPathCycleFollowStatus.STUCK) {
+					extraRobot.drive.stop();
+					twoPathCycleBeginPathfindFromCloserHolonomicStart(role, extraRobot, pathOne, pathTwo);
 				}
 				break;
 			case SCORE_HUB:
@@ -884,6 +912,9 @@ public final class SimFullFieldExtraBehaviourSim {
 		clearTwoPathCycleNav(role);
 		twoPathCycleFollowPointsByRole.remove(role);
 		twoPathCycleFollowIndexByRole.remove(role);
+		twoPathCycleFollowStuckTicksByRole.remove(role);
+		twoPathCycleFollowLastDistanceByRole.remove(role);
+		twoPathCycleFollowNoProgressTicksByRole.remove(role);
 		twoPathCyclePathfinderByRole.remove(role);
 		twoPathCycleLastLaunchTickByRole.remove(role);
 		twoPathCycleScoreAimGraceUntilTickByRole.remove(role);
@@ -954,34 +985,92 @@ public final class SimFullFieldExtraBehaviourSim {
 		}
 		twoPathCycleFollowPointsByRole.put(role, points);
 		twoPathCycleFollowIndexByRole.put(role, 0);
+		twoPathCycleFollowStuckTicksByRole.put(role, 0);
+		twoPathCycleFollowLastDistanceByRole.remove(role);
+		twoPathCycleFollowNoProgressTicksByRole.put(role, 0);
 	} // End beginTwoPathCycleFollow
 
 	/**
 	 * Steers toward the current follow sample; advances the index when inside tolerance.
 	 *
-	 * @return true when the last sample is reached within tolerance, or when there are no samples
+	 * @return {@link TwoPathCycleFollowStatus#COMPLETED} when final sample is reached, {@link
+	 *         TwoPathCycleFollowStatus#STUCK} after sustained low-speed stall, otherwise {@link
+	 *         TwoPathCycleFollowStatus#IN_PROGRESS}
 	 */
-	private boolean advanceTwoPathCycleFollow(SimFullFieldExtraRobot extraRobot, int role) {
+	private TwoPathCycleFollowStatus advanceTwoPathCycleFollow(SimFullFieldExtraRobot extraRobot, int role) {
 		List<Translation2d> points = twoPathCycleFollowPointsByRole.get(role);
 		if (points == null || points.isEmpty()) {
-			return true;
+			return TwoPathCycleFollowStatus.COMPLETED;
 		}
 		int index = twoPathCycleFollowIndexByRole.getOrDefault(role, 0);
 		Pose2d selfPose = extraRobot.driveSimulation.getSimulatedDriveTrainPose();
 		Translation2d target = points.get(Math.min(index, points.size() - 1));
 		double distance = selfPose.getTranslation().getDistance(target);
 		if (distance < kTwoPathCycleFollowWaypointToleranceMeters) {
+			twoPathCycleFollowStuckTicksByRole.put(role, 0);
+			twoPathCycleFollowNoProgressTicksByRole.put(role, 0);
+			twoPathCycleFollowLastDistanceByRole.remove(role);
 			if (index >= points.size() - 1) {
-				return true;
+				return TwoPathCycleFollowStatus.COMPLETED;
 			}
 			twoPathCycleFollowIndexByRole.put(role, index + 1);
-			return false;
+			return TwoPathCycleFollowStatus.IN_PROGRESS;
 		}
+
+		ChassisSpeeds fieldSpeeds = extraRobot.drive.getFieldRelativeChassisSpeeds();
+		double linearSpeedMps = Math.hypot(fieldSpeeds.vxMetersPerSecond, fieldSpeeds.vyMetersPerSecond);
+		int stuckTicks = twoPathCycleFollowStuckTicksByRole.getOrDefault(role, 0);
+		if (linearSpeedMps < kTwoPathCycleFollowStuckSpeedMps) {
+			stuckTicks++;
+		} else {
+			stuckTicks = 0;
+		}
+		twoPathCycleFollowStuckTicksByRole.put(role, stuckTicks);
+		if (stuckTicks >= kTwoPathCycleFollowStuckTicks) {
+			twoPathCycleFollowStuckTicksByRole.put(role, 0);
+			return TwoPathCycleFollowStatus.STUCK;
+		}
+
+		double previousDistance = twoPathCycleFollowLastDistanceByRole.getOrDefault(role, distance);
+		boolean madeProgress = previousDistance - distance > kTwoPathCycleFollowProgressEpsilonMeters;
+		twoPathCycleFollowLastDistanceByRole.put(role, distance);
+		int noProgressTicks = madeProgress ? 0 : twoPathCycleFollowNoProgressTicksByRole.getOrDefault(role, 0) + 1;
+		twoPathCycleFollowNoProgressTicksByRole.put(role, noProgressTicks);
+		if (noProgressTicks >= kTwoPathCycleFollowNoProgressTicks
+				&& nearAnotherRobot(role, selfPose, kTwoPathCycleFollowRobotContactRangeMeters)) {
+			twoPathCycleFollowNoProgressTicksByRole.put(role, 0);
+			twoPathCycleFollowLastDistanceByRole.remove(role);
+			return TwoPathCycleFollowStatus.STUCK;
+		}
+
 		double headingRad = Math.atan2(target.getY() - selfPose.getY(), target.getX() - selfPose.getX());
 		driveTwoPathCycleFieldCentric(
 				extraRobot, selfPose, new Pose2d(target, Rotation2d.fromRadians(headingRad)), headingRad);
-		return false;
+		return TwoPathCycleFollowStatus.IN_PROGRESS;
 	} // End advanceTwoPathCycleFollow
+
+	/** True when {@code selfPose} is within {@code contactRangeMeters} of primary/second/any other active extra robot. */
+	private boolean nearAnotherRobot(int role, Pose2d selfPose, double contactRangeMeters) {
+		if (latestPrimaryPose != null
+				&& selfPose.getTranslation().getDistance(latestPrimaryPose.getTranslation()) <= contactRangeMeters) {
+			return true;
+		}
+		if (latestSecondSimPose != null
+				&& selfPose.getTranslation().getDistance(latestSecondSimPose.getTranslation()) <= contactRangeMeters) {
+			return true;
+		}
+		for (Map.Entry<Integer, Pose2d> entry : latestActiveExtraPoseByRole.entrySet()) {
+			if (entry.getKey() == role) {
+				continue;
+			}
+			Pose2d otherPose = entry.getValue();
+			if (otherPose != null
+					&& selfPose.getTranslation().getDistance(otherPose.getTranslation()) <= contactRangeMeters) {
+				return true;
+			}
+		}
+		return false;
+	} // End nearAnotherRobot
 
 	/** Field-centric P drive toward {@code targetPose} while tracking {@code headingGoalRad}. */
 	private void driveTwoPathCycleFieldCentric(
