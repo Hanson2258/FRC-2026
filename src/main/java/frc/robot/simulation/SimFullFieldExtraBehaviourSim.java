@@ -20,6 +20,8 @@ import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -127,6 +129,10 @@ public final class SimFullFieldExtraBehaviourSim {
 	private static final double kDynamicObstacleHalfExtentMeters = 0.45;
 	/** If an obstacle center is within this distance of the planner goal, skip it to avoid goal self-blocking. */
 	private static final double kDynamicObstacleGoalExclusionMeters = 0.8;
+	/** Extra kitbots shoot out the back of the robot, so rear points at the hub (180 deg from +X forward). */
+	private static final double kKitbotRearShooterYawOffsetRad = Math.PI;
+	/** Kitbot shooter position relative to robot center. */
+	private static final Transform3d kKitbotShooterPos = new Transform3d(new Translation3d(0.3395, 0.0, 0.205), new Rotation3d());
 
 	// ===== Cycle deploy path sets =====
 	/** Immutable deploy stems + lazily-loaded blue/red authoring for one two-path cycle. */
@@ -1015,20 +1021,22 @@ public final class SimFullFieldExtraBehaviourSim {
 				redAlliance ? FieldConstants.RED_FUNNEL_TOP_CENTER_3D : FieldConstants.BLUE_FUNNEL_TOP_CENTER_3D;
 
 		Pose2d estimatedPose = estimateLookaheadPose(pose, fieldSpeeds, ShooterConstants.kPhaseDelaySec);
+		Pose2d estimatedLaunchPose = launchPointPoseFromRobotPose(estimatedPose, kKitbotShooterPos);
 		ShooterCalculator.ShotData shot = ShooterCalculator.iterativeMovingShotFromFunnelClearance(
-				estimatedPose, fieldSpeeds, target3d, ShooterConstants.kLookaheadIterations);
+				estimatedLaunchPose, fieldSpeeds, target3d, ShooterConstants.kLookaheadIterations);
 		double turretYawRobotRad = ShooterCalculator
-				.calculateAzimuthAngle(estimatedPose, shot.getTarget(), 0.0)
+				.calculateAzimuthAngle(estimatedLaunchPose, shot.getTarget(), 0.0)
 				.in(Radians);
 
 		Pose2d selfPose = extraRobot.driveSimulation.getSimulatedDriveTrainPose();
-		double headingGoalRad = selfPose.getRotation().getRadians() + turretYawRobotRad;
+		double rearYawErrorRad = MathUtil.angleModulus(turretYawRobotRad - kKitbotRearShooterYawOffsetRad);
+		double headingGoalRad = selfPose.getRotation().getRadians() + rearYawErrorRad;
 		driveTwoPathCycleFieldCentric(
 				extraRobot, selfPose,
 				new Pose2d(selfPose.getTranslation(), Rotation2d.fromRadians(headingGoalRad)),
 				headingGoalRad);
 
-		if (Math.abs(turretYawRobotRad) > kTwoPathCycleScoreFacingToleranceRad) {
+		if (Math.abs(rearYawErrorRad) > kTwoPathCycleScoreFacingToleranceRad) {
 			return;
 		}
 		int lastLaunchTick = twoPathCycleLastLaunchTickByRole.getOrDefault(role, -1_000_000);
@@ -1046,7 +1054,7 @@ public final class SimFullFieldExtraBehaviourSim {
 				MetersPerSecond.of(ballExitVelMps),
 				Radians.of(fuelSimElevationRad),
 				Radians.of(turretYawRobotRad),
-				ShooterConstants.robotToTurret);
+				kKitbotShooterPos);
 		twoPathCycleLastLaunchTickByRole.put(role, behaviorTickCounter);
 	} // End runTwoPathCycleHubScoringTick
 
@@ -1058,6 +1066,16 @@ public final class SimFullFieldExtraBehaviourSim {
 						fieldSpeeds.vyMetersPerSecond * phaseDelaySec)),
 				pose.getRotation().plus(Rotation2d.fromRadians(fieldSpeeds.omegaRadiansPerSecond * phaseDelaySec)));
 	} // End estimateLookaheadPose
+
+	/**
+	 * Returns field pose of a robot-relative launch point transform (translation only, pose yaw unchanged).
+	 */
+	private static Pose2d launchPointPoseFromRobotPose(Pose2d robotPose, Transform3d robotToLaunchPoint) {
+		Translation3d launchOffset = robotToLaunchPoint.getTranslation();
+		Translation2d launchOffsetXYRobot = new Translation2d(launchOffset.getX(), launchOffset.getY());
+		Translation2d launchOffsetXYField = launchOffsetXYRobot.rotateBy(robotPose.getRotation());
+		return new Pose2d(robotPose.getTranslation().plus(launchOffsetXYField), robotPose.getRotation());
+	} // End launchPointPoseFromRobotPose
 
 	// ===== Dashboard / role index =====
 
