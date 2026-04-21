@@ -1245,7 +1245,7 @@ public class RobotContainer {
 		}
 		if (shooterSimVisualizer != null) {
 			double hoodAngleRad = isHoodEnabled ? hood.getAngleRad() : HoodConstants.kDisabledAngleRad;
-			double flywheelSurfaceMps = flywheel.getTargetVelocityRadPerSec() * FlywheelConstants.kFlywheelRadiusMeters;
+			double flywheelSurfaceMps = flywheel.getVelocityRadPerSec() * FlywheelConstants.kFlywheelRadiusMeters;
 			double ballExitVelMps = flywheelSurfaceMps
 					* ShooterConstants.kFlywheelSurfaceDivider
 					* ShooterConstants.kSimFlywheelToFuelExitVelocityEfficiency;
@@ -1260,7 +1260,7 @@ public class RobotContainer {
 		if (secondSimBundle != null && secondSimBundle.shooterSimVisualizer != null) {
 			double secondSimHoodAngleRad = isHoodEnabled ? secondSimBundle.hood.getAngleRad() : HoodConstants.kDisabledAngleRad;
 			double secondSimFlywheelSurfaceMps =
-					secondSimBundle.flywheel.getTargetVelocityRadPerSec() * FlywheelConstants.kFlywheelRadiusMeters;
+					secondSimBundle.flywheel.getVelocityRadPerSec() * FlywheelConstants.kFlywheelRadiusMeters;
 			double secondSimBallExitVelMps = secondSimFlywheelSurfaceMps
 					* ShooterConstants.kFlywheelSurfaceDivider
 					* ShooterConstants.kSimFlywheelToFuelExitVelocityEfficiency;

@@ -123,6 +123,8 @@ public final class SimFullFieldExtraBehaviourSim {
 	private static final int kTwoPathCycleScoreLaunchIntervalTicks = 5;
 	/** Max |heading error| (rad) before a hub launch is allowed. */
 	private static final double kTwoPathCycleScoreFacingToleranceRad = 0.14;
+	/** After losing facing tolerance, keep launching for this many sim ticks once shooting already started (0.5s @ 20ms). */
+	private static final int kTwoPathCycleScoreAimLossGraceTicks = 31;
 	/** Sim ticks without reaching holonomic start before re-picking the closer-start leg (2.0 s @ 20 ms loop). */
 	private static final int kTwoPathCyclePathfindStartTimeoutTicks = 100;
 	/** Half-width/half-length (m) of dynamic obstacle AABBs used for robot avoidance in AD*. */
@@ -246,6 +248,7 @@ public final class SimFullFieldExtraBehaviourSim {
 	private final Map<Integer, PathPlannerPath> twoPathCyclePathByRole = new HashMap<>();
 	private final Map<Integer, Pose2d> twoPathCycleLastGoalByRole = new HashMap<>();
 	private final Map<Integer, Integer> twoPathCycleLastLaunchTickByRole = new HashMap<>();
+	private final Map<Integer, Integer> twoPathCycleScoreAimGraceUntilTickByRole = new HashMap<>();
 	/** {@link #behaviorTickCounter} when the current pathfind leg began (cleared on arrive, timeout, behavior change). */
 	private final Map<Integer, Integer> twoPathCyclePathfindLegStartTickByRole = new HashMap<>();
 
@@ -883,6 +886,7 @@ public final class SimFullFieldExtraBehaviourSim {
 		twoPathCycleFollowIndexByRole.remove(role);
 		twoPathCyclePathfinderByRole.remove(role);
 		twoPathCycleLastLaunchTickByRole.remove(role);
+		twoPathCycleScoreAimGraceUntilTickByRole.remove(role);
 	} // End clearTwoPathCycleTravelState
 
 	/** Drops travel state and enters {@link ExtraSimTwoPathCyclePhase#SCORE_HUB}. */
@@ -1036,7 +1040,14 @@ public final class SimFullFieldExtraBehaviourSim {
 				new Pose2d(selfPose.getTranslation(), Rotation2d.fromRadians(headingGoalRad)),
 				headingGoalRad);
 
-		if (Math.abs(rearYawErrorRad) > kTwoPathCycleScoreFacingToleranceRad) {
+		boolean inFacingTolerance = Math.abs(rearYawErrorRad) <= kTwoPathCycleScoreFacingToleranceRad;
+		if (inFacingTolerance) {
+			twoPathCycleScoreAimGraceUntilTickByRole.put(role, behaviorTickCounter + kTwoPathCycleScoreAimLossGraceTicks);
+		}
+		boolean hasStartedShooting = twoPathCycleLastLaunchTickByRole.containsKey(role);
+		int graceUntilTick = twoPathCycleScoreAimGraceUntilTickByRole.getOrDefault(role, Integer.MIN_VALUE);
+		boolean canLaunchForAim = inFacingTolerance || (hasStartedShooting && behaviorTickCounter <= graceUntilTick);
+		if (!canLaunchForAim) {
 			return;
 		}
 		int lastLaunchTick = twoPathCycleLastLaunchTickByRole.getOrDefault(role, -1_000_000);
@@ -1049,11 +1060,13 @@ public final class SimFullFieldExtraBehaviourSim {
 				* ShooterConstants.kExitVelocityCompensationMultiplier
 				* ShooterConstants.kSimFlywheelToFuelExitVelocityEfficiency;
 		double fuelSimElevationRad = Math.PI / 2.0 - shot.getHoodAngle().in(Radians);
+		// Fixed kitbot shooter: launch direction is always out the rear in robot frame.
+		double launchYawRobotRad = kKitbotRearShooterYawOffsetRad;
 		fuelSim.launchFuel(
 				extraRobot.fuelRobotIndex,
 				MetersPerSecond.of(ballExitVelMps),
 				Radians.of(fuelSimElevationRad),
-				Radians.of(turretYawRobotRad),
+				Radians.of(launchYawRobotRad),
 				kKitbotShooterPos);
 		twoPathCycleLastLaunchTickByRole.put(role, behaviorTickCounter);
 	} // End runTwoPathCycleHubScoringTick
