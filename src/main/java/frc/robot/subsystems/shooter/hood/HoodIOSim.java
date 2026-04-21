@@ -4,6 +4,7 @@ import static frc.robot.subsystems.shooter.hood.HoodConstants.*;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.util.Units;
 
 /** Hood IO for simulation; slew-rate-limited setpoint following. */
 public class HoodIOSim implements HoodIO {
@@ -21,8 +22,9 @@ public class HoodIOSim implements HoodIO {
   @Override
   public void updateInputs(HoodIOInputs inputs) {
     if (!isStopped) {
-      double clampedTarget = MathUtil.clamp(targetPositionRad, kMinAngleRad, kMaxAngleRad);
+      double clampedTarget = MathUtil.clamp(targetPositionRad, kMaxAngleRad, kMinAngleRad);
       limitedPositionRad = slewRateLimiter.calculate(clampedTarget);
+      System.out.println(Units.radiansToDegrees(slewRateLimiter.calculate(clampedTarget)));
     }
 
     inputs.motorConnected = true;

@@ -72,13 +72,11 @@ public class Hood extends SubsystemBase {
       state = State.AT_POSITION;
     }
 
-    hoodIO.setTargetPosition(state == State.IDLE ? kDisabledAngleRad : getTargetAngleRad());
-
     state = ignoreLimitsSupplier.getAsBoolean() ? State.MANUAL : (atTarget() ? State.AT_POSITION : State.POSITIONING);
 
     // Set the Hood target position based on the current state.
     double targetPositionRad = getSetpointRad();
-    hoodIO.setTargetPosition(targetPositionRad);
+    hoodIO.setTargetPosition(state == State.IDLE ? kDisabledAngleRad : getTargetAngleRad());
   } // End periodic
 
   /** Get current state. */
@@ -114,14 +112,13 @@ public class Hood extends SubsystemBase {
 
   /** Clamp a target angle to mechanical limits. */
   public double clampTargetAngle(double targetRad) {
-    return MathUtil.clamp(targetRad, kMinAngleRad, kMaxAngleRad);
+    return MathUtil.clamp(targetRad, kMaxAngleRad, kMinAngleRad);
   } // End clampTargetAngle
 
   /** Get target angle, clamped to hood travel limits. */
   private double getSetpointRad() {
     return ignoreLimitsSupplier.getAsBoolean() ? targetAngleRad : clampTargetAngle(targetAngleRad);
   } // End getSetpointRad
-
 
   /** Set supplier for ignoring limits. */
   public void setIgnoreLimitsSupplier(BooleanSupplier supplier) {
@@ -130,7 +127,7 @@ public class Hood extends SubsystemBase {
 
   /** Step the target position in Turret frame. */
   public void stepPositionRad(double stepPositionRad) {
-    setTargetAngleRad(getAngleRad() + stepPositionRad);
+    setTargetAngleRad(getTargetAngleRad() + stepPositionRad);
     state = State.MANUAL;
   } // End stepPositionRad
 }
