@@ -16,6 +16,7 @@ import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.PathPoint;
 
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -122,6 +123,10 @@ public final class SimFullFieldExtraBehaviourSim {
 	private static final double kTwoPathCycleScoreFacingToleranceRad = 0.14;
 	/** Sim ticks without reaching holonomic start before re-picking the closer-start leg (2.0 s @ 20 ms loop). */
 	private static final int kTwoPathCyclePathfindStartTimeoutTicks = 100;
+	/** Half-width/half-length (m) of dynamic obstacle AABBs used for robot avoidance in AD*. */
+	private static final double kDynamicObstacleHalfExtentMeters = 0.45;
+	/** If an obstacle center is within this distance of the planner goal, skip it to avoid goal self-blocking. */
+	private static final double kDynamicObstacleGoalExclusionMeters = 0.8;
 
 	// ===== Cycle deploy path sets =====
 	/** Immutable deploy stems + lazily-loaded blue/red authoring for one two-path cycle. */
@@ -210,6 +215,9 @@ public final class SimFullFieldExtraBehaviourSim {
 	private final Map<Integer, Integer> aggressiveRamContactTickByRole = new HashMap<>();
 	private final Map<Integer, String> lastBehaviorByRole = new HashMap<>();
 	private int behaviorTickCounter = 0;
+	private final Map<Integer, Pose2d> latestActiveExtraPoseByRole = new HashMap<>();
+	private Pose2d latestPrimaryPose;
+	private Pose2d latestSecondSimPose;
 
 	/** Phases for {@link #runTwoPathCycleSim}: pathfind and follow each leg, then optional hub scoring. */
 	private enum ExtraSimTwoPathCyclePhase {
@@ -330,6 +338,12 @@ public final class SimFullFieldExtraBehaviourSim {
 			return;
 		}
 		behaviorTickCounter++;
+		latestPrimaryPose = primaryPose;
+		latestSecondSimPose = secondSimPose;
+		latestActiveExtraPoseByRole.clear();
+		for (Map.Entry<Integer, SimFullFieldExtraRobot> entry : activeExtraByRole.entrySet()) {
+			latestActiveExtraPoseByRole.put(entry.getKey(), entry.getValue().driveSimulation.getSimulatedDriveTrainPose());
+		}
 
 		SimFullFieldExtraRobot red2ExtraRobot = activeExtraByRole.get(SimStartingPoseFullFieldSim.ROLE_RED_2);
 		Pose2d red2Pose = red2ExtraRobot != null ? red2ExtraRobot.driveSimulation.getSimulatedDriveTrainPose() : null;
@@ -549,6 +563,9 @@ public final class SimFullFieldExtraBehaviourSim {
 			Map<Integer, PathPlannerPath> pathByRole,
 			Map<Integer, Pose2d> lastGoalByRole) {
 		LocalADStarAK pathfinder = pathfinderByRole.computeIfAbsent(role, key -> new LocalADStarAK());
+		pathfinder.setDynamicObstacles(
+				dynamicObstaclesForRole(role, goalPose.getTranslation(), kDynamicObstacleGoalExclusionMeters),
+				selfPose.getTranslation());
 		PathPlannerPath cachedPath = pathByRole.get(role);
 		Pose2d lastGoal = lastGoalByRole.get(role);
 		boolean targetMoved = lastGoal == null
@@ -570,6 +587,47 @@ public final class SimFullFieldExtraBehaviourSim {
 		}
 		return cachedPath;
 	} // End replanAndGetPath
+
+	/**
+	 * Dynamic obstacle list for AD* in world coordinates using primary, second-sim, and other active extras.
+	 *
+	 * <p>Current role is excluded so a robot never blocks its own start region.
+	 */
+	private List<Pair<Translation2d, Translation2d>> dynamicObstaclesForRole(
+			int role, Translation2d goalTranslation, double goalExclusionMeters) {
+		List<Pair<Translation2d, Translation2d>> obstacles = new ArrayList<>();
+		addDynamicObstacleFromPose(obstacles, latestPrimaryPose, goalTranslation, goalExclusionMeters);
+		addDynamicObstacleFromPose(obstacles, latestSecondSimPose, goalTranslation, goalExclusionMeters);
+		for (Map.Entry<Integer, Pose2d> entry : latestActiveExtraPoseByRole.entrySet()) {
+			if (entry.getKey() == role) {
+				continue;
+			}
+			addDynamicObstacleFromPose(obstacles, entry.getValue(), goalTranslation, goalExclusionMeters);
+		}
+		return obstacles;
+	} // End dynamicObstaclesForRole
+
+	/** Appends an axis-aligned obstacle box centered at {@code pose} using {@link #kDynamicObstacleHalfExtentMeters}. */
+	private static void addDynamicObstacleFromPose(
+			List<Pair<Translation2d, Translation2d>> obstacles,
+			Pose2d pose,
+			Translation2d goalTranslation,
+			double goalExclusionMeters) {
+		if (pose == null) {
+			return;
+		}
+		if (goalTranslation != null
+				&& pose.getTranslation().getDistance(goalTranslation) <= goalExclusionMeters) {
+			return;
+		}
+		Translation2d min = new Translation2d(
+				pose.getX() - kDynamicObstacleHalfExtentMeters,
+				pose.getY() - kDynamicObstacleHalfExtentMeters);
+		Translation2d max = new Translation2d(
+				pose.getX() + kDynamicObstacleHalfExtentMeters,
+				pose.getY() + kDynamicObstacleHalfExtentMeters);
+		obstacles.add(new Pair<>(min, max));
+	} // End addDynamicObstacleFromPose
 
 	/** Selects a short lookahead waypoint on the current path. */
 	private static Pose2d choosePathTargetPose(PathPlannerPath path, Pose2d selfPose, Pose2d fallbackGoalPose) {
