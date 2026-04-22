@@ -224,6 +224,49 @@ public class ShooterCalculator {
 
     private static final double G_MPS2 = 9.81;
 
+    /**
+     * Lookup-table moving shot after TOF iteration: hood/RPM/TOF from {@link ShooterLookup} at the converged
+     * horizontal range to the ghost target, and the aim point (predicted hub) for turret.
+     */
+    public record LookupTableMovingShot(
+            double hoodExitAngleRad,
+            double commandedHoodAngleRad,
+            double flywheelRpmTable,
+            double timeOfFlightSec,
+            Translation3d aimTarget3d,
+            double distanceKeyMeters) {}
+
+    /**
+     * Same idea as iterative funnel clearance, but hood/RPM/TOF come from {@link ShooterLookup} at each step.
+     * Re-reads distance from turret pivot to the predicted target and interpolates table rows so moving shots stay
+     * consistent with table TOF (tunable stationary).
+     */
+    public static LookupTableMovingShot iterativeMovingShotFromLookupTable(
+            Pose2d robot,
+            ChassisSpeeds fieldSpeeds,
+            Translation3d target,
+            int iterations,
+            boolean hubShot) {
+        double distance = getDistanceToTarget(robot, target).in(Meters);
+        ShooterLookup.Result lr = ShooterLookup.lookup(hubShot, distance);
+        Time tof = Seconds.of(lr.timeOfFlightSec());
+        Translation3d predicted = target;
+
+        for (int i = 0; i < iterations; i++) {
+            predicted = predictTargetPos(target, fieldSpeeds, tof);
+            distance = getDistanceToTarget(robot, predicted).in(Meters);
+            lr = ShooterLookup.lookup(hubShot, distance);
+            tof = Seconds.of(lr.timeOfFlightSec());
+        }
+        return new LookupTableMovingShot(
+                lr.hoodExitAngleRad(),
+                lr.commandedHoodAngleRad(),
+                lr.flywheelRpmTable(),
+                lr.timeOfFlightSec(),
+                predicted,
+                distance);
+    }
+
     public record ShotData(double exitVelocity, double hoodAngle, Translation3d target) {
         public ShotData(LinearVelocity exitVelocity, Angle hoodAngle, Translation3d target) {
             this(exitVelocity.in(MetersPerSecond), hoodAngle.in(Radians), target);

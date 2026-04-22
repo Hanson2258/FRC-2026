@@ -101,6 +101,14 @@ test {
     systemProperty 'junit.jupiter.extensions.autodetection.enabled', 'true'
 }
 
+/** Prints ShooterLookup {@code TableEntry} lines; run: {@code ./gradlew printShooterLookupSeed} */
+tasks.register('printShooterLookupSeed', JavaExec) {
+    group = 'utility'
+    description = 'Run ShooterLookupTableGenerator.main (paste output into ShooterLookup.java)'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'frc.robot.ShooterLookupTableGenerator'
+}
+
 // Simulation configuration (e.g. environment variables).
 //
 // The sim GUI is *disabled* by default to support running

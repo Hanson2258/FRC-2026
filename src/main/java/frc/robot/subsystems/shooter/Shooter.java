@@ -18,7 +18,7 @@ import frc.robot.subsystems.shooter.transfer.Transfer;
 import frc.robot.subsystems.shooter.turret.Turret;
 import frc.robot.util.AllianceUtil;
 
-/** Coordinates Agitator, Transfer, Turret, Hood, Flywheel; updates targets from lookup; exposes ready-to-shoot. */
+/** Coordinates Agitator, Transfer, Turret, Hood, Flywheel; updates targets from calculator or optional lookup; exposes ready-to-shoot. */
 public class Shooter extends SubsystemBase {
 
   private final Drive drive;
