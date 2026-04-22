@@ -179,7 +179,9 @@ public final class ShooterCommands {
    *
    * @param calculatorLogRoot AdvantageKit prefix; primary {@code ""}, second sim {@link
    *     SecondSimRobotOutputs#LOG_ROOT_PREFIX}. Calculator outputs log under {@code calculatorLogRoot + "Shooter/…"}.
-   *     SmartDashboard calculator tuning uses the same {@code Shooter/…} keys for both robots.
+   *     SmartDashboard calculator tuning uses the same {@code Shooter/…} keys for both robots. Logs {@code
+   *     Shooter/DistanceTurretPivotToHubMeters}: horizontal distance from turret pivot to hub (same as {@link
+   *     ShooterCalculator#getHorizontalRangeForShot}).
    */
   public static void setShooterTarget(
       Drive drive,
@@ -223,8 +225,8 @@ public final class ShooterCommands {
               ShooterConstants.kLookaheadIterations);
     }
 
-    double distanceM = ShooterCalculator.getDistanceToTarget(estimatedPose, shot.getTarget()).in(Meters);
-    Logger.recordOutput(logRoot + "Shooter/DistanceToHubMeters", distanceM);
+    double distanceTurretPivotToHubM = ShooterCalculator.getHorizontalRangeForShot(estimatedPose, shot).in(Meters);
+    Logger.recordOutput(logRoot + "Shooter/DistanceTurretPivotToHubMeters", distanceTurretPivotToHubM);
     Logger.recordOutput(logRoot + "Shooter/CalculatorHoodDeg", Units.radiansToDegrees(shot.getHoodAngle().in(Radians)));
     double exitVelMps = shot.getExitVelocity().in(MetersPerSecond);
     double exitVelocityMultiplierAdditive =

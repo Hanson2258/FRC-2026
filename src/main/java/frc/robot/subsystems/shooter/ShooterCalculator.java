@@ -39,9 +39,28 @@ import frc.robot.subsystems.shooter.turret.TurretConstants;
  * the floor, π/2 = straight up.
  */
 public class ShooterCalculator {
+
+    /** Turret pivot projected on the field XY (m), same frame as {@link #calculateAzimuthAngle}. */
+    private static Translation2d turretTranslationOnField(Pose2d robot) {
+        return new Pose3d(robot).transformBy(robotToTurret).toPose2d().getTranslation();
+    } // End turretTranslationOnField
+
+    /**
+     * Horizontal distance (m) from the turret pivot XY to {@code target} on the floor (hub XY).
+     * Used as ballistic range ({@code x_dist}), time-of-flight input, and funnel scaling ratio so range
+     * matches where the shot aims from.
+     */
     public static Distance getDistanceToTarget(Pose2d robot, Translation3d target) {
-        return Meters.of(robot.getTranslation().getDistance(target.toTranslation2d()));
-    }
+        return Meters.of(turretTranslationOnField(robot).getDistance(target.toTranslation2d()));
+    } // End getDistanceToTarget
+
+    /**
+     * Same horizontal range as {@link #getDistanceToTarget} for the hub stored in {@code shot}
+     * (predicted hub when iterating).
+     */
+    public static Distance getHorizontalRangeForShot(Pose2d robot, ShotData shot) {
+        return getDistanceToTarget(robot, shot.getTarget());
+    } // End getHorizontalRangeForShot
 
     // see https://www.desmos.com/geometry/l4edywkmha
     public static Angle calculateAngleFromVelocity(Pose2d robot, LinearVelocity velocity, Translation3d target) {
@@ -82,11 +101,7 @@ public class ShooterCalculator {
      */
     public static Angle calculateAzimuthAngle(
             Pose2d robot, Translation3d target, double currentTurretAngleRad) {
-        Translation2d turretTranslation = new Pose3d(robot)
-                .transformBy(robotToTurret)
-                .toPose2d()
-                .getTranslation();
-        Translation2d direction = target.toTranslation2d().minus(turretTranslation);
+        Translation2d direction = target.toTranslation2d().minus(turretTranslationOnField(robot));
         double angleRad =
                 MathUtil.inputModulus(
                         direction.getAngle().minus(robot.getRotation()).getRadians(),
