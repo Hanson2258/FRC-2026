@@ -129,7 +129,8 @@ public class Shooter extends SubsystemBase {
     Logger.recordOutput(logRoot + "ShooterCommand/Ready/TurretAtTarget", turret.atTarget());
     Logger.recordOutput(logRoot + "ShooterCommand/Ready/HoodAtTarget", !hoodEnabled || hood.atTarget());
     Logger.recordOutput(logRoot + "ShooterCommand/Ready/FlywheelAtTarget", flywheel.atTargetVelocity());
-    Logger.recordOutput(logRoot + "ShooterCommand/Ready/FlywheelAtTargetWithinGracePeriod", !(flywheelOffTargetGraceTimerSec >= ShooterConstants.kFlywheelOffTargetGraceSec));
+    Logger.recordOutput(logRoot + "ShooterCommand/Ready/FlywheelAtTargetWithinGracePeriod",
+        !(flywheelOffTargetGraceTimerSec >= ShooterConstants.kFlywheelOffTargetGraceSec) && flywheel.atTargetVelocityWithinDoubleTolerance());
     Logger.recordOutput(logRoot + "ShooterCommand/Ready/FlywheelNotIdle", flywheel.getState() != State.IDLE);
 
     ShooterCommands.setShooterTarget(
@@ -145,7 +146,8 @@ public class Shooter extends SubsystemBase {
 
   /**
    * Turret target in range and on target, Flywheel not Idle and at target speed (with {@link
-   * ShooterConstants#kFlywheelOffTargetGraceSec} grace after leaving target speed); (Optional) Hood at target
+   * ShooterConstants#kFlywheelOffTargetGraceSec} grace after leaving target speed, only while error is within
+   * double flywheel tolerance); (Optional) Hood at target
    * elevation. When shooter target is hub, robot must be in alliance zone and at least {@link
    * ShooterConstants#kMinHubAutoshootDistanceM} from hub center.
    */
@@ -161,7 +163,10 @@ public class Shooter extends SubsystemBase {
     if (!turret.isTargetInRange()) return false;
     if (!turret.atTarget()) return false;
     if (flywheel.getState() == State.IDLE) return false;
-    if (flywheelOffTargetGraceTimerSec >= ShooterConstants.kFlywheelOffTargetGraceSec) return false;
+    if (!flywheel.atTargetVelocity()) {
+      if (!flywheel.atTargetVelocityWithinDoubleTolerance()) return false;
+      if (flywheelOffTargetGraceTimerSec >= ShooterConstants.kFlywheelOffTargetGraceSec) return false;
+    }
     if (hoodEnabled && !hood.atTarget()) return false;
     return true;
   } // End isReadyToShoot

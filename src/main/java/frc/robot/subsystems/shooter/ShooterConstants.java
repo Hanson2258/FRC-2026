@@ -42,7 +42,7 @@ public final class ShooterConstants {
    * After the flywheel leaves target velocity, {@link frc.robot.subsystems.shooter.Shooter#isReadyToShoot}
    * stays true for this long before reporting not ready. Timer resets when velocity is back on target.
    */
-  public static final double kFlywheelOffTargetGraceSec = 0.3;
+  public static final double kFlywheelOffTargetGraceSec = 0.1;
 
   /** Time before the hub is active that we treat the hub as active for the preshoot */
   public static final Time kActivePreshootTime = Seconds.of(2.0);

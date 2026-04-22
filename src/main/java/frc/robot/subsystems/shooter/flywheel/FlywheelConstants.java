@@ -50,7 +50,7 @@ public final class FlywheelConstants {
   public static final double kMaxTargetVelocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(5500.0);
 
   /** Tolerance for considering the Flywheel at target (measured vs target). */
-  public static final double kAtTargetVelocityToleranceRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(150.0);
+  public static final double kAtTargetVelocityToleranceRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(100.0);
 
   /** Delta rad/s per manual step. */
   public static final double kStepRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(100.0);
