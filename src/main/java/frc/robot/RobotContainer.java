@@ -617,21 +617,21 @@ public class RobotContainer {
 				Commands.runOnce(() -> operatorManualOverride = true),
 				() -> operatorManualOverride));
 
-		// Hood Manual Voltage Control // TODO: Comments broken in this section
-		// 
+		// Agitator Manual Voltage Control
+		// Raise Agitator voltage
 		operatorController.y().onTrue(
 			new ConditionalCommand(
-				Commands.runOnce(() -> hood.stepPositionRad(HoodConstants.kStepAngleRads), hood),
+				Commands.runOnce(() -> agitator.stepVoltage(AgitatorConstants.kStepVolts), agitator),
 				new InstantCommand(),
-				() -> (operatorManualOverride && hood != null)
+				() -> (operatorManualOverride && agitator != null)
 			)
 		);
 		// Lower Agitator voltage
 		operatorController.a().and(operatorControlGate).onTrue(
 			new ConditionalCommand(
-				Commands.runOnce(() -> hood.stepPositionRad(-HoodConstants.kStepAngleRads), hood),
+				Commands.runOnce(() -> agitator.stepVoltage(-AgitatorConstants.kStepVolts), hood),
 				new InstantCommand(),
-				() -> (operatorManualOverride && hood != null)
+				() -> (operatorManualOverride && agitator != null)
 			)
 		);
 

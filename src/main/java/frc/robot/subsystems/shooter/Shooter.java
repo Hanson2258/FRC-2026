@@ -167,7 +167,7 @@ public class Shooter extends SubsystemBase {
       if (!flywheel.atTargetVelocityWithinDoubleTolerance()) return false;
       if (flywheelOffTargetGraceTimerSec >= ShooterConstants.kFlywheelOffTargetGraceSec) return false;
     }
-    if (hoodEnabled && !hood.atTarget()) return false;
+    // if (hoodEnabled && !hood.atTarget()) return false; // TODO: Add back when Hood atTarget is functional (incorrect position reported from Hood)
     return true;
   } // End isReadyToShoot
 

@@ -23,7 +23,7 @@ import java.util.List;
 
 /**
  * Prints {@code new TableEntry(distance, hoodExitDeg, commandedHoodDeg, rpm, tofSec)} for {@link
- * frc.robot.subsystems.shooter.ShooterLookup}. Hub 1.0–7.5 m, passing 3–12 m, step 0.5 m; hood
+ * frc.robot.subsystems.shooter.ShooterLookup}. Hub 1.0–6.0 m, passing 3–12 m, step 0.5 m; hood
  * clamped to {@link HoodConstants}. Seeded rows use {@code commandedHoodDeg == hoodExitDeg}. Run
  * {@code ./gradlew printShooterLookupSeed}.
  */
@@ -36,7 +36,7 @@ public final class ShooterLookupTableGenerator {
   private record Solve(double hoodDeg, double rpm, double tofSec) {}
 
   public static void main(String[] args) {
-    List<Row> hub = buildRows(FieldConstants.BLUE_FUNNEL_TOP_CENTER_3D, new Translation2d(-1.0, 0.0), 1.0, 7.5, 0.5);
+    List<Row> hub = buildRows(FieldConstants.BLUE_FUNNEL_TOP_CENTER_3D, new Translation2d(-1.0, 0.0), 1.0, 6.0, 0.5);
     List<Row> passing =
         buildRows(FieldConstants.BLUE_PASSING_SPOT_CENTER, new Translation2d(1.0, 0.0), 3.0, 12.0, 0.5);
     System.out.println("  private static final TableEntry[] HUB_ENTRIES =");

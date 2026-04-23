@@ -23,7 +23,7 @@ public final class ShooterConstants {
   public static final double kAutoSelectShootingTargetAllianceZoneTolerance = 1.5;
 
   /** When aiming at the hub, autoshoot requires at least this horizontal distance to hub center (m). */
-  public static final double kMinHubAutoshootDistanceM = 0.0; // TODO: May need tuning
+  public static final double kMinHubAutoshootDistanceM = 1.0; // TODO: May need tuning
 
   /** Transform from robot center to Turret pivot. +X = forward, +Y = left, +Z = up (meters). */
   public static final Transform3d robotToTurret =

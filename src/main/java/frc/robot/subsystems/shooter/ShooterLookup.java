@@ -43,21 +43,17 @@ public final class ShooterLookup {
 
   private static final TableEntry[] HUB_ENTRIES =
       new TableEntry[] {
+        // .85m constant - Add distance from Hub Wall to this value for distance value.
+        // Need to tune TOF
+
         // distance_m, hood_exit_deg, hood_commanded_deg, flywheel_rpm @ additive=0, time_of_flight_s
-        new TableEntry(1.000000, 80.0000, 80.0000, 2754.0998, 0.935480),
-        new TableEntry(1.500000, 74.3214, 74.3214, 2761.1099, 0.899378),
-        new TableEntry(2.000000, 69.0803, 69.0803, 2826.5350, 0.886584),
-        new TableEntry(2.500000, 64.9589, 64.9589, 2935.4563, 0.900188),
-        new TableEntry(3.000000, 61.6351, 61.6351, 3060.2738, 0.923153),
-        new TableEntry(3.500000, 58.9052, 58.9052, 3191.4470, 0.950018),
-        new TableEntry(4.000000, 56.6290, 56.6290, 3324.6850, 0.978555),
-        new TableEntry(4.500000, 54.7059, 54.7059, 3457.8036, 1.007719),
-        new TableEntry(5.000000, 53.0625, 53.0625, 3589.6259, 1.036983),
-        new TableEntry(5.500000, 51.6435, 51.6435, 3719.5099, 1.066063),
-        new TableEntry(6.000000, 50.4071, 50.4071, 3847.1147, 1.094806),
-        new TableEntry(6.500000, 50.0000, 50.0000, 3970.6551, 1.139379),
-        new TableEntry(7.000000, 50.0000, 50.0000, 4089.0428, 1.191499),
-        new TableEntry(7.500000, 50.0000, 50.0000, 4204.8995, 1.241432),
+        new TableEntry(0.90, 80.0, 80.0, 3300, 0.935480),
+        new TableEntry(1.15, 80.0, 80.0, 3000, 0.935480), // Soft balls launch at steeper angle (works from 2700 to 3000 rpm), hard balls at shallower angle (misses-hits hub).
+        new TableEntry(1.47, 80.0, 80.0, 3000, 0.899378),
+        new TableEntry(1.85, 80.0, 68.0, 3000, 0.899378),
+        new TableEntry(2.25, 80.0, 65.0, 3000, 0.899378),
+        new TableEntry(2.65, 80.0, 63.0, 3200, 0.899378),
+
       };
 
   private static final TableEntry[] PASSING_ENTRIES =

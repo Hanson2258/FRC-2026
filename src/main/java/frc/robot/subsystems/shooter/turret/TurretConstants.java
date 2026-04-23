@@ -21,7 +21,7 @@ public final class TurretConstants {
   public static final NeutralModeValue kNeutralMode = NeutralModeValue.Coast;
 
   /** Smart current limit. SPARK MAX only. */
-  public static final int kSmartCurrentLimitAmps = 25;
+  public static final int kSmartCurrentLimitAmps = 15;
 
   /** Stator current limit. Talon FX only. */
   public static final double kStatorCurrentLimitAmps = 30.0;
