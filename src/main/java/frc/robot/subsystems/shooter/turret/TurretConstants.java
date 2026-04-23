@@ -34,6 +34,12 @@ public final class TurretConstants {
   public static final double kI = 0.0;
   public static final double kD = 0.0;
 
+  /**
+   * SPARK arbitrary FF scale: volts per aim angular rate (rad/s). Tune on robot with {@code
+   * Turret/kAimFfVPerRadS}; start low and increase until lag drops without oscillation.
+   */
+  public static final double kAimFfVPerRadS = 0.02; // TODO: Tune, increase by 0.01 until lag drops without oscillation.
+
   /** Period for sending signals to the motor. SPARK MAX only. */
   public static final int kSignalsPeriodMs = 19;
   public static final int kEncoderVelocitySignalPeriodMs = 19;
