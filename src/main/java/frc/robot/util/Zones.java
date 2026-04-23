@@ -10,7 +10,11 @@ import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.Dimensions;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.extender.Extender;
+import frc.robot.Constants;
 import frc.robot.FieldConstants;
+
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
@@ -23,6 +27,8 @@ public class Zones {
 
     public static interface PredictiveXZone extends Zone {
         public Trigger willContain(Supplier<Pose2d> pose, Supplier<ChassisSpeeds> fieldSpeeds, Time dt);
+        public Trigger willContain(Supplier<Pose2d> pose, Supplier<ChassisSpeeds> fieldSpeeds, Time dt, BooleanSupplier isExtended);
+
     }
 
     public static class BaseZone implements Zone {
@@ -85,6 +91,11 @@ public class Zones {
         public Trigger willContain(Supplier<Pose2d> pose, Supplier<ChassisSpeeds> fieldSpeeds, Time dt) {
             return new Trigger(() -> willContainPoint(pose.get().getTranslation(), fieldSpeeds.get(), dt));
         }
+        
+        @Override
+        public Trigger willContain(Supplier<Pose2d> pose, Supplier<ChassisSpeeds> fieldSpeeds, Time dt, BooleanSupplier isExtended) {
+            return new Trigger(() -> willContainPoint(pose.get(), fieldSpeeds.get(), dt, isExtended.getAsBoolean()));
+        }
 
         protected boolean willContainPoint(Translation2d point, ChassisSpeeds fieldSpeeds, Time dt) {
             return (point.getY() >= yMin && point.getY() <= yMax)
@@ -93,6 +104,43 @@ public class Zones {
                                     && fieldSpeeds.vxMetersPerSecond * dt.in(Seconds) >= xMin - point.getX())
                             || (point.getX() > xMax
                                     && fieldSpeeds.vxMetersPerSecond * dt.in(Seconds) <= xMax - point.getX()));
+        }
+
+        protected boolean willContainPoint(Pose2d robotPose2d, ChassisSpeeds fieldSpeeds, Time dt, boolean isExtended) {
+            boolean yInZone = (robotPose2d.getY() >= yMin && robotPose2d.getY() <= yMax);
+            boolean xInZone;
+            boolean xWillInZone;
+            
+            if (isExtended) {
+                double xAverage = (xMin + xMax) / 2;
+                if (robotPose2d.getX() >= xAverage) {
+                    xInZone = (robotPose2d.getX() >= xMin && robotPose2d.getX() <= xMax);
+                    xWillInZone = (robotPose2d.getRotation().getDegrees() >= -90) || (robotPose2d.getRotation().getDegrees() <= 90)? 
+                        (robotPose2d.getX() > xMax
+                                    && fieldSpeeds.vxMetersPerSecond * dt.in(Seconds) <= xMax - robotPose2d.getX()):
+                        (robotPose2d.getX() > xMax + Constants.Dimensions.FRONT_EXTENSION
+                            && fieldSpeeds.vxMetersPerSecond * dt.in(Seconds) <= xMax - robotPose2d.getX());
+                    return yInZone && (xInZone && xWillInZone);
+                } else {
+                    return ((robotPose2d.getX() >= xMin && robotPose2d.getX() <= xMax)
+                        || (robotPose2d.getX() < xMin
+                            && fieldSpeeds.vxMetersPerSecond * dt.in(Seconds) >= xMin - robotPose2d.getX())
+                        || (robotPose2d.getX() > xMax
+                            && fieldSpeeds.vxMetersPerSecond * dt.in(Seconds) <= xMax - robotPose2d.getX()));
+                }
+            } else {
+                    return ((point.getX() >= xMin && point.getX() <= xMax)
+                        || (point.getX() < xMin
+                            && fieldSpeeds.vxMetersPerSecond * dt.in(Seconds) >= xMin - point.getX())
+                        || (point.getX() > xMax
+                            && fieldSpeeds.vxMetersPerSecond * dt.in(Seconds) <= xMax - point.getX()));
+            }
+            // ((point.getX() >= xMin && point.getX() <= xMax) // determine
+            //                 || (point.getX() < xMin
+            //                         && fieldSpeeds.vxMetersPerSecond * dt.in(Seconds) >= xMin - point.getX()) //heading 0
+            //                 || (point.getX() > xMax
+            //                         && fieldSpeeds.vxMetersPerSecond * dt.in(Seconds) <= xMax - point.getX()));//heading 180
+            // return 
         }
 
         @Override
@@ -140,9 +188,20 @@ public class Zones {
 
             return combined;
         }
+
+        @Override
+        public Trigger willContain(Supplier<Pose2d> pose, Supplier<ChassisSpeeds> fieldSpeeds, Time dt, BooleanSupplier isExtended) {
+            Trigger combined = new Trigger(() -> false);
+
+            for (Zone zone : zones) {
+                combined = combined.or(((PredictiveXZone) zone).willContain(pose, fieldSpeeds, dt));
+            }
+
+            return combined;
+        }
     }
 
-
+    
     private static final double ROBOT_HALF_LENGTH_M = Dimensions.FULL_LENGTH.in(Meters) / 2.0;
 
     public static final PredictiveXBaseZone BLUE_BOTTOM_TRENCH = new PredictiveXBaseZone(
