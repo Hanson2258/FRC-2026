@@ -54,7 +54,7 @@ public class TeleopDrive extends Command {
   private final DoubleSupplier ySupplier;
   private final DoubleSupplier omegaSupplier;
   private int flipFactor = 1;
-
+  private BooleanSupplier isExtendedSupplier;
   @AutoLogOutput
   private final Trigger inTrenchZoneTrigger;
 
@@ -89,6 +89,7 @@ public class TeleopDrive extends Command {
     this.drive = drive;
     this.controller = controller;
     this.extender = extender;
+    isExtendedSupplier = () -> extender.getState() == State.EXTENDED;
     this.hood = hood;
     this.hang = hang;
     this.isRobotCentricSupplier = isRobotCentricSupplier;
@@ -103,7 +104,7 @@ public class TeleopDrive extends Command {
     rotationController.enableContinuousInput(-Math.PI, Math.PI);
 
     inTrenchZoneTrigger = Zones.TRENCH_ZONES
-        .willContain(drive::getPose, drive::getFieldRelativeChassisSpeeds, Seconds.of(SwerveConstants.TRENCH_ALIGN_TIME_S))
+        .willContain(drive::getPose, drive::getFieldRelativeChassisSpeeds, Seconds.of(SwerveConstants.TRENCH_ALIGN_TIME_S),() -> extender.isExtended())
         .debounce(0.1);
 
     

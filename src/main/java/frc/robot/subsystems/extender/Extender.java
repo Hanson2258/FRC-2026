@@ -88,6 +88,11 @@ public class Extender extends SubsystemBase {
     extenderIO.stop();
   } // End setIdleState
 
+  
+  public boolean isExtended(){
+    return getState() == State.EXTENDED;
+  }
+
   /** Set state to Retracted (up position). */
   public void setRetractedState() {
     state = State.RETRACTED;

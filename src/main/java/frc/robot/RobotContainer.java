@@ -80,7 +80,7 @@ public class RobotContainer {
 	private boolean isDriveEnabled 		= true;
 	private boolean isVisionEnabled 	= true;
 	private boolean isIntakeEnabled 	= true;
-	private boolean isExtenderEnabled = true;
+	public boolean isExtenderEnabled = true;
 	private boolean isAgitatorEnabled = true;
 	private boolean isTransferEnabled = true;
 	private boolean isTurretEnabled 	= true;
@@ -189,6 +189,7 @@ public class RobotContainer {
 				hood     = isHoodEnabled  	 ? new Hood(new HoodIOSparkMax()) 		  	: new Hood(new HoodIO() {});
 				flywheel = isFlywheelEnabled ? new Flywheel(new FlywheelIOTalonFX())  : new Flywheel(new FlywheelIO() {});
 				hang 	 	 = isHangEnabled		 ? new Hang(new HangIOSparkMax())  				: new Hang(new HangIO() {});
+				
 				shooterSim = null;
 				shooterSimVisualizer = null;
 				break;
@@ -297,7 +298,7 @@ public class RobotContainer {
 		hood.setIgnoreLimitsSupplier(() 		-> operatorManualOverride);
 		flywheel.setIgnoreLimitsSupplier(() -> operatorManualOverride);
 		hang.setIgnoreLimitsSupplier(() 		-> operatorManualOverride);
-
+		
 		/// -------------------------------------------------------------------------------------------
 		/// ------------------------------------- Drive Commands --------------------------------------		
 		/// -------------------------------------------------------------------------------------------
