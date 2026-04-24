@@ -36,6 +36,7 @@ import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.*;
+import frc.robot.Constants.*;
 import frc.robot.generated.TunerConstants;
 import frc.robot.simulation.FuelSim;
 import frc.robot.simulation.HubLightSimDisplay;
@@ -430,21 +431,25 @@ public class RobotContainer {
 
 		// Cycle Extender, starts in Retracted, goes to Extended, and then cycles between Partial and Extended. 
 		// If in Manual, goes to Extended.
-		driverController.leftTrigger().and(driverTriggerGate).onTrue(Commands.runOnce(() -> {
-			switch (extender.getState()) {
-				case EXTENDED ->  extender.setPartialState();
-				case PARTIAL -> 	extender.setExtendedState();
-				case RETRACTED -> extender.setExtendedState();
-				case MANUAL -> 		extender.setExtendedState();
-				case IDLE ->			extender.setExtendedState();
-				default -> throw new IllegalArgumentException("Unexpected value: " + extender.getState());
-			}
+		//driverController.leftTrigger().and(driverTriggerGate).onTrue(Commands.runOnce(() -> {
+		//	switch (extender.getState()) {
+		//		case EXTENDED ->  extender.setPartialState();
+		//		case PARTIAL -> 	extender.setExtendedState();
+		//		case RETRACTED -> extender.setExtendedState();
+		//		case MANUAL -> 		extender.setExtendedState();
+		//		case IDLE ->			extender.setExtendedState();
+		//		default -> throw new IllegalArgumentException("Unexpected value: " + extender.getState());
+		//	}
+//
+		//	// Disable Intake when Extender is Retracted or Partial
+		//	if (extender.getState() == Extender.State.RETRACTED || extender.getState() == Extender.State.PARTIAL) {
+		//		intake.setIdleState();
+		//	}
+		//}, extender));
 
-			// Disable Intake when Extender is Retracted or Partial
-			if (extender.getState() == Extender.State.RETRACTED || extender.getState() == Extender.State.PARTIAL) {
-				intake.setIdleState();
-			}
-		}, extender));
+		driverController.leftTrigger().and(driverTriggerGate).onTrue(Commands.runOnce(() -> {
+			drive.resetPosition(new Pose2d(Constants.Dimensions.FULL_LENGTH.div(2), Constants.Dimensions.FULL_WIDTH.div(2), new Rotation2d(0)));
+		}));
 
 		// Set to Retracted, must turn off AutoShoot, and set Turret Target to 0
 		driverController.povDown().and(driverTriggerGate).onTrue(safeRetractExtenderCommand);
