@@ -114,7 +114,7 @@ public class TeleopDrive extends Command {
     //     .willContain(drive::getPose, drive::getFieldRelativeChassisSpeeds, Seconds.of(SwerveConstants.BUMP_ALIGN_TIME_S))
     //     .debounce(0.1);
 
-    inTrenchZoneTrigger.onTrue(Commands.runOnce(() -> 
+    inTrenchZoneTrigger.onTrue(Commands.run(() -> 
     { if (
       // If extender is out, if hood is raised, or if hang is out, go to invalid
       extender.getState() == State.PARTIAL 
@@ -124,13 +124,18 @@ public class TeleopDrive extends Command {
         currentDriveMode = DriveMode.INVALID_TRENCH;
       } else {
         currentDriveMode = DriveMode.TRENCH_LOCK;
+        rumbleController(false);
+
       }
   }));
     
     /// Disabled (Bump Zone is not used)
     // inBumpZoneTrigger.onTrue(Commands.runOnce(() -> currentDriveMode = DriveMode.BUMP_LOCK));
     // inTrenchZoneTrigger.or(inBumpZoneTrigger).onFalse(Commands.runOnce(() -> currentDriveMode = DriveMode.NORMAL));
-    inTrenchZoneTrigger.onFalse(Commands.runOnce(() -> currentDriveMode = DriveMode.NORMAL));
+    inTrenchZoneTrigger.whileFalse(Commands.run(() -> {
+      currentDriveMode = DriveMode.NORMAL;
+      rumbleController(false);
+    }));
 
     addRequirements(drive);
   } // End TeleopDrive Constructor
@@ -259,20 +264,28 @@ public class TeleopDrive extends Command {
         break;
 
       case INVALID_TRENCH:
+        trenchYController.setSetpoint(getTrenchYMeters());
+        double yVelInvalid = trenchYController.calculate(drive.getPose().getY());
+        if (trenchYController.atSetpoint()) {
+          yVelInvalid = 0;
+        }
+        rotationController.setSetpoint(getTrenchLockAngle().getRadians());
+        double rotSpeedToStraightInvalid = rotationController.calculate(drive.getRotation().getRadians());
+        if (rotationController.atSetpoint()) {
+          rotSpeedToStraightInvalid = 0;
+        }
+
         double xVelocity = Zones.determineSideOfTrench(drive.getPose());
         
         if (xVelocity == 0)
         {
           xVelocity = linearVelocity.getX();
         }
-        double rotate = isFacingHubSupplier.getAsBoolean()
-            ? DriveCommands.computeOmegaToFaceHub(drive, faceTargetController)
-            : maxRotSpeedRadPerS * omega;
         rumbleController(true);
         drive.driveFieldCentric(
             xVelocity,
-            linearVelocity.getY(),
-            rotate);
+            yVelInvalid,
+            rotSpeedToStraightInvalid);
 
         break;
     }
