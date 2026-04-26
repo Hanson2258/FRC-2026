@@ -45,5 +45,5 @@ public final class TransferConstants {
   public static final int kColorSensorProximityThreshold = 150;
 
   /** Delta volts per step. */
-  public static final double kStepVolts = 12.0; // TODO: Change this to 0.25
+  public static final double kStepVolts = 0.25;
 }
