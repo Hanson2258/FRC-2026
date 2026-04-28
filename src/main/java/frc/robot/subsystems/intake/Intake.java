@@ -5,12 +5,15 @@ import static frc.robot.subsystems.intake.IntakeConstants.*;
 import edu.wpi.first.math.MathUtil;
 import frc.robot.Constants;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.Logger;
 
 /** Intake subsystem: field-to-storage transfer. */
 public class Intake extends SubsystemBase {
+  private static final String kTargetVoltageKey = "Intake/TargetVoltage";
+  private static final double kTargetVoltageWidgetEpsilon = 1e-3;
 
   /** Intake state: Idle, Intaking (pull in), Reversing (spit out), or Manual. */
   public enum State {
@@ -27,6 +30,7 @@ public class Intake extends SubsystemBase {
   private State state = State.IDLE;
   private double targetVoltage = kIdleVoltage;
   private BooleanSupplier ignoreLimitsSupplier = () -> false;
+  private double lastTargetVoltageDashboardWrite = Double.NaN;
 
   public Intake(IntakeIO io) {
     this(io, "");
@@ -35,6 +39,7 @@ public class Intake extends SubsystemBase {
   public Intake(IntakeIO io, String logRoot) {
     intakeIO = io;
     this.logRoot = logRoot;
+    SmartDashboard.putNumber(kTargetVoltageKey, targetVoltage);
   } // End Intake Constructor
 
   @Override
@@ -49,8 +54,20 @@ public class Intake extends SubsystemBase {
 
     if (DriverStation.isDisabled()) {
       intakeIO.stop();
+      lastTargetVoltageDashboardWrite = Double.NaN;
       return;
     }
+
+    if (state != State.IDLE) {
+      double dashboardVolts = SmartDashboard.getNumber(kTargetVoltageKey, targetVoltage);
+      // Apply dashboard only when operator actually edits the widget value.
+      if (!Double.isNaN(lastTargetVoltageDashboardWrite)
+          && Math.abs(dashboardVolts - lastTargetVoltageDashboardWrite) > kTargetVoltageWidgetEpsilon) {
+        setTargetVoltage(dashboardVolts);
+      }
+    }
+    SmartDashboard.putNumber(kTargetVoltageKey, targetVoltage);
+    lastTargetVoltageDashboardWrite = targetVoltage;
 
     // Set the Intake voltage based on the current state.
     switch (state) {
@@ -123,6 +140,8 @@ public class Intake extends SubsystemBase {
         ? MathUtil.clamp(stepTargetVoltage, -Constants.kNominalVoltage, Constants.kNominalVoltage)
         : MathUtil.clamp(stepTargetVoltage, -kMaxVoltage, kMaxVoltage));
     }
-    if (getTargetVoltage() == kIdleVoltage) setIdleState();
+    if (Math.abs(getTargetVoltage() - kIdleVoltage) < 1e-6) {
+      setIdleState();
+    }
   } // End stepVoltage
 }

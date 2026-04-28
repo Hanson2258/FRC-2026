@@ -5,12 +5,15 @@ import static frc.robot.subsystems.shooter.transfer.TransferConstants.*;
 import edu.wpi.first.math.MathUtil;
 import frc.robot.Constants;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.Logger;
 
 /** Transfer subsystem: Staging (low voltage, stop when sensor tripped (optional)) or Shooting (high voltage). */
 public class Transfer extends SubsystemBase {
+  private static final String kTargetVoltageKey = "Transfer/TargetVoltage";
+  private static final double kTargetVoltageWidgetEpsilon = 1e-3;
 
   /** Transfer state: Idle, Staging (slow pre-load), Shooting, or Manual. */
   public enum State {
@@ -29,6 +32,7 @@ public class Transfer extends SubsystemBase {
   private boolean ballStaged = false;
   private double targetVoltage = kIdleVoltage;
   private BooleanSupplier ignoreLimitsSupplier = () -> false;
+  private double lastTargetVoltageDashboardWrite = Double.NaN;
 
   public Transfer(TransferIO io) {
     this(io, "");
@@ -37,6 +41,7 @@ public class Transfer extends SubsystemBase {
   public Transfer(TransferIO io, String logRoot) {
     transferIO = io;
     this.logRoot = logRoot;
+    SmartDashboard.putNumber(kTargetVoltageKey, targetVoltage);
   } // End Transfer Constructor
 
   @Override
@@ -52,8 +57,20 @@ public class Transfer extends SubsystemBase {
 
     if (DriverStation.isDisabled()) {
       transferIO.stop();
+      lastTargetVoltageDashboardWrite = Double.NaN;
       return;
     }
+
+    boolean useSmartDashboardTarget = ignoreLimitsSupplier.getAsBoolean();
+    if (useSmartDashboardTarget && state != State.IDLE) {
+      double dashboardVolts = SmartDashboard.getNumber(kTargetVoltageKey, targetVoltage);
+      if (!Double.isNaN(lastTargetVoltageDashboardWrite)
+          && Math.abs(dashboardVolts - lastTargetVoltageDashboardWrite) > kTargetVoltageWidgetEpsilon) {
+        setTargetVoltage(dashboardVolts);
+      }
+    }
+    SmartDashboard.putNumber(kTargetVoltageKey, targetVoltage);
+    lastTargetVoltageDashboardWrite = targetVoltage;
 
     // Set the Transfer voltage based on the current state.
     switch (state) {
@@ -135,7 +152,9 @@ public class Transfer extends SubsystemBase {
         ? MathUtil.clamp(stepTargetVoltage, -Constants.kNominalVoltage, Constants.kNominalVoltage)
         : MathUtil.clamp(stepTargetVoltage, -kMaxVoltage, kMaxVoltage));
     }
-    if (getTargetVoltage() == kIdleVoltage) setIdleState();
+    if (Math.abs(getTargetVoltage() - kIdleVoltage) < 1e-6) {
+      setIdleState();
+    }
   } // End stepVoltage
 
   /** True when in Staging and colour sensor was tripped (ball at transfer). */

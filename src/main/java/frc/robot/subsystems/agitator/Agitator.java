@@ -5,12 +5,15 @@ import static frc.robot.subsystems.agitator.AgitatorConstants.*;
 import edu.wpi.first.math.MathUtil;
 import frc.robot.Constants;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.Logger;
 
 /** Agitator subsystem: storage-to-shooter transfer. */
 public class Agitator extends SubsystemBase {
+  private static final String kTargetVoltageKey = "Agitator/TargetVoltage";
+  private static final double kTargetVoltageWidgetEpsilon = 1e-3;
 
   /** Agitator state: Idle, Staging (slow pre-load), Shooting, or Manual. */
   public enum State {
@@ -27,6 +30,7 @@ public class Agitator extends SubsystemBase {
   private State state = State.IDLE;
   private double targetVoltage = kIdleVoltage;
   private BooleanSupplier ignoreLimitsSupplier = () -> false;
+  private double lastTargetVoltageDashboardWrite = Double.NaN;
 
   public Agitator(AgitatorIO io) {
     this(io, "");
@@ -35,6 +39,7 @@ public class Agitator extends SubsystemBase {
   public Agitator(AgitatorIO io, String logRoot) {
     agitatorIO = io;
     this.logRoot = logRoot;
+    SmartDashboard.putNumber(kTargetVoltageKey, targetVoltage);
   } // End Agitator Constructor
 
   @Override
@@ -48,8 +53,20 @@ public class Agitator extends SubsystemBase {
 
     if (DriverStation.isDisabled()) {
       agitatorIO.stop();
+      lastTargetVoltageDashboardWrite = Double.NaN;
       return;
     }
+
+    boolean useSmartDashboardTarget = ignoreLimitsSupplier.getAsBoolean();
+    if (useSmartDashboardTarget && state != State.IDLE) {
+      double dashboardVolts = SmartDashboard.getNumber(kTargetVoltageKey, targetVoltage);
+      if (!Double.isNaN(lastTargetVoltageDashboardWrite)
+          && Math.abs(dashboardVolts - lastTargetVoltageDashboardWrite) > kTargetVoltageWidgetEpsilon) {
+        setTargetVoltage(dashboardVolts);
+      }
+    }
+    SmartDashboard.putNumber(kTargetVoltageKey, targetVoltage);
+    lastTargetVoltageDashboardWrite = targetVoltage;
 
     // Set the Agitator voltage based on the current state.
     switch (state) {
@@ -122,6 +139,8 @@ public class Agitator extends SubsystemBase {
         ? MathUtil.clamp(stepTargetVoltage, -Constants.kNominalVoltage, Constants.kNominalVoltage)
         : MathUtil.clamp(stepTargetVoltage, -kMaxVoltage, kMaxVoltage));
     }
-    if (getTargetVoltage() == kIdleVoltage) setIdleState();
+    if (Math.abs(getTargetVoltage() - kIdleVoltage) < 1e-6) {
+      setIdleState();
+    }
   } // End stepVoltage
 }
