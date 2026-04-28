@@ -4,6 +4,7 @@ import static frc.robot.subsystems.shooter.transfer.TransferConstants.*;
 
 import edu.wpi.first.math.MathUtil;
 import frc.robot.Constants;
+import frc.robot.util.TelemetryUtil;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -30,7 +31,7 @@ public class Transfer extends SubsystemBase {
   private State state = State.IDLE;
   private boolean colourSensorEnabled = false;
   private boolean ballStaged = false;
-  private double targetVoltage = kIdleVoltage;
+  private double targetVoltage = TelemetryUtil.roundToTwoDecimals(kIdleVoltage);
   private BooleanSupplier ignoreLimitsSupplier = () -> false;
   private double lastTargetVoltageDashboardWrite = Double.NaN;
 
@@ -41,17 +42,17 @@ public class Transfer extends SubsystemBase {
   public Transfer(TransferIO io, String logRoot) {
     transferIO = io;
     this.logRoot = logRoot;
-    SmartDashboard.putNumber(kTargetVoltageKey, targetVoltage);
+    SmartDashboard.putNumber(kTargetVoltageKey, TelemetryUtil.roundToTwoDecimals(targetVoltage));
   } // End Transfer Constructor
 
   @Override
   public void periodic() {
     transferIO.updateInputs(transferInputs);
     Logger.recordOutput(logRoot + "Subsystems/Shooter/Transfer/Inputs/MotorConnected", transferInputs.motorConnected);
-    Logger.recordOutput(logRoot + "Subsystems/Shooter/Transfer/Inputs/AppliedVolts", transferInputs.appliedVolts);
-    Logger.recordOutput(logRoot + "Subsystems/Shooter/Transfer/Inputs/SupplyCurrentAmps", transferInputs.supplyCurrentAmps);
+    Logger.recordOutput(logRoot + "Subsystems/Shooter/Transfer/Inputs/AppliedVolts", TelemetryUtil.roundToTwoDecimals(transferInputs.appliedVolts));
+    Logger.recordOutput(logRoot + "Subsystems/Shooter/Transfer/Inputs/SupplyCurrentAmps", TelemetryUtil.roundToTwoDecimals(transferInputs.supplyCurrentAmps));
     Logger.recordOutput(logRoot + "Subsystems/Shooter/Transfer/Inputs/ColorSensorTripped", transferInputs.colorSensorTripped);
-    Logger.recordOutput(logRoot + "Subsystems/Shooter/Transfer/TargetVolts", getTargetVoltage());
+    Logger.recordOutput(logRoot + "Subsystems/Shooter/Transfer/TargetVolts", TelemetryUtil.roundToTwoDecimals(getTargetVoltage()));
     Logger.recordOutput(logRoot + "Subsystems/Shooter/Transfer/BallStaged", ballStaged);
     Logger.recordOutput(logRoot + "Subsystems/Shooter/Transfer/State", state.name());
 
@@ -69,6 +70,7 @@ public class Transfer extends SubsystemBase {
         setTargetVoltage(dashboardVolts);
       }
     }
+    targetVoltage = TelemetryUtil.roundToTwoDecimals(targetVoltage);
     SmartDashboard.putNumber(kTargetVoltageKey, targetVoltage);
     lastTargetVoltageDashboardWrite = targetVoltage;
 
@@ -99,20 +101,20 @@ public class Transfer extends SubsystemBase {
   /** Set state to Idle (motor stopped). */
   public void setIdleState() {
     state = State.IDLE;
-    targetVoltage = kIdleVoltage;
+    setTargetVoltage(kIdleVoltage);
   } // End setIdleState
 
   /** Set state to Staging (slow pre-load; stop when colour sensor tripped (optional)). */
   public void setStagingState() {
     state = State.STAGING;
-    targetVoltage = kStagingVoltage;
+    setTargetVoltage(kStagingVoltage);
   } // End setStagingState
 
   /** Set state to Shooting (fast load); clears ballStaged. */
   public void setShootingState() {
     state = State.SHOOTING;
     ballStaged = false;
-    targetVoltage = kShootingVoltage;
+    setTargetVoltage(kShootingVoltage);
   } // End setShootingState
 
   /** Get current state. */
@@ -120,9 +122,9 @@ public class Transfer extends SubsystemBase {
     return state;
   } // End getState
 
-  /** Set the target voltage. */
+  /** Set the target voltage (rounded to two decimals). */
   public void setTargetVoltage(double volts) {
-    targetVoltage = volts;
+    targetVoltage = TelemetryUtil.roundToTwoDecimals(volts);
   } // End setTargetVoltage
 
   /** Get the current target voltage. */

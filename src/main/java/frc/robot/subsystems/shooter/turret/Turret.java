@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.commands.ShooterCommands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.shooter.ShooterCalculator;
+import frc.robot.util.TelemetryUtil;
 import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.Logger;
 
@@ -52,7 +53,7 @@ public class Turret extends SubsystemBase {
     SmartDashboard.putNumber("Turret/kP", kP);
     SmartDashboard.putNumber("Turret/kI", kI);
     SmartDashboard.putNumber("Turret/kD", kD);
-    SmartDashboard.putNumber("Turret/TargetPositionDeg", Units.radiansToDegrees(kDefaultAimDirectionRobotFrame.getRadians()));
+    SmartDashboard.putNumber("Turret/TargetPositionDeg", TelemetryUtil.roundToTwoDecimals(Units.radiansToDegrees(kDefaultAimDirectionRobotFrame.getRadians())));
   } // End Turret Constructor
 
   @Override
@@ -106,13 +107,13 @@ public class Turret extends SubsystemBase {
     lastManualOverride = manualOverrideSupplier.getAsBoolean();
 
     Logger.recordOutput(logRoot + "Subsystems/Shooter/Turret/Inputs/MotorConnected", turretInputs.motorConnected);
-    Logger.recordOutput(logRoot + "Subsystems/Shooter/Turret/Inputs/PositionDeg", Units.radiansToDegrees(turretInputs.positionRads));
+    Logger.recordOutput(logRoot + "Subsystems/Shooter/Turret/Inputs/PositionDeg", TelemetryUtil.roundToTwoDecimals(Units.radiansToDegrees(turretInputs.positionRads)));
     Logger.recordOutput(logRoot + "Subsystems/Shooter/Turret/Inputs/VelocityDegPerSec", Units.radiansToDegrees(turretInputs.velocityRadsPerSec));
-    Logger.recordOutput(logRoot + "Subsystems/Shooter/Turret/Inputs/AppliedVolts", turretInputs.appliedVolts);
-    Logger.recordOutput(logRoot + "Subsystems/Shooter/Turret/Inputs/SupplyCurrentAmps", turretInputs.supplyCurrentAmps);
-    Logger.recordOutput(logRoot + "Subsystems/Shooter/Turret/TargetPositionDeg", Units.radiansToDegrees(targetPositionRad));
-    Logger.recordOutput(logRoot + "Subsystems/Shooter/Turret/TargetRobotFrameDeg", getTargetRelativeToRobot().getDegrees());
-    Logger.recordOutput(logRoot + "Subsystems/Shooter/Turret/RobotFrameDeg", getRobotFramePosition().getDegrees());
+    Logger.recordOutput(logRoot + "Subsystems/Shooter/Turret/Inputs/AppliedVolts", TelemetryUtil.roundToTwoDecimals(turretInputs.appliedVolts));
+    Logger.recordOutput(logRoot + "Subsystems/Shooter/Turret/Inputs/SupplyCurrentAmps", TelemetryUtil.roundToTwoDecimals(turretInputs.supplyCurrentAmps));
+    Logger.recordOutput(logRoot + "Subsystems/Shooter/Turret/TargetPositionDeg", TelemetryUtil.roundToTwoDecimals(Units.radiansToDegrees(targetPositionRad)));
+    Logger.recordOutput(logRoot + "Subsystems/Shooter/Turret/TargetRobotFrameDeg", TelemetryUtil.roundToTwoDecimals(getTargetRelativeToRobot().getDegrees()));
+    Logger.recordOutput(logRoot + "Subsystems/Shooter/Turret/RobotFrameDeg", TelemetryUtil.roundToTwoDecimals(getRobotFramePosition().getDegrees()));
     Logger.recordOutput(logRoot + "Subsystems/Shooter/Turret/AimRateFeedforwardDegPerSec", Units.radiansToDegrees(velocityFeedforwardRadPerSec));
     Logger.recordOutput(logRoot + "Subsystems/Shooter/Turret/State", state.name());
 
@@ -275,7 +276,7 @@ public class Turret extends SubsystemBase {
     turretIO.resetEncoder();
     setTargetRelativeToRobot(kDefaultAimDirectionRobotFrame);
     lastTargetPositionRad = robotToTurretFrameRad(kDefaultAimDirectionRobotFrame.getRadians());
-    SmartDashboard.putNumber("Turret/TargetPositionDeg", Units.radiansToDegrees(kDefaultAimDirectionRobotFrame.getRadians()));
+    SmartDashboard.putNumber("Turret/TargetPositionDeg", TelemetryUtil.roundToTwoDecimals(Units.radiansToDegrees(kDefaultAimDirectionRobotFrame.getRadians())));
   } // End resetMotorEncoder
 
   /** Step the target position in Turret frame. */

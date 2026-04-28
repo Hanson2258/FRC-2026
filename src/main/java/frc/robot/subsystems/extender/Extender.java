@@ -7,6 +7,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.util.TelemetryUtil;
 import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.Logger;
 
@@ -27,7 +28,8 @@ public class Extender extends SubsystemBase {
   private final String logRoot;
 
   private State state = State.RETRACTED;
-  private double targetPositionRad = kUpExtenderRad;
+  private double targetPositionRad =
+      Units.degreesToRadians(TelemetryUtil.roundToTwoDecimals(Units.radiansToDegrees(kUpExtenderRad)));
   private BooleanSupplier ignoreLimitsSupplier = () -> false;
 
   public Extender(ExtenderIO io) {
@@ -41,18 +43,18 @@ public class Extender extends SubsystemBase {
     SmartDashboard.putNumber("Extender/kP", kP);
     SmartDashboard.putNumber("Extender/kI", kI);
     SmartDashboard.putNumber("Extender/kD", kD);
-    SmartDashboard.putNumber("Extender/TargetPositionDeg", Units.radiansToDegrees(targetPositionRad));
+    SmartDashboard.putNumber("Extender/TargetPositionDeg", TelemetryUtil.roundToTwoDecimals(Units.radiansToDegrees(targetPositionRad)));
   } // End Extender Constructor
 
   @Override
   public void periodic() {
     extenderIO.updateInputs(extenderInputs);
     Logger.recordOutput(logRoot + "Subsystems/Extender/Inputs/MotorConnected", extenderInputs.motorConnected);
-    Logger.recordOutput(logRoot + "Subsystems/Extender/Inputs/PositionDeg", Units.radiansToDegrees(extenderInputs.positionRads));
+    Logger.recordOutput(logRoot + "Subsystems/Extender/Inputs/PositionDeg", TelemetryUtil.roundToTwoDecimals(Units.radiansToDegrees(extenderInputs.positionRads)));
     Logger.recordOutput(logRoot + "Subsystems/Extender/Inputs/VelocityDegPerSec", Units.radiansToDegrees(extenderInputs.velocityRadsPerSec));
-    Logger.recordOutput(logRoot + "Subsystems/Extender/Inputs/AppliedVolts", extenderInputs.appliedVolts);
-    Logger.recordOutput(logRoot + "Subsystems/Extender/Inputs/SupplyCurrentAmps", extenderInputs.supplyCurrentAmps);
-    Logger.recordOutput(logRoot + "Subsystems/Extender/TargetPositionDeg", Units.radiansToDegrees(targetPositionRad));
+    Logger.recordOutput(logRoot + "Subsystems/Extender/Inputs/AppliedVolts", TelemetryUtil.roundToTwoDecimals(extenderInputs.appliedVolts));
+    Logger.recordOutput(logRoot + "Subsystems/Extender/Inputs/SupplyCurrentAmps", TelemetryUtil.roundToTwoDecimals(extenderInputs.supplyCurrentAmps));
+    Logger.recordOutput(logRoot + "Subsystems/Extender/TargetPositionDeg", TelemetryUtil.roundToTwoDecimals(Units.radiansToDegrees(targetPositionRad)));
     Logger.recordOutput(logRoot + "Subsystems/Extender/AtTargetPosition", atTargetPosition());
     Logger.recordOutput(logRoot + "Subsystems/Extender/State", state.name());
 
@@ -134,7 +136,8 @@ public class Extender extends SubsystemBase {
 
   /** Set target position in radians (clamped to travel limits if limits override is not enabled). */
   public void setTargetPositionRad(double targetRad) {
-    targetPositionRad = ignoreLimitsSupplier.getAsBoolean() ? targetRad : clampTargetPosition(targetRad);
+    double clampedRad = ignoreLimitsSupplier.getAsBoolean() ? targetRad : clampTargetPosition(targetRad);
+    targetPositionRad = Units.degreesToRadians(TelemetryUtil.roundToTwoDecimals(Units.radiansToDegrees(clampedRad)));
   } // End setTargetPositionRad
 
   /** Whether Extender is at target position within tolerance. */
