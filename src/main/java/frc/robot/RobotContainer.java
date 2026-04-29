@@ -122,7 +122,11 @@ public class RobotContainer {
 	// Shooter Manager
 	private final Shooter shooter;
 	private final ShootWhenReadyCommand shootWhenReadyCommand;
-
+	@AutoLogOutput(key = "Subsystems/Shooter/AutoShootEnabled")
+	private boolean autoShootEnabled = false;
+	@AutoLogOutput(key = "Subsystems/Shooter/AutoShootTemporarilyDisabled")
+	private boolean autoShootTemporarilyDisabled = false;
+	
 	// Safe Extender Retracter
 	private final Command safeRetractExtenderCommand;
 
@@ -141,10 +145,6 @@ public class RobotContainer {
 	@AutoLogOutput(key = "Subsystems/Shooter/Turret/DriverTurretOverride")
 	private boolean driverTurretOverride = false;
 	private boolean trenchAutoShootEnabled = true;
-	@AutoLogOutput(key = "Subsystems/Shooter/AutoShootEnabled")
-	private boolean autoShootEnabled = false;
-	@AutoLogOutput(key = "Subsystems/Shooter/AutoShootTemporarilyDisabled")
-	private boolean autoShootTemporarilyDisabled = false;
 
 	// Hang Hold Mode
 	@AutoLogOutput(key = "Subsystems/Hang/HangHoldModeEnabled")
