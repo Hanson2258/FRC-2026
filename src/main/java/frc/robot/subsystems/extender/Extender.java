@@ -31,7 +31,7 @@ public class Extender extends SubsystemBase {
 
   private State state = State.RETRACTED;
   private double targetPositionRad =
-      Units.degreesToRadians(TelemetryUtil.roundToTwoDecimals(Units.radiansToDegrees(kUpExtenderRad)));
+      Units.degreesToRadians(TelemetryUtil.roundToTwoDecimals(Units.radiansToDegrees(kUpRad)));
   private BooleanSupplier ignoreLimitsSupplier = () -> false;
   private double lastTargetPositionDashboardWriteDeg = Double.NaN;
 
@@ -101,7 +101,7 @@ public class Extender extends SubsystemBase {
         extenderIO.setTargetPosition(targetPositionRad);
         break;
       case IDLE:
-        if (getPositionRad() > kExtendedExtenderRad - kAtTargetToleranceRad) {
+        if (getPositionRad() > kExtendedRad - kAtTargetToleranceRad) {
           setExtendedState();
           break;
         }
@@ -126,19 +126,19 @@ public class Extender extends SubsystemBase {
   /** Set state to Retracted (up position). */
   public void setRetractedState() {
     state = State.RETRACTED;
-    setTargetPositionRad(kUpExtenderRad);
+    setTargetPositionRad(kUpRad);
   } // End setRetractedState
 
   /** Set state to Partial (middle position). */
   public void setPartialState() {
     state = State.PARTIAL;
-    setTargetPositionRad(kPartialExtenderRad);
+    setTargetPositionRad(kPartialRad);
   } // End setPartialState
 
   /** Set state to Extended (down; rest on bumpers when there). */
   public void setExtendedState() {
     state = State.EXTENDED;
-    setTargetPositionRad(kExtendedExtenderRad);
+    setTargetPositionRad(kExtendedRad);
   } // End setExtendedState
 
   /** Get current state. */
@@ -155,8 +155,8 @@ public class Extender extends SubsystemBase {
   /** Returns true when Extender is neither near retracted nor near extended endpoints. */
   public boolean isBetweenSafeEndpoints() {
     double extenderPositionRad = getPositionRad();
-    boolean nearRetracted = extenderPositionRad <= kUpExtenderRad + kAtTargetToleranceRad;
-    boolean nearExtended = extenderPositionRad >= kExtendedExtenderRad - kAtTargetToleranceRad;
+    boolean nearRetracted = extenderPositionRad <= kUpRad + kAtTargetToleranceRad;
+    boolean nearExtended = extenderPositionRad >= kExtendedRad - kAtTargetToleranceRad;
     return !nearRetracted && !nearExtended;
   } // End isBetweenSafeEndpoints
 
