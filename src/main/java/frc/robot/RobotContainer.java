@@ -26,6 +26,8 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+
+import static edu.wpi.first.units.Units.Meter;
 import static edu.wpi.first.units.Units.Meters;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -445,25 +447,21 @@ public class RobotContainer {
 
 		// Cycle Extender, starts in Retracted, goes to Extended, and then cycles between Partial and Extended. 
 		// If in Manual, goes to Extended.
-		//driverController.leftTrigger().and(driverTriggerGate).onTrue(Commands.runOnce(() -> {
-		//	switch (extender.getState()) {
-		//		case EXTENDED ->  extender.setPartialState();
-		//		case PARTIAL -> 	extender.setExtendedState();
-		//		case RETRACTED -> extender.setExtendedState();
-		//		case MANUAL -> 		extender.setExtendedState();
-		//		case IDLE ->			extender.setExtendedState();
-		//		default -> throw new IllegalArgumentException("Unexpected value: " + extender.getState());
-		//	}
-//
-		//	// Disable Intake when Extender is Retracted or Partial
-		//	if (extender.getState() == Extender.State.RETRACTED || extender.getState() == Extender.State.PARTIAL) {
-		//		intake.setIdleState();
-		//	}
-		//}, extender));
-
 		driverController.leftTrigger().and(driverTriggerGate).onTrue(Commands.runOnce(() -> {
-			drive.resetPosition(new Pose2d(Constants.Dimensions.FULL_LENGTH.div(2), Constants.Dimensions.FULL_WIDTH.div(2), new Rotation2d(0)));
-		}));
+			switch (extender.getState()) {
+				case EXTENDED ->  extender.setPartialState();
+				case PARTIAL -> 	extender.setExtendedState();
+				case RETRACTED -> extender.setExtendedState();
+				case MANUAL -> 		extender.setExtendedState();
+				case IDLE ->			extender.setExtendedState();
+				default -> throw new IllegalArgumentException("Unexpected value: " + extender.getState());
+			}
+
+			// Disable Intake when Extender is Retracted or Partial
+			if (extender.getState() == Extender.State.RETRACTED || extender.getState() == Extender.State.PARTIAL) {
+				intake.setIdleState();
+			}
+		}, extender));
 
 		// Set to Retracted, must turn off AutoShoot, and set Turret Target to 0
 		driverController.povDown().and(driverTriggerGate).onTrue(safeRetractExtenderCommand);
@@ -574,17 +572,17 @@ public class RobotContainer {
 		// Raise Intake voltage
 		operatorController.povLeft().and(operatorControlGate).onTrue(
 			new ConditionalCommand(
-				Commands.runOnce(() -> intake.stepVoltage(IntakeConstants.kStepVolts), intake),
+				Commands.runOnce(() -> hood.stepPositionRad(HoodConstants.kStepAngleRads), hood),
 				new InstantCommand(),
-				() -> intake != null
+				() -> hood != null
 			)
 		);
 		// Lower Intake voltage
 		operatorController.povRight().and(operatorControlGate).onTrue(
 			new ConditionalCommand(
-				Commands.runOnce(() -> intake.stepVoltage(-IntakeConstants.kStepVolts), intake),
+				Commands.runOnce(() -> hood.stepPositionRad(-HoodConstants.kStepAngleRads), hood),
 				new InstantCommand(),
-				() -> intake != null
+				() -> hood != null
 			)
 		);
 
@@ -608,6 +606,12 @@ public class RobotContainer {
 				() -> extender != null)
 		);
 
+		operatorController.a().and(operatorControlGate).onTrue(
+			Commands.runOnce(() -> {
+				idleAllSubsystems();
+			}, turret)
+		);
+
 		// Hang Manual Position Control
 		// Raise Hang (Extend)
 		operatorController.b().and(operatorControlGate).onTrue(
@@ -626,7 +630,6 @@ public class RobotContainer {
 			)
 		);
 
-
 		// ------------------------------------------ Operator Manual Override ------------------------------------------
 		// If Manual Override is false, become true. 
 		// If true, reset encoder positions and then become false.
@@ -636,31 +639,23 @@ public class RobotContainer {
 				Commands.runOnce(() -> operatorManualOverride = true),
 				() -> operatorManualOverride));
 
-		// Agitator Manual Voltage Control
-		// Raise Agitator voltage
-		operatorController.y().onTrue(
+		// Reset Robot ODOM
+		Pose2d rightResetODOMPose = new Pose2d(Constants.Dimensions.FULL_LENGTH.in(Meters) / 2, Constants.Dimensions.FULL_WIDTH.in(Meters) / 2, new Rotation2d(0));
+		Pose2d leftResetODOMPose = new Pose2d(FieldConstants.FIELD_WIDTH_M - (Constants.Dimensions.FULL_LENGTH.in(Meters) / 2), Constants.Dimensions.FULL_WIDTH.in(Meters) / 2, new Rotation2d(0));
+
+		operatorController.leftBumper().and(operatorControlGate).onTrue(
 			new ConditionalCommand(
-				Commands.runOnce(() -> agitator.stepVoltage(AgitatorConstants.kStepVolts), agitator),
+				Commands.runOnce(() -> drive.resetPosition(rightResetODOMPose)),
 				new InstantCommand(),
-				() -> (operatorManualOverride && agitator != null)
-			)
-		);
-		// Lower Agitator voltage
-		operatorController.a().and(operatorControlGate).onTrue(
-			new ConditionalCommand(
-				Commands.runOnce(() -> agitator.stepVoltage(-AgitatorConstants.kStepVolts), hood),
-				new InstantCommand(),
-				() -> (operatorManualOverride && agitator != null)
+				() -> (operatorManualOverride && drive != null)
 			)
 		);
 
-		// Transfer Manual Voltage Control
-		// Raise Transfer voltage
 		operatorController.leftBumper().and(operatorControlGate).onTrue(
 			new ConditionalCommand(
-				Commands.runOnce(() -> transfer.stepVoltage(TransferConstants.kStepVolts), transfer),
+				Commands.runOnce(() -> drive.resetPosition(leftResetODOMPose)),
 				new InstantCommand(),
-				() -> (operatorManualOverride && transfer != null)
+				() -> (operatorManualOverride && drive != null)
 			)
 		);
 		// Lower Transfer voltage
