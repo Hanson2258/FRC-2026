@@ -27,7 +27,6 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 
-import static edu.wpi.first.units.Units.Meter;
 import static edu.wpi.first.units.Units.Meters;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -38,7 +37,6 @@ import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.*;
-import frc.robot.Constants.*;
 import frc.robot.generated.TunerConstants;
 import frc.robot.simulation.FuelSim;
 import frc.robot.simulation.HubLightSimDisplay;
@@ -642,18 +640,9 @@ public class RobotContainer {
 
 		// Reset Robot ODOM
 		Pose2d rightResetODOMPose = new Pose2d(Constants.Dimensions.FULL_LENGTH.in(Meters) / 2, Constants.Dimensions.FULL_WIDTH.in(Meters) / 2, new Rotation2d(0));
-		Pose2d leftResetODOMPose = new Pose2d(FieldConstants.FIELD_WIDTH_M - (Constants.Dimensions.FULL_LENGTH.in(Meters) / 2), Constants.Dimensions.FULL_WIDTH.in(Meters) / 2, new Rotation2d(0));
+		Pose2d leftResetODOMPose = new Pose2d(Constants.Dimensions.FULL_LENGTH.in(Meters) / 2, FieldConstants.FIELD_WIDTH_M - (Constants.Dimensions.FULL_LENGTH.in(Meters) / 2), new Rotation2d(0));
 
 		// Right position reset ODOM
-		operatorController.leftBumper().and(operatorControlGate).onTrue(
-			new ConditionalCommand(
-				Commands.runOnce(() -> drive.resetPosition(rightResetODOMPose)),
-				new InstantCommand(),
-				() -> (operatorManualOverride && drive != null)
-			)
-		);
-
-		// Left position reset ODOM
 		operatorController.leftBumper().and(operatorControlGate).onTrue(
 			new ConditionalCommand(
 				Commands.runOnce(() -> drive.resetPosition(leftResetODOMPose)),
@@ -661,12 +650,13 @@ public class RobotContainer {
 				() -> (operatorManualOverride && drive != null)
 			)
 		);
-		// Lower Transfer voltage
+
+		// Left position reset ODOM
 		operatorController.rightBumper().and(operatorControlGate).onTrue(
 			new ConditionalCommand(
-				Commands.runOnce(() -> transfer.stepVoltage(-TransferConstants.kStepVolts), transfer),
+				Commands.runOnce(() -> drive.resetPosition(rightResetODOMPose)),
 				new InstantCommand(),
-				() -> (operatorManualOverride && transfer != null)
+				() -> (operatorManualOverride && drive != null)
 			)
 		);
 		
