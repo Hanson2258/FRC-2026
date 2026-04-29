@@ -105,30 +105,22 @@ public class Zones {
 
         protected boolean willContainPoint(Pose2d robotPose2d, ChassisSpeeds fieldSpeeds, Time dt, boolean isExtended) {
             boolean yInZone = (robotPose2d.getY() >= yMin && robotPose2d.getY() <= yMax);
-            boolean xWillInZone;
-            
-            if (isExtended) {
-                double xAverage = (xMin + xMax) / 2;
-                if (robotPose2d.getX() >= xAverage) {
-                    xWillInZone = (robotPose2d.getRotation().getDegrees() <= -90) || (robotPose2d.getRotation().getDegrees() >= 90)? 
-                        willContainPointLogic(robotPose2d, fieldSpeeds, dt, 0, Constants.Dimensions.FRONT_EXTENSION):
-                        willContainPointLogic(robotPose2d, fieldSpeeds, dt, 0, 0);
-                    return yInZone && xWillInZone;
-                } else {
-                    xWillInZone = (robotPose2d.getRotation().getDegrees() >= -90) || (robotPose2d.getRotation().getDegrees() <= 90)?
-                        willContainPointLogic(robotPose2d, fieldSpeeds, dt, Constants.Dimensions.FRONT_EXTENSION, 0):
-                        willContainPointLogic(robotPose2d, fieldSpeeds, dt, 0, 0);
-                    return yInZone && xWillInZone;
-                }
-            } else {
-                    return willContainPointLogic(robotPose2d, fieldSpeeds, dt, 0, 0);
+            if (!yInZone) {
+                return false;
             }
-            // ((point.getX() >= xMin && point.getX() <= xMax) // determine
-            //                 || (point.getX() < xMin
-            //                         && fieldSpeeds.vxMetersPerSecond * dt.in(Seconds) >= xMin - point.getX()) //heading 0
-            //                 || (point.getX() > xMax
-            //                         && fieldSpeeds.vxMetersPerSecond * dt.in(Seconds) <= xMax - point.getX()));//heading 180
-            // return 
+
+            double subtract = 0.0;
+            double add = 0.0;
+            if (isExtended) {
+                // Expand only in the robot's front field-X direction.
+                if (robotPose2d.getRotation().getCos() >= 0.0) {
+                    subtract = Constants.Dimensions.FRONT_EXTENSION;
+                } else {
+                    add = Constants.Dimensions.FRONT_EXTENSION;
+                }
+            }
+
+            return willContainPointLogic(robotPose2d, fieldSpeeds, dt, subtract, add);
         }
 
             protected boolean willContainPointLogic(Pose2d point, ChassisSpeeds fieldSpeeds, Time dt, double subtract, double add) {
