@@ -45,13 +45,13 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 import frc.robot.subsystems.intake.*;
 import frc.robot.subsystems.extender.*;
 import frc.robot.subsystems.agitator.*;
-import frc.robot.subsystems.candle.*;
 import frc.robot.subsystems.shooter.*;
 import frc.robot.subsystems.shooter.transfer.*;
 import frc.robot.subsystems.shooter.turret.*;
 import frc.robot.subsystems.shooter.hood.*;
 import frc.robot.subsystems.shooter.flywheel.*;
 import frc.robot.subsystems.hang.*;
+import frc.robot.subsystems.candle.*;
 
 import frc.robot.simulation.SecondSimRobotBundle;
 import frc.robot.simulation.SecondSimRobotOutputs;
@@ -89,8 +89,8 @@ public class RobotContainer {
 	private boolean isTurretEnabled 	= true;
 	private boolean isHoodEnabled 		= true;
 	private boolean isFlywheelEnabled = true;
-	private boolean isCandleEnabled 	= true;
 	private boolean isHangEnabled 		= false;
+	private boolean isCandleEnabled 	= true;
 
 	// Simulation Toggle
 	private boolean halfFuelOnly 			= false;
@@ -108,8 +108,8 @@ public class RobotContainer {
 	private final Turret turret;
 	private final Hood hood;
 	private final Flywheel flywheel;
-	private final CANdle candle;
 	private final Hang hang;
+	private final CANdle candle;
 
 	// Drive Commands
 	private final TeleopDrive teleopDrive;
@@ -218,8 +218,8 @@ public class RobotContainer {
 				turret   = isTurretEnabled 	 ? new Turret(new TurretIOSparkMax()) 	  : new Turret(new TurretIO() {});
 				hood     = isHoodEnabled  	 ? new Hood(new HoodIOAxon()) 		  			: new Hood(new HoodIO() {});
 				flywheel = isFlywheelEnabled ? new Flywheel(new FlywheelIOTalonFX())  : new Flywheel(new FlywheelIO() {});
-				candle 	 = isCandleEnabled   ? new CANdle(new CANdleIOLEDs())  			  : new CANdle(new CANdleIO() {});
 				hang 	 	 = isHangEnabled		 ? new Hang(new HangIOSparkMax())  				: new Hang(new HangIO() {});
+				candle 	 = isCandleEnabled   ? new CANdle(new CANdleIOLEDs())  			  : new CANdle(new CANdleIO() {});
 				shooterSim = null;
 				shooterSimVisualizer = null;
 				break;
@@ -261,8 +261,8 @@ public class RobotContainer {
 				turret 	 = new Turret(new TurretIOSim());
 				hood 		 = new Hood(new HoodIOSim());
 				flywheel = new Flywheel(new FlywheelIOSim());
-				candle   = new CANdle(new CANdleIOSim());
 				hang 		 = new Hang(new HangIOSim());
+				candle   = new CANdle(new CANdleIOSim());
 
 				int fuelRobotIndex = 0;
 				if (fuelSimEnabled) {
@@ -315,8 +315,8 @@ public class RobotContainer {
 				turret 	 = new Turret(new TurretIO() {});
 				hood 		 = new Hood(new HoodIO() {});
 				flywheel = new Flywheel(new FlywheelIO() {});
-				candle   = new CANdle(new CANdleIO() {});
 				hang 		 = new Hang(new HangIO() {});
+				candle   = new CANdle(new CANdleIO() {});
 				shooterSim = null;
 				shooterSimVisualizer = null;
 				break;
@@ -363,6 +363,7 @@ public class RobotContainer {
 		turret.setDrive(drive);
 		turret.setAimAtTargetSupplier(() -> shootWhenReadyCommand.isScheduled());
 
+		// LED Subsystem
 		candle.setShootWhenReadySupplier(() -> shootWhenReadyCommand.isScheduled());
 		candle.setManualOverrideSupplier(() -> RobotContainer.driverManualOverride || RobotContainer.operatorManualOverride);
 		candle.setShooter(shooter);
@@ -405,7 +406,6 @@ public class RobotContainer {
 		);
 		
 
-		//candle.setLEDColor(new RGBWColor(new Color(0, 0, 255)));
     // Configure button bindings
     configureDriverBindings();
     configureOperatorBindings(true); // False to disable operator controls
