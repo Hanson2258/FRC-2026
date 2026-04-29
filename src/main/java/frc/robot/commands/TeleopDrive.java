@@ -25,7 +25,6 @@ import frc.robot.Constants.SwerveConstants;
 import frc.robot.FieldConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.extender.Extender;
-import frc.robot.subsystems.extender.Extender.State;
 import frc.robot.subsystems.hang.Hang;
 import frc.robot.subsystems.hang.HangConstants;
 import frc.robot.subsystems.shooter.hood.Hood;
@@ -117,15 +116,14 @@ public class TeleopDrive extends Command {
     this.drive = drive;
     this.controller = controller;
     this.extender = extender;
-    this.isExtendedSupplier = extender != null
-        ? () -> extender.getState() == State.EXTENDED || extender.getState() == State.PARTIAL
-        : () -> false;
+    this.isExtendedSupplier = extender != null ? extender::isBetweenSafeEndpoints : () -> false;
     this.hood = hood;
     this.hang = hang;
     this.isRobotCentricSupplier = isRobotCentricSupplier;
     this.isFacingHubSupplier = isFacingHubSupplier;
     this.faceTargetController = faceTargetController;
-    this.fieldFlipTreatAsRedAlliance = fieldFlipTreatAsRedAlliance != null ? fieldFlipTreatAsRedAlliance : TeleopDrive::driverStationIsRedAlliance;
+    this.fieldFlipTreatAsRedAlliance = fieldFlipTreatAsRedAlliance != null ? fieldFlipTreatAsRedAlliance
+        : TeleopDrive::driverStationIsRedAlliance;
     this.logRoot = logRoot != null ? logRoot : "";
     this.xSupplier = () -> -controller.getLeftY() * flipFactor;
     this.ySupplier = () -> -controller.getLeftX() * flipFactor;
@@ -142,18 +140,16 @@ public class TeleopDrive extends Command {
 
     Trigger trenchContainmentTrigger;
     if (extender != null) {
-      trenchContainmentTrigger =
-          Zones.TRENCH_ZONES.willContain(
-              drive::getPose,
-              drive::getFieldRelativeChassisSpeeds,
-              Seconds.of(SwerveConstants.TRENCH_ALIGN_TIME_S),
-              isExtendedSupplier);
+      trenchContainmentTrigger = Zones.TRENCH_ZONES.willContain(
+          drive::getPose,
+          drive::getFieldRelativeChassisSpeeds,
+          Seconds.of(SwerveConstants.TRENCH_ALIGN_TIME_S),
+          isExtendedSupplier);
     } else {
-      trenchContainmentTrigger =
-          Zones.TRENCH_ZONES.willContain(
-              drive::getPose,
-              drive::getFieldRelativeChassisSpeeds,
-              Seconds.of(SwerveConstants.TRENCH_ALIGN_TIME_S));
+      trenchContainmentTrigger = Zones.TRENCH_ZONES.willContain(
+          drive::getPose,
+          drive::getFieldRelativeChassisSpeeds,
+          Seconds.of(SwerveConstants.TRENCH_ALIGN_TIME_S));
     }
     inTrenchZoneTrigger = trenchContainmentTrigger.debounce(0.1);
 
@@ -187,7 +183,7 @@ public class TeleopDrive extends Command {
     if (extender == null || hood == null || hang == null) {
       return false;
     }
-    return extender.getState() == State.PARTIAL
+    return extender.isBetweenSafeEndpoints()
         || hood.getAngleRad() < HoodConstants.kDisabledAngleRad - HoodConstants.kAtTargetToleranceRad
         || hang.getPositionMeters() > HangConstants.kStoredPositionMeters + HangConstants.kAtTargetToleranceMeters;
   } // End shouldUseInvalidTrenchMode
@@ -351,6 +347,7 @@ public class TeleopDrive extends Command {
     
     }
   }
+
   @Override
   public void end(boolean interrupted) {}
 
@@ -366,6 +363,4 @@ public class TeleopDrive extends Command {
     MANUAL_OVERRIDE,
     INVALID_TRENCH
   } // End DriveMode
-
-
 }

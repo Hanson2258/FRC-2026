@@ -119,7 +119,7 @@ public class Extender extends SubsystemBase {
   } // End setIdleState
 
   
-  public boolean isExtended(){
+  public boolean isExtended() {
     return getState() == State.EXTENDED;
   }
 
@@ -150,7 +150,15 @@ public class Extender extends SubsystemBase {
   /** Measured position in radians. */
   public double getPositionRad() {
     return extenderInputs.positionRads;
-  } // End getPositionRad  
+  } // End getPositionRad
+
+  /** Returns true when Extender is neither near retracted nor near extended endpoints. */
+  public boolean isBetweenSafeEndpoints() {
+    double extenderPositionRad = getPositionRad();
+    boolean nearRetracted = extenderPositionRad <= kUpExtenderRad + kAtTargetToleranceRad;
+    boolean nearExtended = extenderPositionRad >= kExtendedExtenderRad - kAtTargetToleranceRad;
+    return !nearRetracted && !nearExtended;
+  } // End isBetweenSafeEndpoints
 
   /** Get the current target position in radians. */
   public double getTargetPositionRad() {
@@ -168,7 +176,7 @@ public class Extender extends SubsystemBase {
     return Math.abs(getPositionRad() - targetPositionRad) <= kAtTargetToleranceRad;
   } // End atTargetPosition
 
-  
+
   /** Clamp a target angle to mechanical limits. */
   public double clampTargetPosition(double targetRad) {
     return MathUtil.clamp(targetRad, kMinRad, kMaxRad);
