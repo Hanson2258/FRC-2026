@@ -9,9 +9,13 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.Dimensions;
+import frc.robot.Constants;
 import frc.robot.FieldConstants;
+
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
+
 
 public class Zones {
     public static interface Zone {
@@ -20,6 +24,8 @@ public class Zones {
 
     public static interface PredictiveXZone extends Zone {
         public Trigger willContain(Supplier<Pose2d> pose, Supplier<ChassisSpeeds> fieldSpeeds, Time dt);
+        public Trigger willContain(Supplier<Pose2d> pose, Supplier<ChassisSpeeds> fieldSpeeds, Time dt, BooleanSupplier isExtended);
+
     }
 
     public static class BaseZone implements Zone {
@@ -82,6 +88,11 @@ public class Zones {
         public Trigger willContain(Supplier<Pose2d> pose, Supplier<ChassisSpeeds> fieldSpeeds, Time dt) {
             return new Trigger(() -> willContainPoint(pose.get().getTranslation(), fieldSpeeds.get(), dt));
         }
+        
+        @Override
+        public Trigger willContain(Supplier<Pose2d> pose, Supplier<ChassisSpeeds> fieldSpeeds, Time dt, BooleanSupplier isExtended) {
+            return new Trigger(() -> willContainPoint(pose.get(), fieldSpeeds.get(), dt, isExtended.getAsBoolean()));
+        }
 
         protected boolean willContainPoint(Translation2d point, ChassisSpeeds fieldSpeeds, Time dt) {
             return (point.getY() >= yMin && point.getY() <= yMax)
@@ -92,6 +103,33 @@ public class Zones {
                                     && fieldSpeeds.vxMetersPerSecond * dt.in(Seconds) <= xMax - point.getX()));
         }
 
+        protected boolean willContainPoint(Pose2d robotPose2d, ChassisSpeeds fieldSpeeds, Time dt, boolean isExtended) {
+            boolean yInZone = (robotPose2d.getY() >= yMin && robotPose2d.getY() <= yMax);
+            if (!yInZone) {
+                return false;
+            }
+
+            double subtract = 0.0;
+            double add = 0.0;
+            if (isExtended) {
+                // Expand only in the robot's front field-X direction.
+                if (robotPose2d.getRotation().getCos() >= 0.0) {
+                    subtract = Constants.Dimensions.FRONT_EXTENSION;
+                } else {
+                    add = Constants.Dimensions.FRONT_EXTENSION;
+                }
+            }
+
+            return willContainPointLogic(robotPose2d, fieldSpeeds, dt, subtract, add);
+        }
+
+            protected boolean willContainPointLogic(Pose2d point, ChassisSpeeds fieldSpeeds, Time dt, double subtract, double add) {
+                return  ((point.getX() >= xMin - subtract && point.getX() <= xMax + add)
+                || (point.getX() < xMin - subtract
+                    && fieldSpeeds.vxMetersPerSecond * dt.in(Seconds) >= xMin - subtract - point.getX())
+                || (point.getX() > xMax + add
+                    && fieldSpeeds.vxMetersPerSecond * dt.in(Seconds) <= xMax + add - point.getX()));
+        }
         @Override
         public PredictiveXBaseZone mirroredX() {
             return new PredictiveXBaseZone(super.mirroredX());
@@ -137,11 +175,23 @@ public class Zones {
 
             return combined;
         }
+
+        @Override
+        public Trigger willContain(Supplier<Pose2d> pose, Supplier<ChassisSpeeds> fieldSpeeds, Time dt, BooleanSupplier isExtended) {
+            Trigger combined = new Trigger(() -> false);
+
+            for (Zone zone : zones) {
+                combined = combined.or(((PredictiveXZone) zone).willContain(pose, fieldSpeeds, dt, isExtended));
+            }
+
+            return combined;
+        }
     }
 
+    
     private static final double ROBOT_HALF_LENGTH_M = Dimensions.FULL_LENGTH.in(Meters) / 2.0;
 
-    private static final PredictiveXBaseZone BLUE_BOTTOM_TRENCH = new PredictiveXBaseZone(
+    public static final PredictiveXBaseZone BLUE_BOTTOM_TRENCH = new PredictiveXBaseZone(
             FieldConstants.TRENCH_BUMP_X_M
                     - FieldConstants.TRENCH_BUMP_LENGTH_M / 2.0
                     - ROBOT_HALF_LENGTH_M,
@@ -150,13 +200,46 @@ public class Zones {
                     + ROBOT_HALF_LENGTH_M,
             0,
             FieldConstants.TRENCH_WIDTH_M);
-    private static final PredictiveXBaseZone BLUE_TOP_TRENCH = BLUE_BOTTOM_TRENCH.mirroredY();
-    private static final PredictiveXBaseZone RED_BOTTOM_TRENCH = BLUE_BOTTOM_TRENCH.mirroredX();
-    private static final PredictiveXBaseZone RED_TOP_TRENCH = BLUE_TOP_TRENCH.mirroredX();
+    public static final PredictiveXBaseZone BLUE_TOP_TRENCH = BLUE_BOTTOM_TRENCH.mirroredY();
+    public static final PredictiveXBaseZone RED_BOTTOM_TRENCH = BLUE_BOTTOM_TRENCH.mirroredX();
+    public static final PredictiveXBaseZone RED_TOP_TRENCH = BLUE_TOP_TRENCH.mirroredX();
 
     public static final PredictiveXZoneCollection TRENCH_ZONES =
             new PredictiveXZoneCollection(BLUE_BOTTOM_TRENCH, BLUE_TOP_TRENCH, RED_BOTTOM_TRENCH, RED_TOP_TRENCH);
 
+    public static BaseZone getContainingTrenchZone(Pose2d pose)
+    {
+        if (pose == null) return null;
+        Translation2d pt = pose.getTranslation();
+        for (Zone z : TRENCH_ZONES.zones) {
+            if (z instanceof BaseZone) {
+                BaseZone bz = (BaseZone) z;
+                if (bz.containsPoint(pt)) return bz;
+            }
+        }
+        return null;
+    }
+
+    public static int determineSideOfTrench(Pose2d pose){
+        BaseZone currentTrench = getContainingTrenchZone(pose);
+        
+        if (currentTrench == null)
+        {
+            System.out.println("Not in a Trench!");
+            return 0;
+        }
+        
+        double x1 = currentTrench.xMin;
+        double x2 = currentTrench.xMax;
+        double average = (x1 + x2) / 2;
+
+        if (pose.getX() > average)
+        {
+            return 1;
+        } else {
+            return -1;
+        }
+    }
     /** Extra distance (m) for duck zone beyond trench bar. */
     private static final double TRENCH_DUCK_EXTRA_DISTANCE_M = 0.5;
 
@@ -208,4 +291,7 @@ public class Zones {
         Logger.recordOutput("Zones/Bumps/Red Bottom", RED_BOTTOM_BUMP.getCorners());
         Logger.recordOutput("Zones/Bumps/Red Top", RED_TOP_BUMP.getCorners());
     }
+
+
+
 }

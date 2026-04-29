@@ -628,7 +628,7 @@
             "title": "Auto-Shoot Active",
             "x": 380.0,
             "y": 380.0,
-            "width": 190.0,
+            "width": 380.0,
             "height": 95.0,
             "type": "Boolean Box",
             "properties": {
@@ -642,27 +642,10 @@
             }
           },
           {
-            "title": "Ready To Shoot",
-            "x": 570.0,
-            "y": 380.0,
-            "width": 190.0,
-            "height": 95.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/IsReadyToShoot",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
             "title": "Driver Override",
             "x": 380.0,
-            "y": 475.0,
-            "width": 855.0,
+            "y": 570.0,
+            "width": 665.0,
             "height": 95.0,
             "type": "Boolean Box",
             "properties": {
@@ -740,9 +723,9 @@
           {
             "title": "Is Robot (Turret Forward) Facing Hub",
             "x": 380.0,
-            "y": 570.0,
-            "width": 285.0,
-            "height": 190.0,
+            "y": 665.0,
+            "width": 380.0,
+            "height": 95.0,
             "type": "Boolean Box",
             "properties": {
               "topic": "/AdvantageKit/RealOutputs/TeleopDrive/IsFacingHub",
@@ -756,10 +739,10 @@
           },
           {
             "title": "Is Robot Centric",
-            "x": 665.0,
-            "y": 570.0,
+            "x": 760.0,
+            "y": 665.0,
             "width": 285.0,
-            "height": 190.0,
+            "height": 95.0,
             "type": "Boolean Box",
             "properties": {
               "topic": "/AdvantageKit/RealOutputs/TeleopDrive/IsRobotCentric",
@@ -773,10 +756,10 @@
           },
           {
             "title": "Is Intaking",
-            "x": 950.0,
-            "y": 570.0,
-            "width": 285.0,
-            "height": 95.0,
+            "x": 1045.0,
+            "y": 475.0,
+            "width": 190.0,
+            "height": 190.0,
             "type": "Boolean Box",
             "properties": {
               "topic": "/AdvantageKit/RealOutputs/Subsystems/Intake/IsIntaking",
@@ -790,9 +773,9 @@
           },
           {
             "title": "Intake State",
-            "x": 950.0,
+            "x": 1045.0,
             "y": 665.0,
-            "width": 285.0,
+            "width": 190.0,
             "height": 95.0,
             "type": "Text Display",
             "properties": {
@@ -878,6 +861,57 @@
               "period": 0.06,
               "rotation_turns": 0
             }
+          },
+          {
+            "title": "Auto-Shoot Enabled",
+            "x": 380.0,
+            "y": 475.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/AutoShootEnabled",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Ready To Shoot",
+            "x": 570.0,
+            "y": 475.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ShooterCommand/Ready/IsReadyToShoot",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Auto-Shoot Temp Disabled",
+            "x": 760.0,
+            "y": 475.0,
+            "width": 285.0,
+            "height": 95.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/AutoShootTemporarilyDisabled",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
           }
         ]
       }
@@ -946,7 +980,7 @@
             "title": "Auto-Shoot Active",
             "x": 380.0,
             "y": 380.0,
-            "width": 190.0,
+            "width": 380.0,
             "height": 95.0,
             "type": "Boolean Box",
             "properties": {
@@ -962,7 +996,7 @@
           {
             "title": "Ready To Shoot",
             "x": 570.0,
-            "y": 380.0,
+            "y": 475.0,
             "width": 190.0,
             "height": 95.0,
             "type": "Boolean Box",
@@ -979,8 +1013,8 @@
           {
             "title": "Driver Override",
             "x": 380.0,
-            "y": 475.0,
-            "width": 855.0,
+            "y": 570.0,
+            "width": 665.0,
             "height": 95.0,
             "type": "Boolean Box",
             "properties": {
@@ -1096,9 +1130,9 @@
           {
             "title": "Is Robot (Turret Forward) Facing Hub",
             "x": 380.0,
-            "y": 570.0,
-            "width": 285.0,
-            "height": 190.0,
+            "y": 665.0,
+            "width": 380.0,
+            "height": 95.0,
             "type": "Boolean Box",
             "properties": {
               "topic": "/AdvantageKit/RealOutputs/TeleopDrive/IsFacingHub",
@@ -1112,10 +1146,10 @@
           },
           {
             "title": "Is Robot Centric",
-            "x": 665.0,
-            "y": 570.0,
+            "x": 760.0,
+            "y": 665.0,
             "width": 285.0,
-            "height": 190.0,
+            "height": 95.0,
             "type": "Boolean Box",
             "properties": {
               "topic": "/AdvantageKit/RealOutputs/TeleopDrive/IsRobotCentric",
@@ -1129,10 +1163,10 @@
           },
           {
             "title": "Is Intaking",
-            "x": 950.0,
-            "y": 570.0,
-            "width": 285.0,
-            "height": 95.0,
+            "x": 1045.0,
+            "y": 475.0,
+            "width": 190.0,
+            "height": 190.0,
             "type": "Boolean Box",
             "properties": {
               "topic": "/AdvantageKit/RealOutputs/Subsystems/Intake/IsIntaking",
@@ -1146,9 +1180,9 @@
           },
           {
             "title": "Intake State",
-            "x": 950.0,
+            "x": 1045.0,
             "y": 665.0,
-            "width": 285.0,
+            "width": 190.0,
             "height": 95.0,
             "type": "Text Display",
             "properties": {
@@ -1195,6 +1229,40 @@
               "topic": "/CameraPublisher/webcam_0-raw",
               "period": 0.06,
               "rotation_turns": 0
+            }
+          },
+          {
+            "title": "Auto-Shoot Enabled",
+            "x": 380.0,
+            "y": 475.0,
+            "width": 190.0,
+            "height": 95.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/AutoShootEnabled",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Auto-Shoot Temp Disabled",
+            "x": 760.0,
+            "y": 475.0,
+            "width": 285.0,
+            "height": 95.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/AutoShootTemporarilyDisabled",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
             }
           }
         ]

@@ -84,7 +84,7 @@ public class RobotContainer {
 	private boolean isDriveEnabled 		= true;
 	private boolean isVisionEnabled 	= true;
 	private boolean isIntakeEnabled 	= true;
-	private boolean isExtenderEnabled = true;
+	public boolean isExtenderEnabled = true;
 	private boolean isAgitatorEnabled = true;
 	private boolean isTransferEnabled = true;
 	private boolean isTurretEnabled 	= true;
@@ -141,6 +141,11 @@ public class RobotContainer {
 	public static boolean operatorManualOverride = false;
 	@AutoLogOutput(key = "Subsystems/Shooter/Turret/DriverTurretOverride")
 	private boolean driverTurretOverride = false;
+	private boolean trenchAutoShootEnabled = true;
+	@AutoLogOutput(key = "Subsystems/Shooter/AutoShootEnabled")
+	private boolean autoShootEnabled = false;
+	@AutoLogOutput(key = "Subsystems/Shooter/AutoShootTemporarilyDisabled")
+	private boolean autoShootTemporarilyDisabled = false;
 
 	// Hang Hold Mode
 	@AutoLogOutput(key = "Subsystems/Hang/HangHoldModeEnabled")
@@ -343,7 +348,7 @@ public class RobotContainer {
 		hood.setUseSmartDashboardTarget(()  -> operatorManualOverride);
 		flywheel.setIgnoreLimitsSupplier(() -> operatorManualOverride);
 		hang.setIgnoreLimitsSupplier(() 		-> operatorManualOverride);
-
+		
 		/// -------------------------------------------------------------------------------------------
 		/// ------------------------------------- Drive Commands --------------------------------------		
 		/// -------------------------------------------------------------------------------------------
@@ -353,8 +358,21 @@ public class RobotContainer {
 		new TrapezoidProfile.Constraints(DriveCommands.getAngleMaxVelocity(), DriveCommands.getAngleMaxAcceleration()));
 		faceTargetController.enableContinuousInput(-Math.PI, Math.PI);
 
-		teleopDrive = new TeleopDrive(drive, driverController, () -> isRobotCentric, () -> isFacingHub, faceTargetController);
+		teleopDrive = new TeleopDrive(drive, extender, hood, hang, driverController, () -> isRobotCentric, () -> isFacingHub, faceTargetController);
 		teleopDrive.setManualOverrideSupplier(() -> driverManualOverride);
+		teleopDrive.setAutoShootEnabledSetter(enabled -> {
+			trenchAutoShootEnabled = enabled;
+			autoShootTemporarilyDisabled = !enabled;
+			if (!enabled) {
+				CommandScheduler.getInstance().cancel(shootWhenReadyCommand);
+				if (flywheel != null ) flywheel.setState(Flywheel.State.IDLE);
+			} else if (autoShootEnabled) {
+				if (flywheel != null && flywheel.getState() == Flywheel.State.IDLE) {
+					flywheel.setState(Flywheel.State.CHARGING);
+				}
+				CommandScheduler.getInstance().schedule(shootWhenReadyCommand);
+			}
+		});
 
 		/// -------------------------------------------------------------------------------------------
 		/// ------------------------------- Shooter Subsystem Commands --------------------------------
@@ -517,15 +535,19 @@ public class RobotContainer {
 
 		// Shoot toggle: on = schedule ShootWhenReadyCommand, set Flywheel to Charging if Idle; off = cancel (command end() sets Transfer and Agitator to Idle)
 		driverController.a().and(driverTriggerGate).onTrue(Commands.runOnce(() -> {
-			if (shootWhenReadyCommand.isScheduled()) {
+			autoShootEnabled = !autoShootEnabled;
+			if (!autoShootEnabled) {
 				CommandScheduler.getInstance().cancel(shootWhenReadyCommand);
 				if (flywheel != null ) flywheel.setState(Flywheel.State.IDLE);
-			} else {
-				if (flywheel != null && flywheel.getState() == Flywheel.State.IDLE) {
-					flywheel.setState(Flywheel.State.CHARGING);
-				}
-				CommandScheduler.getInstance().schedule(shootWhenReadyCommand);
+				return;
 			}
+			if (!trenchAutoShootEnabled) {
+				return;
+			}
+			if (flywheel != null && flywheel.getState() == Flywheel.State.IDLE) {
+				flywheel.setState(Flywheel.State.CHARGING);
+			}
+			CommandScheduler.getInstance().schedule(shootWhenReadyCommand);
 		}));
 
 		// Reset Gyro / Odometry, or if Manual Override is true, Reset Gyro
@@ -1423,7 +1445,8 @@ public class RobotContainer {
 		new TrapezoidProfile.Constraints(DriveCommands.getAngleMaxVelocity(), DriveCommands.getAngleMaxAcceleration()));
 		secondSimRobotBundle.faceTargetController.enableContinuousInput(-Math.PI, Math.PI);
 
-		secondSimRobotBundle.teleopDrive = new TeleopDrive(secondSimRobotBundle.drive, secondSimRobotBundle.driverController,
+		secondSimRobotBundle.teleopDrive = new TeleopDrive(secondSimRobotBundle.drive, secondSimRobotBundle.extender, secondSimRobotBundle.hood,
+				secondSimRobotBundle.hang, secondSimRobotBundle.driverController,
 				() -> secondSimRobotBundle.isRobotCentric, () -> secondSimRobotBundle.isFacingHub, secondSimRobotBundle.faceTargetController,
 				() -> simSecondRobotSession.isRedAlliance(),
 				SecondSimRobotOutputs.LOG_ROOT_PREFIX);
