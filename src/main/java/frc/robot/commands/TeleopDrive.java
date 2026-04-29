@@ -15,6 +15,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -23,7 +24,15 @@ import frc.robot.Constants.ControllerConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.FieldConstants;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.extender.Extender;
+import frc.robot.subsystems.extender.ExtenderConstants;
+import frc.robot.subsystems.hang.Hang;
+import frc.robot.subsystems.hang.HangConstants;
+import frc.robot.subsystems.shooter.hood.Hood;
+import frc.robot.subsystems.shooter.hood.HoodConstants;
 import frc.robot.util.Zones;
+
+import java.util.function.Consumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
@@ -31,6 +40,9 @@ import org.littletonrobotics.junction.Logger;
 /** Default drive command. */
 public class TeleopDrive extends Command {
   private final Drive drive;
+  private final Extender extender;
+  private final Hood hood;
+  private final Hang hang;
   private final CommandXboxController controller;
   private final BooleanSupplier isRobotCentricSupplier;
   private final BooleanSupplier isFacingHubSupplier;
@@ -38,6 +50,7 @@ public class TeleopDrive extends Command {
   private final DoubleSupplier xSupplier;
   private final DoubleSupplier ySupplier;
   private final DoubleSupplier omegaSupplier;
+  private final BooleanSupplier isExtendedSupplier;
   private int flipFactor = 1;
 
   /** When true, joystick field axes are negated (red-alliance convention). */
@@ -59,6 +72,9 @@ public class TeleopDrive extends Command {
 
   /** When true, set DriveMode to MANUAL_OVERRIDE (Manual Override). */
   private BooleanSupplier manualOverrideSupplier = () -> false;
+  private Consumer<Boolean> autoShootEnabledSetter = enabled -> {};
+  private boolean autoShootTemporarilyDisabled = false;
+  private boolean invalidTrenchEntryHandled = false;
 
   private DriveMode currentDriveMode = DriveMode.NORMAL;
 
@@ -67,12 +83,18 @@ public class TeleopDrive extends Command {
   /** Field flip follows {@link DriverStation} alliance; AdvantageKit keys are {@code TeleopDrive/…} (no path prefix). */
   public TeleopDrive(
       Drive drive,
+      Extender extender,
+      Hood hood,
+      Hang hang,
       CommandXboxController controller,
       BooleanSupplier isRobotCentricSupplier,
       BooleanSupplier isFacingHubSupplier,
       ProfiledPIDController faceTargetController) {
     this(
         drive,
+        extender,
+        hood,
+        hang,
         controller,
         isRobotCentricSupplier,
         isFacingHubSupplier,
@@ -87,6 +109,9 @@ public class TeleopDrive extends Command {
    */
   public TeleopDrive(
       Drive drive,
+      Extender extender,
+      Hood hood,
+      Hang hang,
       CommandXboxController controller,
       BooleanSupplier isRobotCentricSupplier,
       BooleanSupplier isFacingHubSupplier,
@@ -95,10 +120,15 @@ public class TeleopDrive extends Command {
       String logRoot) {
     this.drive = drive;
     this.controller = controller;
+    this.extender = extender;
+    this.isExtendedSupplier = extender != null ? extender::isBetweenSafeEndpoints : () -> false;
+    this.hood = hood;
+    this.hang = hang;
     this.isRobotCentricSupplier = isRobotCentricSupplier;
     this.isFacingHubSupplier = isFacingHubSupplier;
     this.faceTargetController = faceTargetController;
-    this.fieldFlipTreatAsRedAlliance = fieldFlipTreatAsRedAlliance != null ? fieldFlipTreatAsRedAlliance : TeleopDrive::driverStationIsRedAlliance;
+    this.fieldFlipTreatAsRedAlliance = fieldFlipTreatAsRedAlliance != null ? fieldFlipTreatAsRedAlliance
+        : TeleopDrive::driverStationIsRedAlliance;
     this.logRoot = logRoot != null ? logRoot : "";
     this.xSupplier = () -> -controller.getLeftY() * flipFactor;
     this.ySupplier = () -> -controller.getLeftX() * flipFactor;
@@ -108,20 +138,52 @@ public class TeleopDrive extends Command {
     rotationController.setTolerance(SwerveConstants.ROTATION_TOLERANCE_RAD);
     rotationController.enableContinuousInput(-Math.PI, Math.PI);
 
-    inTrenchZoneTrigger = Zones.TRENCH_ZONES
-        .willContain(drive::getPose, drive::getFieldRelativeChassisSpeeds, Seconds.of(SwerveConstants.TRENCH_ALIGN_TIME_S))
-        .debounce(0.1);
-
     /// Disabled (Bump Zone is not used)
     // inBumpZoneTrigger = Zones.BUMP_ZONES
     //     .willContain(drive::getPose, drive::getFieldRelativeChassisSpeeds, Seconds.of(SwerveConstants.BUMP_ALIGN_TIME_S))
     //     .debounce(0.1);
 
-    inTrenchZoneTrigger.onTrue(Commands.runOnce(() -> currentDriveMode = DriveMode.TRENCH_LOCK));
+    Trigger trenchContainmentTrigger;
+    if (extender != null) {
+      trenchContainmentTrigger = Zones.TRENCH_ZONES.willContain(
+          drive::getPose,
+          drive::getFieldRelativeChassisSpeeds,
+          Seconds.of(SwerveConstants.TRENCH_ALIGN_TIME_S),
+          isExtendedSupplier);
+    } else {
+      trenchContainmentTrigger = Zones.TRENCH_ZONES.willContain(
+          drive::getPose,
+          drive::getFieldRelativeChassisSpeeds,
+          Seconds.of(SwerveConstants.TRENCH_ALIGN_TIME_S));
+    }
+    inTrenchZoneTrigger = trenchContainmentTrigger.debounce(0.1);
+
+    inTrenchZoneTrigger.whileTrue(Commands.run(() -> {
+      if (shouldUseInvalidTrenchMode()) {
+        if (!invalidTrenchEntryHandled) {
+          onEnterInvalidTrenchMode();
+          invalidTrenchEntryHandled = true;
+        }
+        currentDriveMode = DriveMode.INVALID_TRENCH;
+      } else {
+        invalidTrenchEntryHandled = false;
+        currentDriveMode = DriveMode.TRENCH_LOCK;
+        rumbleController(false);
+      }
+    }));
+    
     /// Disabled (Bump Zone is not used)
     // inBumpZoneTrigger.onTrue(Commands.runOnce(() -> currentDriveMode = DriveMode.BUMP_LOCK));
     // inTrenchZoneTrigger.or(inBumpZoneTrigger).onFalse(Commands.runOnce(() -> currentDriveMode = DriveMode.NORMAL));
-    inTrenchZoneTrigger.onFalse(Commands.runOnce(() -> currentDriveMode = DriveMode.NORMAL));
+    inTrenchZoneTrigger.whileFalse(Commands.run(() -> {
+      invalidTrenchEntryHandled = false;
+      currentDriveMode = DriveMode.NORMAL;
+      rumbleController(false);
+      if (autoShootTemporarilyDisabled) {
+        autoShootEnabledSetter.accept(true);
+        autoShootTemporarilyDisabled = false;
+      }
+    }));
 
     addRequirements(drive);
   } // End TeleopDrive Constructor
@@ -130,6 +192,16 @@ public class TeleopDrive extends Command {
     return DriverStation.getAlliance().isPresent()
         && DriverStation.getAlliance().get() == DriverStation.Alliance.Red;
   } // End driverStationIsRedAlliance
+
+  /** Returns true when trench mode must switch to invalid trench mode. */
+  private boolean shouldUseInvalidTrenchMode() {
+    if (extender == null || hood == null || hang == null) {
+      return false;
+    }
+    return extender.isBetweenSafeEndpoints()
+        || hood.getAngleRad() < HoodConstants.kDisabledAngleRad - HoodConstants.kAtTargetToleranceRad
+        || hang.getPositionMeters() > HangConstants.kStoredPositionMeters + HangConstants.kAtTargetToleranceMeters;
+  } // End shouldUseInvalidTrenchMode
 
   private static Translation2d getLinearVelocityFromJoysticks(double joystickX, double joystickY) {
     double linearMagnitude = MathUtil.applyDeadband(Math.hypot(joystickX, joystickY), ControllerConstants.CONTROLLER_DEADBAND);
@@ -168,6 +240,27 @@ public class TeleopDrive extends Command {
   public void setManualOverrideSupplier(BooleanSupplier supplier) {
     manualOverrideSupplier = supplier != null ? supplier : () -> false;
   } // End setManualOverrideSupplier
+
+  /** Sets callback that enables or disables autoshoot outside this command. */
+  public void setAutoShootEnabledSetter(Consumer<Boolean> setter) {
+    autoShootEnabledSetter = setter != null ? setter : enabled -> {};
+  } // End setAutoShootEnabledSetter
+
+  /** Applies INVALID_TRENCH entry recovery actions for Hang, Extender, and autoshoot lockout. */
+  private void onEnterInvalidTrenchMode() {
+    if (hang.getPositionMeters() > HangConstants.kStoredPositionMeters + HangConstants.kAtTargetToleranceMeters) {
+      hang.setStoredState();
+    }
+    if (extender.getPositionRad() < ExtenderConstants.kExtendedRad - ExtenderConstants.kAtTargetToleranceRad) {
+      extender.setExtendedState();
+    }
+    if (hood.getAngleRad() < HoodConstants.kDisabledAngleRad - HoodConstants.kAtTargetToleranceRad) {
+      if (!autoShootTemporarilyDisabled) {
+        autoShootEnabledSetter.accept(false);
+        autoShootTemporarilyDisabled = true;
+      }
+    }
+  } // End onEnterInvalidTrenchMode
 
   @Override
   public void initialize() {
@@ -211,6 +304,8 @@ public class TeleopDrive extends Command {
         //   drive.stopWithX();
         //   break;
         // }
+        // turns off rumble if it was on already
+        rumbleController(false);
 
         if (isRobotCentricSupplier.getAsBoolean()) {
           drive.runVelocity(new ChassisSpeeds(vx, vy, rot));
@@ -229,6 +324,7 @@ public class TeleopDrive extends Command {
         if (rotationController.atSetpoint()) {
           rotSpeedToStraight = 0;
         }
+        rumbleController(false);
         drive.driveFieldCentric(
             linearVelocity.getX(),
             yVel,
@@ -240,10 +336,37 @@ public class TeleopDrive extends Command {
         if (rotationController.atSetpoint()) {
           rotSpeedToDiagonal = 0;
         }
+        rumbleController(false);
         drive.driveFieldCentric(
             linearVelocity.getX(),
             linearVelocity.getY(),
             rotSpeedToDiagonal);
+        break;
+
+      case INVALID_TRENCH:
+        trenchYController.setSetpoint(getTrenchYMeters());
+        double yVelInvalid = trenchYController.calculate(drive.getPose().getY());
+        if (trenchYController.atSetpoint()) {
+          yVelInvalid = 0;
+        }
+        rotationController.setSetpoint(getTrenchLockAngle().getRadians());
+        double rotSpeedToStraightInvalid = rotationController.calculate(drive.getRotation().getRadians());
+        if (rotationController.atSetpoint()) {
+          rotSpeedToStraightInvalid = 0;
+        }
+
+        double xVelocity = Zones.determineSideOfTrench(drive.getPose());
+        
+        if (xVelocity == 0)
+        {
+          xVelocity = linearVelocity.getX();
+        }
+        rumbleController(true);
+        drive.driveFieldCentric(
+            xVelocity,
+            yVelInvalid,
+            rotSpeedToStraightInvalid);
+
         break;
     }
 
@@ -251,6 +374,15 @@ public class TeleopDrive extends Command {
     Logger.recordOutput(logRoot + "TeleopDrive/currentDriveMode", currentDriveMode.toString());
     Logger.recordOutput(logRoot + "TeleopDrive/TargetFieldRelativeSpeeds", desiredFieldSpeeds);
   } // End execute
+
+  public void rumbleController(boolean isRumbling){
+    if (isRumbling){
+    controller.getHID().setRumble(RumbleType.kBothRumble,frc.robot.Constants.ControllerConstants.CONTROLLER_RUMBLE);
+    } else {
+    controller.getHID().setRumble(RumbleType.kBothRumble,0);
+    
+    }
+  }
 
   @Override
   public void end(boolean interrupted) {}
@@ -264,6 +396,7 @@ public class TeleopDrive extends Command {
     NORMAL,
     TRENCH_LOCK,
     BUMP_LOCK,
-    MANUAL_OVERRIDE
+    MANUAL_OVERRIDE,
+    INVALID_TRENCH
   } // End DriveMode
 }

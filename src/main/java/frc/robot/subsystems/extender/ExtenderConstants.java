@@ -34,13 +34,13 @@ public final class ExtenderConstants {
   public static final int kEncoderVelocitySignalPeriodMs = 31;
 
   /** Target position when the Extender is in Retracted (up) mode. */
-  public static final double kUpExtenderRad = Units.degreesToRadians(0.0);
+  public static final double kUpRad = Units.degreesToRadians(0.0);
 
   /** Target position when the Extender is in Partial mode. */
-  public static final double kPartialExtenderRad = Units.degreesToRadians(35.0);
+  public static final double kPartialRad = Units.degreesToRadians(35.0);
 
   /** Target position when the Extender is in Extended mode. */
-  public static final double kExtendedExtenderRad = Units.degreesToRadians(80.0);
+  public static final double kExtendedRad = Units.degreesToRadians(80.0);
 
   /** Minimum angle (fully retracted). */
   public static final double kMinRad = Units.degreesToRadians(0.0);
