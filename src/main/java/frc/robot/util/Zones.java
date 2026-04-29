@@ -9,8 +9,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.Dimensions;
-import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.extender.Extender;
 import frc.robot.Constants;
 import frc.robot.FieldConstants;
 
@@ -18,7 +16,6 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
-import com.fasterxml.jackson.databind.JsonSerializable.Base;
 
 public class Zones {
     public static interface Zone {
@@ -108,7 +105,6 @@ public class Zones {
 
         protected boolean willContainPoint(Pose2d robotPose2d, ChassisSpeeds fieldSpeeds, Time dt, boolean isExtended) {
             boolean yInZone = (robotPose2d.getY() >= yMin && robotPose2d.getY() <= yMax);
-            boolean xInZone;
             boolean xWillInZone;
             
             if (isExtended) {

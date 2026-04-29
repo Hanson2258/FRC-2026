@@ -1430,7 +1430,8 @@ public class RobotContainer {
 		new TrapezoidProfile.Constraints(DriveCommands.getAngleMaxVelocity(), DriveCommands.getAngleMaxAcceleration()));
 		secondSimRobotBundle.faceTargetController.enableContinuousInput(-Math.PI, Math.PI);
 
-		secondSimRobotBundle.teleopDrive = new TeleopDrive(secondSimRobotBundle.drive, secondSimRobotBundle.driverController,
+		secondSimRobotBundle.teleopDrive = new TeleopDrive(secondSimRobotBundle.drive, secondSimRobotBundle.extender, secondSimRobotBundle.hood,
+				secondSimRobotBundle.hang, secondSimRobotBundle.driverController,
 				() -> secondSimRobotBundle.isRobotCentric, () -> secondSimRobotBundle.isFacingHub, secondSimRobotBundle.faceTargetController,
 				() -> simSecondRobotSession.isRedAlliance(),
 				SecondSimRobotOutputs.LOG_ROOT_PREFIX);
