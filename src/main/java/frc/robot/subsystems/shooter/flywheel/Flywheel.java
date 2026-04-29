@@ -7,6 +7,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.util.TelemetryUtil;
 import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.Logger;
 
@@ -23,43 +24,66 @@ public class Flywheel extends SubsystemBase {
 
   private final FlywheelIO flywheelIO;
   private final FlywheelIO.FlywheelIOInputs flywheelInputs = new FlywheelIO.FlywheelIOInputs();
+  private final String logRoot;
+  /** SmartDashboard key prefix (e.g. {@code Flywheel}, {@code SecondSimRobotOutputs/Flywheel}). */
+  private final String smartDashboardPrefix;
 
   private State state = State.IDLE;
 
   private BooleanSupplier ignoreLimitsSupplier = () -> false;
 
-  private double targetVelocityRadPerSec = kDefaultTargetVelocityRadPerSec;
-  private double lastSmartDashboardTargetVelocityRpm = Units.radiansPerSecondToRotationsPerMinute(kDefaultTargetVelocityRadPerSec);
+  private double targetVelocityRadPerSec =
+      Units.rotationsPerMinuteToRadiansPerSecond(
+          TelemetryUtil.roundToTwoDecimals(
+              Units.radiansPerSecondToRotationsPerMinute(kDefaultTargetVelocityRadPerSec)));
+  private double lastSmartDashboardTargetVelocityRpm =
+      TelemetryUtil.roundToTwoDecimals(
+          Units.radiansPerSecondToRotationsPerMinute(kDefaultTargetVelocityRadPerSec));
 
   public Flywheel(FlywheelIO io) {
-    flywheelIO = io;
+    this(io, "", "Flywheel");
+  } // End Flywheel Constructor
 
-    SmartDashboard.putNumber("Flywheel/kP", kP);
-    SmartDashboard.putNumber("Flywheel/kI", kI);
-    SmartDashboard.putNumber("Flywheel/kD", kD);
-    SmartDashboard.putNumber("Flywheel/kV", kV);
-    SmartDashboard.putNumber("Flywheel/kS", kS);
-    SmartDashboard.putNumber("Flywheel/TargetVelocityRpm", Units.radiansPerSecondToRotationsPerMinute(kDefaultTargetVelocityRadPerSec));
+  public Flywheel(FlywheelIO io, String logRoot) {
+    this(io, logRoot, "Flywheel");
+  } // End Flywheel Constructor
+
+  public Flywheel(FlywheelIO io, String logRoot, String smartDashboardPrefix) {
+    flywheelIO = io;
+    this.logRoot = logRoot;
+    this.smartDashboardPrefix = smartDashboardPrefix;
+
+    SmartDashboard.putNumber(smartDashboardPrefix + "/kP", kP);
+    SmartDashboard.putNumber(smartDashboardPrefix + "/kI", kI);
+    SmartDashboard.putNumber(smartDashboardPrefix + "/kD", kD);
+    SmartDashboard.putNumber(smartDashboardPrefix + "/kV", kV);
+    SmartDashboard.putNumber(smartDashboardPrefix + "/kS", kS);
+    SmartDashboard.putNumber(
+        smartDashboardPrefix + "/TargetVelocityRpm",
+        TelemetryUtil.roundToTwoDecimals(Units.radiansPerSecondToRotationsPerMinute(kDefaultTargetVelocityRadPerSec)));
   } // End Flywheel Constructor
 
   @Override
   public void periodic() {
     flywheelIO.updateInputs(flywheelInputs);
-    Logger.recordOutput("Subsystems/Shooter/Flywheel/Inputs/MotorConnected", flywheelInputs.motorConnected);
-    Logger.recordOutput("Subsystems/Shooter/Flywheel/Inputs/VelocityRpm", getVelocityRpm());
-    Logger.recordOutput("Subsystems/Shooter/Flywheel/Inputs/AppliedVolts", flywheelInputs.appliedVolts);
-    Logger.recordOutput("Subsystems/Shooter/Flywheel/Inputs/SupplyCurrentAmps", flywheelInputs.supplyCurrentAmps);
-    Logger.recordOutput("Subsystems/Shooter/Flywheel/TargetVelocityRpm", getTargetVelocityRpm());
-    Logger.recordOutput("Subsystems/Shooter/Flywheel/AtTargetVelocity", atTargetVelocity());
-    Logger.recordOutput("Subsystems/Shooter/Flywheel/State", state.name());
+    Logger.recordOutput(logRoot + "Subsystems/Shooter/Flywheel/Inputs/MotorConnected", flywheelInputs.motorConnected);
+    Logger.recordOutput(logRoot + "Subsystems/Shooter/Flywheel/Inputs/VelocityRpm", TelemetryUtil.roundToTwoDecimals(getVelocityRpm()));
+    Logger.recordOutput(logRoot + "Subsystems/Shooter/Flywheel/Inputs/AppliedVolts", TelemetryUtil.roundToTwoDecimals(flywheelInputs.appliedVolts));
+    Logger.recordOutput(logRoot + "Subsystems/Shooter/Flywheel/Inputs/SupplyCurrentAmps", TelemetryUtil.roundToTwoDecimals(flywheelInputs.supplyCurrentAmps));
+    Logger.recordOutput(logRoot + "Subsystems/Shooter/Flywheel/TargetVelocityRpm", TelemetryUtil.roundToTwoDecimals(getTargetVelocityRpm()));
+    Logger.recordOutput(logRoot + "Subsystems/Shooter/Flywheel/AtTargetVelocity", atTargetVelocity());
+    Logger.recordOutput(logRoot + "Subsystems/Shooter/Flywheel/State", state.name());
 
     if (DriverStation.isDisabled()) {
       flywheelIO.stop();
       return;
     }
 
-    double targetRpm = SmartDashboard.getNumber( "Flywheel/TargetVelocityRpm",
+    double targetRpmRaw =
+        SmartDashboard.getNumber(
+            smartDashboardPrefix + "/TargetVelocityRpm",
             Units.radiansPerSecondToRotationsPerMinute(kDefaultTargetVelocityRadPerSec));
+    double targetRpm = TelemetryUtil.roundToTwoDecimals(targetRpmRaw);
     if (targetRpm != lastSmartDashboardTargetVelocityRpm) {
       setState(State.CHARGING);
       setTargetVelocityRadPerSec(Units.rotationsPerMinuteToRadiansPerSecond(targetRpm));
@@ -112,10 +136,11 @@ public class Flywheel extends SubsystemBase {
   /** Set target velocity (rad/s) when not Idle; clamped to limits unless limits override is enabled. */
   public void setTargetVelocityRadPerSec(double velocityRadPerSec) {
     targetVelocityRadPerSec = ignoreLimitsSupplier.getAsBoolean() ? velocityRadPerSec : clampTargetVelocity(velocityRadPerSec);
-    SmartDashboard.putNumber(
-        "Flywheel/TargetVelocityRpm", Units.radiansPerSecondToRotationsPerMinute(targetVelocityRadPerSec));
-    lastSmartDashboardTargetVelocityRpm =
-        Units.radiansPerSecondToRotationsPerMinute(targetVelocityRadPerSec);
+    double targetRpmRounded =
+        TelemetryUtil.roundToTwoDecimals(Units.radiansPerSecondToRotationsPerMinute(targetVelocityRadPerSec));
+    targetVelocityRadPerSec = Units.rotationsPerMinuteToRadiansPerSecond(targetRpmRounded);
+    SmartDashboard.putNumber(smartDashboardPrefix + "/TargetVelocityRpm", targetRpmRounded);
+    lastSmartDashboardTargetVelocityRpm = targetRpmRounded;
   } // End setTargetVelocityRadPerSec
   
 
@@ -133,6 +158,11 @@ public class Flywheel extends SubsystemBase {
   public boolean atTargetVelocity() {
     return Math.abs(getVelocityRadPerSec() - getTargetVelocityRadPerSec()) <= kAtTargetVelocityToleranceRadPerSec;
   } // End atTargetVelocity
+
+  /** Whether Flywheel is at target velocity within double tolerance. */
+  public boolean atTargetVelocityWithinDoubleTolerance() {
+    return Math.abs(getVelocityRadPerSec() - getTargetVelocityRadPerSec()) <= 2.0 * kAtTargetVelocityToleranceRadPerSec;
+  } // End atTargetVelocityWithinDoubleTolerance
 
 
   /** Set supplier for ignoring limits. */
