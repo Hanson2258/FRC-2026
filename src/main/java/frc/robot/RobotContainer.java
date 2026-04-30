@@ -77,7 +77,7 @@ public class RobotContainer {
 
 	// Competition Toggle
 	@AutoLogOutput(key = "CompetitionToggle")
-	private boolean isCompetition = false;
+	private boolean isCompetition = true;
 
 	// Subsystems Toggle
 	private boolean isDriveEnabled 		= true;
