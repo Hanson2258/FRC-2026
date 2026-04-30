@@ -44,14 +44,14 @@ public final class TurretConstants {
   public static final int kSignalsPeriodMs = 19;
   public static final int kEncoderVelocitySignalPeriodMs = 19;
   
-  /** Default aim direction in robot frame (0 = forward); π = toward robot back. */
-  public static final Rotation2d kDefaultAimDirectionRobotFrame = Rotation2d.kPi;
+  /** Default aim direction in robot frame (0 = forward). */
+  public static final Rotation2d kDefaultAimDirectionRobotFrame = Rotation2d.fromDegrees(-161.45377);
 
   /** Minimum Turret angle. */
-  public static final double kMinAngleRad = Units.degreesToRadians(-181.0);
+  public static final double kMinAngleRad = Units.degreesToRadians(-199.54623);
 
   /** Maximum Turret angle. */
-  public static final double kMaxAngleRad = Units.degreesToRadians(181.0);
+  public static final double kMaxAngleRad = Units.degreesToRadians(162.45377);
 
   /** Max voltage magnitude applied to the motor. */
   public static final double kMaxVoltage = 12.0;
