@@ -41,17 +41,16 @@ public class CANdle extends SubsystemBase {
     candleIO.updateInputs(candleIOInputs);
 
     String ledState = setCustomLEDColors();
-
-    Logger.recordOutput("Subsystems/LED/CANdle/State", ledState);
-    Logger.recordOutput("Subsystems/LED/CANdle/Inputs/CurrentAnimationType", candleIOInputs.currentAnimationType.name());
-    Logger.recordOutput(
-        "Subsystems/LED/CANdle/Inputs/CurrentColorHex",
-        String.format(
+    String currentColorHex = String.format(
             "#%02X%02X%02X%02X",
             candleIOInputs.currentColorRed,
             candleIOInputs.currentColorGreen,
             candleIOInputs.currentColorBlue,
-            candleIOInputs.currentColorWhite));
+            candleIOInputs.currentColorWhite);
+
+    Logger.recordOutput("Subsystems/LED/CANdle/State", ledState);
+    Logger.recordOutput("Subsystems/LED/CANdle/Inputs/CurrentAnimationType", candleIOInputs.currentAnimationType.name());
+    Logger.recordOutput("Subsystems/LED/CANdle/Inputs/CurrentColorHex",currentColorHex);
     Logger.recordOutput("Subsystems/LED/CANdle/Inputs/StartLEDIndex", candleIOInputs.startLEDIndex);
     Logger.recordOutput("Subsystems/LED/CANdle/Inputs/EndLEDIndex", candleIOInputs.endLEDIndex);
   } // End periodic
@@ -82,7 +81,7 @@ public class CANdle extends SubsystemBase {
         ledState = "ShootWhenReadyTempDisabled";
       } else {
         targetColor = kShootWhenReadyScheduledColor;
-        ledState = "ShootWhenReadyTempDisabled";
+        ledState = "ShootWhenReadyScheduled";
       }
     } else if (DriverStation.isEnabled()) {
       // IDLE
