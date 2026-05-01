@@ -342,7 +342,8 @@
             "type": "Toggle Button",
             "properties": {
               "topic": "/SmartDashboard/SimStartingPose/ResetToDefaults",
-              "period": 0.06
+              "period": 0.06,
+              "data_type": "boolean"
             }
           },
           {
@@ -580,14 +581,28 @@
             },
             "children": [
               {
-                "title": "Exit Velocity Modifier",
-                "x": 0.0,
-                "y": 0.0,
+                "title": "Exit Velocity Multiplier (Hub)",
+                "x": 950.0,
+                "y": 285.0,
                 "width": 190.0,
                 "height": 190.0,
                 "type": "Text Display",
                 "properties": {
-                  "topic": "/SmartDashboard/Shooter/ExitVelocityCompensationMultiplierAdditive",
+                  "topic": "/SmartDashboard/Shooter/ExitVelocityCompensationMultiplierAdditiveHub",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              },
+              {
+                "title": "Exit Velocity Multiplier (Other)",
+                "x": 950.0,
+                "y": 190.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Shooter/ExitVelocityCompensationMultiplierAdditivePassing",
                   "period": 0.06,
                   "data_type": "double",
                   "show_submit_button": true
@@ -932,14 +947,28 @@
             },
             "children": [
               {
-                "title": "Exit Velocity Modifier",
-                "x": 0.0,
-                "y": 0.0,
+                "title": "Exit Velocity Multiplier (Hub)",
+                "x": 950.0,
+                "y": 285.0,
                 "width": 190.0,
                 "height": 190.0,
                 "type": "Text Display",
                 "properties": {
-                  "topic": "/SmartDashboard/Shooter/ExitVelocityCompensationMultiplierAdditive",
+                  "topic": "/SmartDashboard/Shooter/ExitVelocityCompensationMultiplierAdditiveHub",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              },
+              {
+                "title": "Exit Velocity Multiplier (Other)",
+                "x": 950.0,
+                "y": 190.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Shooter/ExitVelocityCompensationMultiplierAdditivePassing",
                   "period": 0.06,
                   "data_type": "double",
                   "show_submit_button": true
@@ -2222,21 +2251,35 @@
             "x": 1045.0,
             "y": 0.0,
             "width": 285.0,
-            "height": 285.0,
+            "height": 380.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
             },
             "children": [
               {
-                "title": "Exit Velocity Modifier",
-                "x": 0.0,
-                "y": 0.0,
+                "title": "Exit Velocity Multiplier (Hub)",
+                "x": 950.0,
+                "y": 285.0,
                 "width": 190.0,
                 "height": 190.0,
                 "type": "Text Display",
                 "properties": {
-                  "topic": "/SmartDashboard/Shooter/ExitVelocityCompensationMultiplierAdditive",
+                  "topic": "/SmartDashboard/Shooter/ExitVelocityCompensationMultiplierAdditiveHub",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              },
+              {
+                "title": "Exit Velocity Multiplier (Other)",
+                "x": 950.0,
+                "y": 190.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Shooter/ExitVelocityCompensationMultiplierAdditivePassing",
                   "period": 0.06,
                   "data_type": "double",
                   "show_submit_button": true
@@ -2426,8 +2469,8 @@
           {
             "title": "Operator Override",
             "x": 1045.0,
-            "y": 285.0,
-            "width": 285.0,
+            "y": 760.0,
+            "width": 855.0,
             "height": 95.0,
             "type": "Boolean Box",
             "properties": {
@@ -2826,6 +2869,74 @@
                   "topic": "/AdvantageKit/RealOutputs/Subsystems/Shooter/Turret/Inputs/SupplyCurrentAmps",
                   "period": 0.06,
                   "data_type": "double"
+                }
+              }
+            ]
+          },
+          {
+            "title": "Shooter",
+            "x": 855.0,
+            "y": 0.0,
+            "width": 285.0,
+            "height": 380.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Exit Velocity Multiplier (Hub)",
+                "x": 950.0,
+                "y": 285.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Shooter/ExitVelocityCompensationMultiplierAdditiveHub",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              },
+              {
+                "title": "Exit Velocity Multiplier (Other)",
+                "x": 950.0,
+                "y": 190.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Shooter/ExitVelocityCompensationMultiplierAdditivePassing",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              },
+              {
+                "title": "Target Aim Offset Deg",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/SmartDashboard/Shooter/TargetAimOffsetDeg",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": true
+                }
+              },
+              {
+                "title": "Use Lookup Table",
+                "x": 1330.0,
+                "y": 570.0,
+                "width": 190.0,
+                "height": 190.0,
+                "type": "Toggle Switch",
+                "properties": {
+                  "topic": "/SmartDashboard/Shooter/UseLookupTable",
+                  "period": 0.06,
+                  "data_type": "boolean"
                 }
               }
             ]
