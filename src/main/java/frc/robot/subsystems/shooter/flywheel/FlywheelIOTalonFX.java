@@ -86,7 +86,8 @@ public class FlywheelIOTalonFX implements FlywheelIO {
   public void setTargetVelocity(double targetVelocityRadPerSec) {
     double rampedRadPerSec = velocityRamp.calculate(targetVelocityRadPerSec);
     double motorRps = (rampedRadPerSec / (2.0 * Math.PI)) * kGearRatio;
-    motor.setControl(velocityVoltageRequest.withVelocity(motorRps));
+
+    motor.setControl(velocityVoltageRequest.withVelocity(motorRps).withEnableFOC(true));
   } // End setTargetVelocity
 
   @Override

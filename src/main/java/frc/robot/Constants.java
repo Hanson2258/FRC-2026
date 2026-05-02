@@ -30,6 +30,13 @@ public final class Constants {
 
     public static final Distance FULL_LENGTH = FRAME_SIZE_X.plus(BUMPER_THICKNESS.times(2));
     public static final Distance FULL_WIDTH = FRAME_SIZE_Y.plus(BUMPER_THICKNESS.times(2));
+    
+    public static final double FRONT_EXTENSION = 0.2794; // Metres added to robot when extender is out
+    /**
+     * Protrusion past bumpers along robot +X when the extender is fully extended. MapleSim / dyn4j
+     * chassis collision only; FuelSim uses {@link #FULL_LENGTH} for the robot box.
+     */
+    public static final double kExtensionPastBumpersMeters = Inches.of(8.696850).in(Meters);
   }
 
   /** Controller deadband and rumble. */
@@ -47,21 +54,21 @@ public final class Constants {
   }
 
   /** Teleop drive speeds and trench/bump alignment. */
-  public static class SwerveConstants { // XXX: Tune SwerveConstants, especially TRENCH_ALIGN_TIME_S
+  public static class SwerveConstants {
     public static final double DEFAULT_DRIVE_SPEED_MPS = 1.6;
     public static final double DEFAULT_ROT_SPEED_RAD_PER_S = 0.75 * 2 * Math.PI;
     /** From Drive.getMaxLinearSpeedMetersPerSec() (TunerConstants.kSpeedAt12Volts = 4.58 m/s). */
     public static final double FAST_DRIVE_SPEED_MPS = 4.58;
     /** From Drive.getMaxAngularSpeedRadPerSec(): max linear / drive base radius. Radius = hypot(9.75, 10.75) in → 0.36866 m. */
     public static final double FAST_ROT_SPEED_RAD_PER_S = 4.58 / 0.36866;
-    public static final double TRENCH_ALIGN_TIME_S = 0.5;
+    public static final double TRENCH_ALIGN_TIME_S = 0.60;
     public static final double BUMP_ALIGN_TIME_S = 0.3;
 
     /** Trench Y (translation) PID and tolerance. */
     public static final double TRENCH_Y_KP = 8.0;
     public static final double TRENCH_Y_KI = 0.0;
     public static final double TRENCH_Y_KD = 0.05;
-    public static final double TRENCH_Y_TOLERANCE_M = 0.127;
+    public static final double TRENCH_Y_TOLERANCE_M = 0.1;
 
     /** Rotation (trench/bump lock) PID and tolerance. */
     public static final double ROTATION_KP = 5.0;

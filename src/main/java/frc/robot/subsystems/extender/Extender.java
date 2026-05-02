@@ -7,11 +7,14 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.util.TelemetryUtil;
 import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.Logger;
 
 /** Extender subsystem: one motor with onboard position control. */
 public class Extender extends SubsystemBase {
+  private static final String kTargetPositionDegKey = "Extender/TargetPositionDeg";
+  private static final double kTargetPositionWidgetEpsilonDeg = 1e-3;
 
   /** Extender state: Idle, Retracted (facing up), Partial, Extended (facing forward) or Manual. */
   public enum State {
@@ -24,36 +27,59 @@ public class Extender extends SubsystemBase {
 
   private final ExtenderIO extenderIO;
   private final ExtenderIO.ExtenderIOInputs extenderInputs = new ExtenderIO.ExtenderIOInputs();
+  private final String logRoot;
 
   private State state = State.RETRACTED;
-  private double targetPositionRad = kUpExtenderRad;
+  private double targetPositionRad =
+      Units.degreesToRadians(TelemetryUtil.roundToTwoDecimals(Units.radiansToDegrees(kUpRad)));
   private BooleanSupplier ignoreLimitsSupplier = () -> false;
+  private double lastTargetPositionDashboardWriteDeg = Double.NaN;
 
   public Extender(ExtenderIO io) {
+    this(io, "");
+  } // End Extender Constructor
+
+  public Extender(ExtenderIO io, String logRoot) {
     extenderIO = io;
+    this.logRoot = logRoot;
 
     SmartDashboard.putNumber("Extender/kP", kP);
     SmartDashboard.putNumber("Extender/kI", kI);
     SmartDashboard.putNumber("Extender/kD", kD);
-    SmartDashboard.putNumber("Extender/TargetPositionDeg", Units.radiansToDegrees(targetPositionRad));
+    SmartDashboard.putNumber(kTargetPositionDegKey, TelemetryUtil.roundToTwoDecimals(Units.radiansToDegrees(targetPositionRad)));
   } // End Extender Constructor
 
   @Override
   public void periodic() {
     extenderIO.updateInputs(extenderInputs);
-    Logger.recordOutput("Subsystems/Extender/Inputs/MotorConnected", extenderInputs.motorConnected);
-    Logger.recordOutput("Subsystems/Extender/Inputs/PositionDeg", Units.radiansToDegrees(extenderInputs.positionRads));
-    Logger.recordOutput("Subsystems/Extender/Inputs/VelocityDegPerSec", Units.radiansToDegrees(extenderInputs.velocityRadsPerSec));
-    Logger.recordOutput("Subsystems/Extender/Inputs/AppliedVolts", extenderInputs.appliedVolts);
-    Logger.recordOutput("Subsystems/Extender/Inputs/SupplyCurrentAmps", extenderInputs.supplyCurrentAmps);
-    Logger.recordOutput("Subsystems/Extender/TargetPositionDeg", Units.radiansToDegrees(targetPositionRad));
-    Logger.recordOutput("Subsystems/Extender/AtTargetPosition", atTargetPosition());
-    Logger.recordOutput("Subsystems/Extender/State", state.name());
+    Logger.recordOutput(logRoot + "Subsystems/Extender/Inputs/MotorConnected", extenderInputs.motorConnected);
+    Logger.recordOutput(logRoot + "Subsystems/Extender/Inputs/PositionDeg", TelemetryUtil.roundToTwoDecimals(Units.radiansToDegrees(extenderInputs.positionRads)));
+    Logger.recordOutput(logRoot + "Subsystems/Extender/Inputs/VelocityDegPerSec", Units.radiansToDegrees(extenderInputs.velocityRadsPerSec));
+    Logger.recordOutput(logRoot + "Subsystems/Extender/Inputs/AppliedVolts", TelemetryUtil.roundToTwoDecimals(extenderInputs.appliedVolts));
+    Logger.recordOutput(logRoot + "Subsystems/Extender/Inputs/SupplyCurrentAmps", TelemetryUtil.roundToTwoDecimals(extenderInputs.supplyCurrentAmps));
+    Logger.recordOutput(logRoot + "Subsystems/Extender/TargetPositionDeg", TelemetryUtil.roundToTwoDecimals(Units.radiansToDegrees(targetPositionRad)));
+    Logger.recordOutput(logRoot + "Subsystems/Extender/AtTargetPosition", atTargetPosition());
+    Logger.recordOutput(logRoot + "Subsystems/Extender/State", state.name());
 
     if (DriverStation.isDisabled()) {
       extenderIO.stop();
+      lastTargetPositionDashboardWriteDeg = Double.NaN;
       return;
     }
+
+    double targetDeg = SmartDashboard.getNumber(kTargetPositionDegKey,
+        TelemetryUtil.roundToTwoDecimals(Units.radiansToDegrees(targetPositionRad)));
+    boolean dashboardTargetEdited = !Double.isNaN(lastTargetPositionDashboardWriteDeg)
+        && Math.abs(targetDeg - lastTargetPositionDashboardWriteDeg) > kTargetPositionWidgetEpsilonDeg;
+    if (dashboardTargetEdited) {
+      setTargetPositionRad(Units.degreesToRadians(targetDeg));
+      if (state == State.IDLE) {
+        state = State.MANUAL;
+      }
+    }
+    double publishedTargetDeg = TelemetryUtil.roundToTwoDecimals(Units.radiansToDegrees(targetPositionRad));
+    SmartDashboard.putNumber(kTargetPositionDegKey, publishedTargetDeg);
+    lastTargetPositionDashboardWriteDeg = publishedTargetDeg;
 
     // Update the target position.
     targetPositionRad = getSetpointRad();
@@ -75,6 +101,10 @@ public class Extender extends SubsystemBase {
         extenderIO.setTargetPosition(targetPositionRad);
         break;
       case IDLE:
+        if (getPositionRad() > kExtendedRad - kAtTargetToleranceRad) {
+          setExtendedState();
+          break;
+        }
       default:
         extenderIO.stop();
         break;
@@ -88,22 +118,27 @@ public class Extender extends SubsystemBase {
     extenderIO.stop();
   } // End setIdleState
 
+  
+  public boolean isExtended() {
+    return getState() == State.EXTENDED;
+  }
+
   /** Set state to Retracted (up position). */
   public void setRetractedState() {
     state = State.RETRACTED;
-    setTargetPositionRad(kUpExtenderRad);
+    setTargetPositionRad(kUpRad);
   } // End setRetractedState
 
   /** Set state to Partial (middle position). */
   public void setPartialState() {
     state = State.PARTIAL;
-    setTargetPositionRad(kPartialExtenderRad);
+    setTargetPositionRad(kPartialRad);
   } // End setPartialState
 
   /** Set state to Extended (down; rest on bumpers when there). */
   public void setExtendedState() {
     state = State.EXTENDED;
-    setTargetPositionRad(kExtendedExtenderRad);
+    setTargetPositionRad(kExtendedRad);
   } // End setExtendedState
 
   /** Get current state. */
@@ -115,7 +150,15 @@ public class Extender extends SubsystemBase {
   /** Measured position in radians. */
   public double getPositionRad() {
     return extenderInputs.positionRads;
-  } // End getPositionRad  
+  } // End getPositionRad
+
+  /** Returns true when Extender is neither near retracted nor near extended endpoints. */
+  public boolean isBetweenSafeEndpoints() {
+    double extenderPositionRad = getPositionRad();
+    boolean nearRetracted = extenderPositionRad <= kUpRad + kAtTargetToleranceRad;
+    boolean nearExtended = extenderPositionRad >= kExtendedRad - kAtTargetToleranceRad;
+    return !nearRetracted && !nearExtended;
+  } // End isBetweenSafeEndpoints
 
   /** Get the current target position in radians. */
   public double getTargetPositionRad() {
@@ -124,7 +167,8 @@ public class Extender extends SubsystemBase {
 
   /** Set target position in radians (clamped to travel limits if limits override is not enabled). */
   public void setTargetPositionRad(double targetRad) {
-    targetPositionRad = ignoreLimitsSupplier.getAsBoolean() ? targetRad : clampTargetPosition(targetRad);
+    double clampedRad = ignoreLimitsSupplier.getAsBoolean() ? targetRad : clampTargetPosition(targetRad);
+    targetPositionRad = Units.degreesToRadians(TelemetryUtil.roundToTwoDecimals(Units.radiansToDegrees(clampedRad)));
   } // End setTargetPositionRad
 
   /** Whether Extender is at target position within tolerance. */
@@ -132,7 +176,7 @@ public class Extender extends SubsystemBase {
     return Math.abs(getPositionRad() - targetPositionRad) <= kAtTargetToleranceRad;
   } // End atTargetPosition
 
-  
+
   /** Clamp a target angle to mechanical limits. */
   public double clampTargetPosition(double targetRad) {
     return MathUtil.clamp(targetRad, kMinRad, kMaxRad);
